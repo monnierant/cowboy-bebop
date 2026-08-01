@@ -14,18 +14,7 @@ export interface Mouvement {
   notes: number;
 }
 
-export interface Cadran {
-  name: string;
-  size: number;
-  genre: string;
-  isImportant: boolean;
-  secretNote: string;
-  mouvement: number;
-  value: number;
-  isObjective: boolean;
-  isVisibleByPlayers: boolean;
-  isClosed: boolean;
-}
+
 
 export interface Colors {
   [key: string]: {

@@ -1,19 +1,16 @@
-@import "./prime/cadran.scss";
 @import "./prime/tokens.scss";
-
-.cowboy-prime-cadrans-grid {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
 
 .cowboy-prime-cadrans-buttons {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   gap: 1em;
+  margin-top: 0.4em;
+}
+
+.cowboy-dials-group-label {
+  font-size: 0.85em;
+  opacity: 0.8;
 }
 
 .cowboy-prime-header-selects {
@@ -27,17 +24,4 @@
 
 .cowboy-prime-selected {
   background-color: #0dcaca35;
-}
-
-.cowboy-cadran-admin {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  gap: 0.2em;
-}
-
-.cowboy-cadran-header {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
 }

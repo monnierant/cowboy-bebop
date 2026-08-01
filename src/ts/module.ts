@@ -6,10 +6,10 @@ import "../styles/style.scss";
 import CowboyBebopItemSheet from "./apps/sheets/cowboybebopItemSheet";
 import CowboyBebopActorSheet from "./apps/sheets/cowboybebopActorSheet";
 import CowboyBebopActor from "./apps/documents/cowboybebopActor";
-import { colors, moduleId } from "./constants";
-import { Cadran } from "./types";
+import { moduleId } from "./constants";
 import { range } from "./handlebarsHelpers/range";
 import { genreToIcon } from "./handlebarsHelpers/genreToIcon";
+import { registerSlicedDials } from "./slicedDials";
 // import CowboyBebopRoll from "./apps/rolls/cowboybebopRoll";
 // import CowboyBebopResultRollMessageData from "./apps/messages/cowboybebopResultRollMessageData";
 
@@ -18,7 +18,6 @@ async function preloadTemplates(): Promise<any> {
     `systems/${moduleId}/templates/partials/rythm-counter.hbs`,
     `systems/${moduleId}/templates/partials/health-counter.hbs`,
     `systems/${moduleId}/templates/partials/actor-admin-panel.hbs`,
-    `systems/${moduleId}/templates/partials/cadran-counter.hbs`,
     `systems/${moduleId}/templates/partials/token-counter.hbs`,
   ];
 
@@ -31,24 +30,8 @@ Hooks.once("init", () => {
   Handlebars.registerHelper("range", range);
   Handlebars.registerHelper("genreToIcon", genreToIcon);
 
-  Handlebars.registerHelper(
-    "circlePortion",
-    function (index: number, total: number, radius: number) {
-      return index * (radius / total);
-    }
-  );
-
-  Handlebars.registerHelper("divide", function (a: number, b: number) {
-    return a / b;
-  });
-
-  Handlebars.registerHelper("coloron", function (cadran: Cadran) {
-    return colors[cadran.isClosed ? "closed" : cadran.genre]?.on;
-  });
-
-  Handlebars.registerHelper("coloroff", function (cadran: Cadran) {
-    return colors[cadran.isClosed ? "closed" : cadran.genre]?.off;
-  });
+  // `circlePortion` and `divide` existed only to draw the old dial partial by
+  // hand. The module owns that drawing now.
 
   CONFIG.Actor.documentClass = CowboyBebopActor;
   // CONFIG.ChatMessage.dataModels.rollMessage = CowboyBebopResultRollMessageData;
@@ -58,6 +41,8 @@ Hooks.once("init", () => {
 
   Actors.unregisterSheet("core", ActorSheet);
   Actors.registerSheet(moduleId, CowboyBebopActorSheet, { makeDefault: true });
+
+  registerSlicedDials();
 
   preloadTemplates();
 });

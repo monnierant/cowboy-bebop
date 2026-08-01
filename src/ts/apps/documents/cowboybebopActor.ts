@@ -1,5 +1,5 @@
 import { genres } from "../../constants";
-import { Cadran, Trait, Traits } from "../../types";
+import { Trait, Traits } from "../../types";
 import CowboyBebopRollDialog from "../dialog/cowboybebopRollDialog";
 import CowboyBebopRoll from "../rolls/cowboybebopRoll";
 
@@ -260,28 +260,6 @@ export default class CowboyBebopActor extends Actor {
     await this.collectCartons(genre, cartons);
   }
 
-  public async addCadran(
-    genre: string,
-    size: number,
-    isObjective: boolean,
-    isImportant: boolean
-  ) {
-    const cadran: Cadran = {
-      name: "",
-      size: size,
-      genre: genre,
-      isImportant: isImportant,
-      secretNote: "",
-      mouvement: 0,
-      value: 0,
-      isObjective: isObjective,
-      isVisibleByPlayers: false,
-      isClosed: false,
-    };
-    await this.update({
-      "system.cadrans": [...(this as any).system.cadrans, cadran],
-    });
-  }
 
   public async collectNotes(genre: string, notes: number) {
     let newNotes = (this as any).system.notes;
@@ -315,81 +293,9 @@ export default class CowboyBebopActor extends Actor {
     }
   }
 
-  public async deleteCadran(index: number) {
-    const cadrans = [...(this as any).system.cadrans];
-    cadrans.splice(index, 1);
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-  }
 
-  public async closeCadran(index: number) {
-    const cadrans = (this as any).system.cadrans;
-    cadrans[index].isClosed = true;
 
-    // open a modal to ask for confirmation
-    const confirmed = await Dialog.confirm({
-      title: "Close Cadran",
-      content: "Are you sure you want to close this cadran?",
-      yes: () => true,
-      no: () => false,
-    });
 
-    if (confirmed) {
-      await this.update({
-        "system.cadrans": cadrans,
-      });
-    }
-  }
-
-  public async increaseCadran(
-    index: number,
-    genre: string,
-    type: string
-  ): Promise<boolean> {
-    const cadrans = (this as any).system.cadrans;
-    const cadran = cadrans[index];
-
-    console.log(cadran, genre, type);
-
-    if ((this as any).system[type][genre] <= 0) {
-      console.log("this as any).system[type][genre] <= 0");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    // Check if the cadran is at the last value
-    if (cadran.value >= cadran.size - 1 && cadran.genre != genre) {
-      console.log("cadran.value >= cadran.size - 1 && cadran.genre != genre");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    if (cadran.value >= cadran.size) {
-      console.log("cadran.value >= cadran.size");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    if (type !== (cadran.isObjective ? "cartons" : "notes")) {
-      console.log("type !== cadran.isObjective ? cartons : notes");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    cadrans[index].value += 1;
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-
-    this.addToken(genre, type, -1);
-
-    return new Promise<boolean>((resolve) => resolve(true));
-  }
-
-  public async toggleCadranVisibility(index: number) {
-    const cadrans = (this as any).system.cadrans;
-    cadrans[index].isVisibleByPlayers = !cadrans[index].isVisibleByPlayers;
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-  }
 
   public async setGenre(genre: string) {
     await this.update({

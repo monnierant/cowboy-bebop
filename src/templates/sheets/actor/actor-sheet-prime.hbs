@@ -72,46 +72,26 @@
     </div>
   </section>
   <section class="cowboy-prime-cadrans">
-    <div class="cowboy-prime-cadrans-grid">
-      {{#each actor.system.cadrans as |cadran cadranId|}}
-      {{> "systems/cowboy-bebop/templates/partials/cadran-counter.hbs" cadranid=cadranId cadran=cadran isGM=../isGM}}
-      {{/each}}
-    </div>
+    {{!-- Filled by Sliced Dials; this system never draws a dial itself. --}}
+    <div class="cowboy-prime-dials"></div>
+
     {{#if isGM}}
     <div class="cowboy-prime-cadrans-admin">
       <div class="cowboy-prime-cadrans-buttons">
-        <select class="cowboy-cadrans-select-goal">
-          <option value="true">
-            {{localize 'COWBOY.actor.goal'}}
-          </option>
-          <option value="false">
-            {{localize 'COWBOY.actor.threat'}}
-          </option>
-        </select>
-        <select class="cowboy-cadrans-select-important">
-          <option value="false">
-            {{localize 'COWBOY.actor.normal'}}
-          </option>
-          <option value="true">
-            {{localize 'COWBOY.actor.important'}}
-          </option>
-        </select>
-        <select class="cowboy-cadrans-select-genre">
-          {{#each genres as |genre|}}
-          <option value="{{ genre }}">
-            {{ genre }}
-          </option>
-          {{/each}}
-        </select>
-        <button type="button" class="cowboy-cadrans-add" data-size="4">
-          +4
-        </button>
-        <button type="button" class="cowboy-cadrans-add" data-size="6">
-          +6
-        </button>
-        <button type="button" class="cowboy-cadrans-add" data-size="8">
-          +8
-        </button>
+        <span class="cowboy-dials-group-label">
+          {{localize 'COWBOY.actor.goal'}}
+        </span>
+        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="4">+4</button>
+        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="6">+6</button>
+        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="8">+8</button>
+      </div>
+      <div class="cowboy-prime-cadrans-buttons">
+        <span class="cowboy-dials-group-label">
+          {{localize 'COWBOY.actor.threat'}}
+        </span>
+        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="4">+4</button>
+        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="6">+6</button>
+        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="8">+8</button>
       </div>
     </div>
     {{/if}}

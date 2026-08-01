@@ -1,6 +1,7 @@
 import { moduleId, genres, rangs } from "../../constants";
 // import { Traits, Trait } from "../../types";
 import CowboyBebopActor from "../documents/cowboybebopActor";
+import { RULESET } from "../../slicedDials";
 
 export default class CowboyBebopItemSheet extends ActorSheet {
   private genreSelected: string | undefined = undefined;
@@ -60,19 +61,14 @@ export default class CowboyBebopItemSheet extends ActorSheet {
   }
 
   private activateListenersNPC(html: JQuery) {
-    html.find(".cowboy-cadrans-add").on("click", this._onAddCadran.bind(this));
+    html.find(".cowboy-dials-add").on("click", this._onAddDial.bind(this));
+    this._mountDials(html);
     html
       .find(".cowboy-prime-current-target-button")
       .on("click", this._onSetCurrent.bind(this));
     html
       .find(".cowboy-actor-token")
       .on("click", this._onSelectToken.bind(this));
-    html
-      .find(".cowboy-cadran-action")
-      .on("click", this._onCadranAction.bind(this));
-    html
-      .find(".cowboy-cadran-visible")
-      .on("click", this._onCadranVisible.bind(this));
     html
       .find(".cowboy-prime-genre")
       .on("change", this._onSelectGenre.bind(this));
@@ -172,39 +168,55 @@ export default class CowboyBebopItemSheet extends ActorSheet {
   // NPC Actions
   //=============================================
 
-  private _onAddCadran(event: Event) {
+  /**
+   * Hands the dial container over to the module, which draws them and wires
+   * the whole placement interaction. This system never draws a dial itself -
+   * that is the point of depending on the module.
+   */
+  private _mountDials(html: JQuery) {
+    const container = html.find(".cowboy-prime-dials").get(0);
+    if (!container) return;
+
+    const api = (game as any).modules?.get("sliced-dials")?.api;
+    if (!api) {
+      // The manifest declares the dependency, so this only happens if someone
+      // disabled the module in an existing world.
+      container.innerHTML = `<p class="notification warning">Sliced Dials is not active.</p>`;
+      return;
+    }
+
+    api.mountDials(container, this.actor);
+  }
+
+  /**
+   * Creates a dial embedded on this prime. Objective dials take tokens,
+   * threat dials take false notes - which in the module's terms is simply the
+   * sign each one accepts.
+   */
+  private async _onAddDial(event: Event) {
     event.preventDefault();
     event.stopPropagation();
 
-    const parent = (event.currentTarget as HTMLElement).parentElement;
+    const button = event.currentTarget as HTMLElement;
+    const size = parseInt(button.dataset.size ?? "4");
+    const objective = button.dataset.goal === "true";
 
-    const genre = (
-      parent
-        ?.getElementsByClassName("cowboy-cadrans-select-genre")
-        .item(0) as HTMLSelectElement
-    ).value;
-
-    const goal = (
-      parent
-        ?.getElementsByClassName("cowboy-cadrans-select-goal")
-        .item(0) as HTMLSelectElement
-    ).value;
-
-    const important = (
-      parent
-        ?.getElementsByClassName("cowboy-cadrans-select-important")
-        .item(0) as HTMLSelectElement
-    ).value;
-
-    const size = parseInt(
-      (event.currentTarget as HTMLElement).dataset.size ?? ""
+    const created = await Item.create(
+      {
+        name: objective
+          ? (game as any).i18n.localize("COWBOY.actor.goal")
+          : (game as any).i18n.localize("COWBOY.actor.threat"),
+        type: "sliced-dials.dial",
+        system: {
+          size,
+          ruleset: RULESET,
+          allowedSigns: [objective ? "+" : "-"],
+        },
+      } as any,
+      { parent: this.actor } as any
     );
-    (this.actor as CowboyBebopActor).addCadran(
-      genre,
-      size,
-      goal === "true",
-      important === "true"
-    );
+
+    (created as any)?.sheet?.render(true);
   }
 
   private _onSetCurrent(event: Event) {
@@ -238,49 +250,6 @@ export default class CowboyBebopItemSheet extends ActorSheet {
       .forEach((element: Element) => {
         element.classList.add("cowboy-actor-token-selected");
       });
-  }
-
-  private async _onCadranAction(event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const action = (event.currentTarget as HTMLElement).dataset.action;
-    const cadranIndex = parseInt(
-      (event.currentTarget as HTMLElement).dataset.index ?? "0"
-    );
-    let result: boolean = false;
-
-    console.log(event.currentTarget, action, cadranIndex);
-
-    switch (action) {
-      case "remove":
-        (this.actor as CowboyBebopActor).deleteCadran(cadranIndex);
-        break;
-      case "close":
-        (this.actor as CowboyBebopActor).closeCadran(cadranIndex);
-        break;
-      case "increase":
-        result = await (this.actor as CowboyBebopActor).increaseCadran(
-          cadranIndex,
-          this.genreSelected ?? "",
-          this.typeSelected ?? ""
-        );
-        if (!result) {
-          ui.notifications?.warn("Impossible d'augmenter ce cadran");
-        }
-        break;
-    }
-  }
-
-  private _onCadranVisible(event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const cadranIndex = parseInt(
-      (event.currentTarget as HTMLElement).dataset.index ?? "0"
-    );
-
-    (this.actor as CowboyBebopActor).toggleCadranVisibility(cadranIndex);
   }
 
   private async _onSelectGenre(event: Event) {
