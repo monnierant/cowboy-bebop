@@ -4,6 +4,7 @@ import scss from "rollup-plugin-scss";
 import { defineConfig, Plugin } from "vite";
 import path from "path";
 import fs from "fs-extra";
+import { compilePack } from "@foundryvtt/foundryvtt-cli";
 
 const moduleVersion = process.env.MODULE_VERSION;
 const githubProject = process.env.GH_PROJECT;
@@ -50,9 +51,59 @@ export default defineConfig({
       ],
       // hook: newLocal,
     }),
+    compilePacksPlugin(kindOfProject),
     conditionalCopyPlugin(kindOfProject),
   ],
 });
+
+/**
+ * Compiles the compendium sources into the LevelDB packs Foundry actually reads.
+ *
+ * The manifest is what says which packs exist - the same list Foundry loads - so
+ * there is no second list here to keep in step with it. A pack declared as
+ * `"path": "packs/session-types"` is built from `src/packs/session-types/` into
+ * `dist/packs/session-types/`.
+ *
+ * One document per source file, in JSON or YAML. Each carries the `_key` the
+ * CLI keys the database on: `"_key": "!items!<the same id as _id>"`. A file
+ * without one is skipped silently by the CLI, which is why the count is logged.
+ */
+function compilePacksPlugin(kind: string = "module"): Plugin {
+  return {
+    name: "compile-packs",
+    async writeBundle(): Promise<void> {
+      const manifest = JSON.parse(
+        await fsPromises.readFile(`src/${kind}.json`, "utf-8")
+      ) as { packs?: { name: string; path: string }[] };
+
+      const packs = manifest.packs ?? [];
+      if (packs.length === 0) return;
+
+      for (const pack of packs) {
+        const src = path.resolve(__dirname, "src", "packs", pack.name);
+        const dest = path.resolve(__dirname, "dist", pack.path);
+
+        if (!fs.existsSync(src)) {
+          // A declared pack with no sources is a mistake worth naming: Foundry
+          // would show an empty compendium and say nothing about why.
+          console.warn(
+            `Pack "${pack.name}" is declared in the manifest but ${path.relative(
+              __dirname,
+              src
+            )} does not exist -> skipped.`
+          );
+          continue;
+        }
+
+        // Rebuilt from scratch each time. compilePack does delete keys that are
+        // no longer in the sources, but a pack whose *name* changed would leave
+        // its old database behind for Foundry to find.
+        await fs.remove(dest);
+        await compilePack(src, dest, { log: true });
+      }
+    },
+  };
+}
 
 function updateModuleManifestPlugin(kind: string = "module"): Plugin {
   return {
@@ -92,7 +143,11 @@ function conditionalCopyPlugin(kind: string = "module"): Plugin {
   console.log(`kind: ${kind}`);
   return {
     name: "conditional-copy-plugin",
-    async writeBundle(): Promise<void> {
+    // `closeBundle`, not `writeBundle`: Rollup runs `writeBundle` hooks in
+    // parallel, so copying `dist` from there could start before the templates,
+    // the languages or the packs had finished landing in it. `closeBundle` runs
+    // once every one of them is done.
+    async closeBundle(): Promise<void> {
       if (!foundryPath) {
         console.log(
           "FOUNDRY_PATH is not defined -> Skip internal test release."
