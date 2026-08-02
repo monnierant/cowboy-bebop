@@ -1,4 +1,15 @@
 {
+  "TYPES": {
+    "Actor": {
+      "chasseur": "Hunter",
+      "prime": "Prime"
+    },
+    "Item": {
+      "mono": "Mono",
+      "sessionType": "Session type"
+    }
+  },
+
   "COWBOY": {
     "actor": {
       "goal": "Goal",
@@ -8,12 +19,32 @@
       "roll": "Roll",
       "name": "NAME",
       "genre": "GENRE",
-      "rang": "MOUVEMENT",
+      "mouvement": "MOUVEMENT",
       "concept": "CONCEPT",
       "memory": "MEMORY",
+      "groove": "GROOVE",
       "burden": "BURDEN",
+      "healTrait": "Heal this trait",
+      "rythme": "Rhythm",
+      "rythmeUp": "Gain a rhythm",
+      "rythmeDown": "Lose a rhythm",
       "currentTarget": "Is current target",
       "setCurrentTarget": "Set current target",
+      "activePrime": "Active prime",
+      "inactivePrime": "Inactive prime",
+      "activePrimeHint": "This prime receives the false notes produced by rolls.",
+      "inactivePrimeHint": "Activating this prime automatically replaces the current one.",
+      "setActivePrime": "Activate this prime",
+      "clearActivePrime": "Deactivate this prime",
+      "cartons": "Cartons",
+      "notes": "False notes",
+      "notesHint": "Roll false notes are credited here while this prime is active. The GM can correct each pool with + and −.",
+      "noActivePrime": "No prime is in play. The GM has to choose one.",
+      "playerCartons": "Cartons",
+      "playerCartonsHint": "The prime may hold a GM-managed reserve for tests or bonuses. Each hunter holding cartons gets a row, followed by totals grouped by genre.",
+      "primeCartons": "Prime",
+      "cartonTotals": "All hunters",
+      "noHunters": "No hunter in this world.",
       "admin": {
         "heal": "Heal",
         "damage": "Damage",
@@ -21,11 +52,146 @@
       }
     },
 
+    "session": {
+      "title": "Session",
+      "hint": "The GM writes these lines before play and turns them over as they come into play. Until a line is revealed, players do not see it on this sheet.",
+      "traits": "Session traits",
+      "traitPlaceholder": "A trait of this session…",
+      "secret": "Secret",
+      "secretPlaceholder": "What the prime is hiding…",
+      "reveal": "Reveal to players",
+      "conceal": "Hide from players"
+    },
+
+    "riffs": {
+      "title": "Riffs",
+      "hint": "The gameplay actions the session type opens, for the mouvement being played. Big Shot decides which ones are on the table.",
+      "editorHint": "Tick, mouvement by mouvement, what the session opens. The book has riffs accumulate — what opens at one mouvement stays open at the next — but nothing here forces you to.",
+      "current": "in play",
+      "none": "No riff is on the table for this mouvement.",
+      "hunters": "Hunters",
+      "bigshot": "Big Shot",
+      "addCustom": "Add a riff",
+      "removeCustom": "Remove this riff",
+      "customNamePlaceholder": "Riff name…",
+      "customDescriptionPlaceholder": "What it allows, and what it costs…",
+      "catalog": {
+        "involve": {
+          "name": "Get involved",
+          "description": "Tick a cartridge to add two dice to your pool."
+        },
+        "showWounds": {
+          "name": "Show your wounds",
+          "description": "Roll with disadvantage, describing how your damage makes life harder: once resolved, clear up to two damages from the traits described. Severe damage cannot be cleared this way."
+        },
+        "force": {
+          "name": "Force it",
+          "description": "Right after the roll, if you did not get both cartons, trigger two false notes to make one."
+        },
+        "doubleOrNothing": {
+          "name": "Double or nothing",
+          "description": "Ignore the first roll and throw again with one more die, putting a trait at stake. Without both cartons that trait is struck out until the end of the session; the second result stands, better or worse."
+        },
+        "solo": {
+          "name": "Solo!",
+          "description": "Once per session, spend a rhythm point before or after a test: you gain and immediately spend a carton, even if you take no part in the test."
+        },
+        "assist": {
+          "name": "Assist",
+          "description": "Spend a rhythm point to grant advantage to another hunter's test. Once it is resolved, clear the damage on one of your traits."
+        },
+        "improvise": {
+          "name": "Improvise",
+          "description": "Spend a rhythm point to use traits from a second approach in your test."
+        },
+        "jam": {
+          "name": "Jam!",
+          "description": "Like assisting, but you also lend your groove to the test. You likewise clear the damage on one of your traits once it is resolved."
+        },
+        "risqueNote": {
+          "name": "False note",
+          "description": "Spend a risk to add one false note to a test's result, and use it immediately."
+        },
+        "risqueDisadvantage": {
+          "name": "Disadvantage",
+          "description": "Spend a risk to impose disadvantage on a test."
+        },
+        "risqueDoubleNote": {
+          "name": "Double false note",
+          "description": "Spend a risk to add two false notes to a test's result. They must be used immediately and earn no risk."
+        }
+      }
+    },
+    "sessionType": {
+      "name": "NAME",
+      "label": "Session type",
+      "apply": "Apply a session type",
+      "applied": "{name} is now applied to this prime.",
+      "overwrite": "Applying {name} will replace this prime's riffs, written ones included. Continue?",
+      "noneAvailable": "No session type is available.",
+      "dropHint": "…or drop a session type here.",
+      "dropTypeOnly": "Only a Session type Item can be applied here.",
+      "fromWorld": "World",
+      "setup": "Setup",
+      "setupHint": "What Big Shot has to prepare for this session type: starting rhythm, risks, cartridges. The system computes none of it — it reminds you of it when you apply the type.",
+      "setupPlaceholder": "Starting rhythm, Big Shot's risks, what changes…"
+    },
     "roll": {
       "actions": {
         "collect": "Collect",
+        "collected": "Collected",
         "cartridge": "Use Cartridge",
-        "traits": "Use Traits"
+        "traits": "Use Traits",
+        "damageTrait": "Damage this trait: it cancels one false note, and stays damaged.",
+        "hyperDamageTrait": "Break this trait: the roll is thrown again without it, and it stays broken."
+      }
+    },
+
+    "dials": {
+      "title": "Linked dials",
+      "hint": "Objectives and threats accept a hunter's positive cartons or this prime's negative false notes. The GM chooses what pays.",
+      "manage": "Create or link a dial",
+      "createGoal": "New objective — size",
+      "createThreat": "New threat — size",
+      "link": "Link a dial",
+      "unlink": "Unlink a dial",
+      "noneFree": "No unlinked dial to attach.",
+      "noneLinked": "No dial is linked to this prime.",
+      "noneVisible": "No visible dial is linked to this prime.",
+      "dropHint": "Drag a world dial here to link it to this prime.",
+      "dropDialOnly": "Only a Dial Item can be linked here.",
+      "dropWorldDialOnly": "This dial must first be imported into the world's Items.",
+      "dropLinked": "{name} is now linked to this prime.",
+      "payCarton": "1 {genre} carton",
+      "payNote": "1 {genre} false note",
+      "noneLeft": "Nothing to spend.",
+      "noPayer": "Nobody can pay for a slice on this dial.",
+      "close": "Close"
+    },
+
+    "poster": {
+      "wanted": "WANTED",
+      "options": "Wanted poster",
+      "optionsHint": "What this prime shows on the on-screen wanted poster while it is the one in play. Unchecking both keeps its identity secret.",
+      "showImage": "Portrait",
+      "showName": "Name",
+      "inactiveNote": "Only shown while this prime is in play."
+    },
+
+    "settings": {
+      "activePrime": "Prime in play",
+      "posterPosition": "Wanted poster position",
+      "posterPositionHint": "Where the wanted poster of the prime in play hangs, for the whole table.",
+      "posterPositions": {
+        "top": "Top",
+        "bottom": "Bottom",
+        "left": "Left",
+        "right": "Right",
+        "top-left": "Top left corner",
+        "top-right": "Top right corner",
+        "bottom-left": "Bottom left corner",
+        "bottom-right": "Bottom right corner",
+        "hidden": "Hidden"
       }
     },
 

@@ -1,24 +1,39 @@
+@import "../counter-box.scss";
+
 .cowboy-actor-tokens {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   margin: 0.5em;
-  .cowboy-actor-token-selected {
-    border: 2px solid #0dcaca;
-    border-radius: 0.2em;
-    background-color: #0dcaca35 !important;
+
+  .cowboy-actor-token-label {
+    font-weight: bold;
   }
+
+  .cowboy-actor-token-pool {
+    display: flex;
+    align-items: center;
+
+    > button {
+      @include cowboy-counter-button;
+    }
+  }
+
   .cowboy-prime-tokens-add {
     width: auto;
   }
 
   .cowboy-actor-token {
+    @include cowboy-counter-box;
+
     &.cowboy-notes {
-      background-color: #ca590d35;
+      color: #aa0200;
+      background-color: #d98887bb;
     }
 
     &.cowboy-cartons {
-      background-color: #20ca0d35;
+      color: #18520b;
+      background-color: #7ca9719a;
     }
   }
 }

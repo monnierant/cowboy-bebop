@@ -1,0 +1,24 @@
+// The box a counter is drawn in: an icon, its value, and a tinted plate around
+// the pair. Cartons, false notes and the rhythm all use it, and they have to
+// keep looking like one another - which is what a shared mixin says and two
+// copies of the same five declarations would not.
+@mixin cowboy-counter-box {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.25em 0.45em;
+  border: 1px solid #0004;
+  min-height: 2.1em;
+  border-radius: 0;
+}
+
+// The buttons that flank it. Flush against the box on both sides, so the three
+// read as one control.
+@mixin cowboy-counter-button {
+  width: 1.65em;
+  min-width: 1.65em;
+  height: 2.1em;
+  padding: 0;
+  line-height: 1;
+  flex: 0 0 auto;
+}

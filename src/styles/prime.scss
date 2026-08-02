@@ -1,16 +1,64 @@
 @import "./prime/tokens.scss";
+@import "./prime/poster.scss";
 
 .cowboy-prime-cadrans-buttons {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   align-items: center;
-  gap: 1em;
+  gap: 0.4em;
   margin-top: 0.4em;
+
+  button {
+    width: auto;
+  }
 }
 
 .cowboy-dials-group-label {
   font-size: 0.85em;
   opacity: 0.8;
+}
+
+// Foundry gives the header a fixed height, which the three fields now outgrow.
+// Letting it size to its content is what allows the portrait to be measured
+// against them rather than against a number written here.
+.cowboy-prime-header {
+  flex: 0 0 auto;
+  align-items: stretch;
+  height: auto;
+}
+
+// Upright: the width is fixed, the height comes from the row. `stretch` beats
+// the header's own align-items, and `contain` keeps a face from being cropped
+// by whatever height the fields happen to add up to.
+.cowboy-prime-portrait {
+  flex: 0 0 96px;
+  width: 96px;
+  height: auto;
+  align-self: stretch;
+  object-fit: contain;
+  object-position: top center;
+}
+
+// Three short lines. Left to itself the block grows to whatever the header has
+// spare and pushes the selects and the badge off the row, so it is capped and
+// the rows are tightened - the header's height, and with it the portrait's,
+// comes down as well.
+.cowboy-prime-header-fields {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 18em;
+
+  label {
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  input {
+    height: 1.7em;
+    margin: 0;
+    padding: 0 0.35em;
+    font-size: 0.9em;
+  }
 }
 
 .cowboy-prime-header-selects {
@@ -22,6 +70,236 @@
   margin-right: 1em;
 }
 
-.cowboy-prime-selected {
-  background-color: #0dcaca35;
+// The activation badge and the poster switches, stacked into one column of the
+// header. Only the badge was ever there; the switches followed it up out of the
+// body because they only mean anything while this prime is the active one.
+.cowboy-prime-header-status {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35em;
+  margin-right: 0.6em;
+  min-width: 0;
+}
+
+.cowboy-prime-status {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.45em 0.6em;
+  border: 1px solid #0003;
+  border-radius: 0.35em;
+  white-space: nowrap;
+
+  > i { font-size: 1.1em; }
+  &.is-active { color: #075e5e; background: #0dcaca24; border-color: #0a999966; }
+  &.is-inactive { background: #0000000a; }
+  button { width: auto; min-width: 2em; padding: 0.2em 0.4em; }
+}
+
+// Two rows of short fields. A session trait is a handful of words, so the block
+// stays the height of the text in it and not of the frame around it.
+.cowboy-prime-session {
+  .cowboy-session-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3em;
+    margin: 0.15em 0;
+  }
+
+  .cowboy-session-label {
+    flex: 0 0 auto;
+    width: 7em;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    opacity: 0.75;
+  }
+
+  // The eye sits inside the field's border, so a trait reads as one control
+  // rather than as a button that happens to be next to a box.
+  .cowboy-session-field {
+    display: flex;
+    align-items: center;
+    flex: 1 1 9em;
+    min-width: 0;
+    border: 1px solid #0004;
+    border-radius: 0.2em;
+    background: #ffffff20;
+
+    // Alone on its row, a field would stretch the width of the sheet. The
+    // secret is a handful of words like the traits are, so it keeps their size
+    // instead of taking the room that happens to be free.
+    &.cowboy-session-field-solo {
+      flex: 0 1 16em;
+    }
+
+    input {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 1.7em;
+      margin: 0;
+      padding: 0 0.35em;
+      border: 0;
+      background: transparent;
+      font-size: 0.9em;
+    }
+  }
+
+  .cowboy-session-read {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.15em 0.35em;
+    font-size: 0.9em;
+    overflow-wrap: anywhere;
+  }
+
+  // Not yet turned over: dashed and dimmed, so one glance over the row says
+  // what the players can see without reading three eyes.
+  .is-hidden {
+    border-style: dashed;
+    opacity: 0.65;
+  }
+
+  .cowboy-session-reveal {
+    flex: 0 0 auto;
+    width: 1.6em;
+    min-width: 1.6em;
+    height: 1.6em;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    line-height: 1;
+    font-size: 0.85em;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    > i {
+      margin: 0;
+    }
+  }
+}
+
+.cowboy-prime-section {
+  margin: 0.65em;
+  padding: 0.75em;
+  border: 1px solid #0003;
+  border-radius: 0.35em;
+  background: #ffffff18;
+}
+
+.cowboy-prime-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1em;
+  margin-bottom: 0.5em;
+  border-bottom: 1px solid #0003;
+
+  h2 { margin: 0; border: 0; font-size: 1.05em; text-transform: uppercase; }
+}
+
+.cowboy-prime-section-help {
+  margin-left: 0.35em;
+  font-size: 0.8em;
+  opacity: 0.55;
+  cursor: help;
+
+  &:hover { opacity: 1; }
+}
+
+.cowboy-prime-count {
+  min-width: 1.8em;
+  padding: 0.15em 0.45em;
+  border-radius: 1em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.cowboy-prime-count { background: #0dcaca35; }
+
+.cowboy-prime-empty {
+  margin: 0.5em 0;
+  padding: 0.75em;
+  text-align: center;
+  font-style: italic;
+  opacity: 0.65;
+  border: 1px dashed #0004;
+  border-radius: 0.3em;
+}
+
+.cowboy-prime-cadrans-admin {
+  margin-top: 0.75em;
+  padding-top: 0.5em;
+  border-top: 1px solid #0003;
+
+  summary { cursor: pointer; font-weight: bold; }
+}
+
+.cowboy-prime-dials {
+  min-height: 3.5em;
+  border-radius: 0.35em;
+  transition: outline-color 120ms ease, background-color 120ms ease;
+
+  &.cowboy-dial-drop-active {
+    outline: 2px dashed #0dcaca;
+    outline-offset: 3px;
+    background: #0dcaca18;
+  }
+
+  .sd-hud-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-evenly;
+    gap: 0.75em;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sd-hud-dial {
+    display: grid;
+    grid-template-columns: minmax(0, 96px) auto;
+    grid-template-rows: auto auto;
+    justify-content: center;
+    align-items: start;
+    column-gap: 0.25em;
+    min-width: 8em;
+    margin: 0;
+    list-style: none;
+  }
+
+  .sd-dial {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  // Stacked rather than in a row: the controls stay a thin strip beside the
+  // dial instead of widening the tile and pulling the name off centre.
+  .sd-dial-controls {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    flex-direction: column;
+    align-self: start;
+  }
+
+  // Under the dial, not under the dial and its controls: the name belongs to
+  // what it names.
+  .sd-hud-label {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 0.25em;
+    text-align: center;
+  }
+
+  .sd-hud-dial::marker {
+    content: "";
+  }
 }

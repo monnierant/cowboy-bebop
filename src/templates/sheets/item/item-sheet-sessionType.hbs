@@ -1,0 +1,37 @@
+<form class="item-sheet cowboy-session-type {{ cssClass }}" autocomplete="off">
+  <header class="sheet-header">
+    <img src="{{ item.img }}" data-edit="img" title="{{ item.name }}" height="64" width="64" />
+    <div class="cowboy-session-type-fields">
+      <label>{{localize 'COWBOY.sessionType.name'}}</label>
+      <input name="name" type="text" value="{{ item.name }}" />
+    </div>
+  </header>
+
+  {{!-- La mise en place est une aide, pas une mécanique : le système n'en tire
+  ni rythme ni risque, il la donne à lire à Big Shot au moment où il applique le
+  type. --}}
+  <section class="cowboy-prime-section">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-clipboard-list"></i> {{localize 'COWBOY.sessionType.setup'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help"
+            title="{{localize 'COWBOY.sessionType.setupHint'}}"></i>
+        </h2>
+      </div>
+    </header>
+    <textarea name="system.setup" rows="6"
+      placeholder="{{localize 'COWBOY.sessionType.setupPlaceholder'}}">{{ item.system.setup }}</textarea>
+  </section>
+
+  <section class="cowboy-prime-section cowboy-prime-riffs">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-guitar"></i> {{localize 'COWBOY.riffs.title'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help"
+            title="{{localize 'COWBOY.riffs.editorHint'}}"></i>
+        </h2>
+      </div>
+    </header>
+    {{> "systems/cowboy-bebop/templates/partials/riff-editor.hbs"}}
+  </section>
+</form>

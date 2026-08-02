@@ -1,10 +1,19 @@
 {
   "$schema": "https://json.schemastore.org/foundryvtt-manifest.json",
   "id": "cowboy-bebop",
-  "title": "Cowboy Bebop System",
+  "title": "Cowboy Bebop",
   "description": "A template module using Typescript. You should change name, title, and description in module.json.",
   "version": "1.0.0",
-  "packs": [],
+  "packs": [
+    {
+      "name": "types-de-session",
+      "label": "Types de session",
+      "path": "packs/types-de-session",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
+    }
+  ],
   "system": [],
   "dependencies": [],
   "scripts": [],

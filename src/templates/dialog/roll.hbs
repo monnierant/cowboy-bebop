@@ -1,16 +1,16 @@
 <div class="cowboy-dialog-content">
   <h2>{{ category }}</h2>
-  <section class="cowboy-dialog-rangs">
+  <section class="cowboy-dialog-mouvements">
     <h3>Difficulty</h3>
-    <select class="cowboy-dialog-rang">
-      {{#each rangs as |rang index|}}
+    <select class="cowboy-dialog-mouvement">
+      {{#each mouvements as |mouvement index|}}
       {{#if (eq index ../mouvementIndex)}}
       <option value="{{ index }}" selected>
-        {{ rang.name }} ({{ rang.difficulty }})
+        {{ mouvement.name }} ({{ mouvement.difficulty }})
       </option>
       {{else}}
       <option value="{{ index }}">
-        {{ rang.name }} ({{ rang.difficulty }})
+        {{ mouvement.name }} ({{ mouvement.difficulty }})
       </option>
       {{/if}}
       {{/each}}

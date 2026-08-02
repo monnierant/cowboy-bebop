@@ -1,3 +1,4 @@
+@import "./counter-box.scss";
 @import "./actor/health-counter.scss";
 
 .cowboy-admin-pannel {
@@ -25,11 +26,11 @@
   padding: 0.3rem;
   border-radius: 50%;
 }
+// The tint the rhythm is known by, worn by its box the way a carton pool wears
+// its genre's - the icon inside only carries the colour.
 .cowboy-rythme {
   color: #00aa85;
   background-color: #92e8d5bb;
-  padding: 0.3rem;
-  border-radius: 50%;
 }
 
 .dice-tooltip .part-total.success {
@@ -47,6 +48,17 @@
 .cowboy-actor-trait-cat-header {
   display: flex;
   margin: 0;
+
+  .cowboy-actor-trait-cat-icon {
+    margin-right: 0.4em;
+  }
+
+  // The category is stored as its key - "rock", "blues" - and shown as a
+  // title. Capitalised here rather than in the data, so the key that indexes
+  // traits, colours and icons stays the one lowercase word it has to be.
+  h3 {
+    text-transform: capitalize;
+  }
 }
 
 .cowboy-actor-counters {
@@ -60,10 +72,14 @@
     justify-content: center;
     align-items: center;
     margin: 0;
+  }
 
-    .cowboy-actor-counter-value {
-      margin-left: 0.5em;
-    }
+  .cowboy-actor-counter-box {
+    @include cowboy-counter-box;
+  }
+
+  .cowboy-rythme-add {
+    @include cowboy-counter-button;
   }
 }
 

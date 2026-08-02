@@ -1,5 +1,5 @@
 import CowboyBebopActor from "../documents/cowboybebopActor";
-import { moduleId, rangs } from "../../constants";
+import { moduleId, mouvements } from "../../constants";
 import { Mouvement } from "../../types";
 import CowboyBebopRoll from "../rolls/cowboybebopRoll";
 
@@ -75,8 +75,8 @@ export default class CowboyBebopRollDialog extends Dialog {
     data.genre = this.genre;
     data.category = this.category;
     data.mouvementIndex = this.mouvementIndex;
-    data.mouvement = rangs[this.mouvementIndex];
-    data.rangs = rangs;
+    data.mouvement = mouvements[this.mouvementIndex];
+    data.mouvements = mouvements;
     return data;
   }
 
@@ -86,8 +86,10 @@ export default class CowboyBebopRollDialog extends Dialog {
   // Roll the dice
   private async _onRoll(html: JQuery) {
     // Roll the dice
-    const rang = parseInt(html.find(".cowboy-dialog-rang").val() as string);
-    const mouvement: Mouvement = rangs[rang ?? 0];
+    const index = parseInt(
+      html.find(".cowboy-dialog-mouvement").val() as string
+    );
+    const mouvement: Mouvement = mouvements[index ?? 0];
     const advantage =
       parseInt(
         html.find(".cowboy-dialog-modifier-advantage").val() as string
@@ -99,7 +101,7 @@ export default class CowboyBebopRollDialog extends Dialog {
     await this.actor.roll(
       this.genre,
       this.category,
-      rang,
+      index,
       mouvement,
       advantage,
       traitsUsed.map((trait) => trait.dataset.dice)

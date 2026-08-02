@@ -1,0 +1,246 @@
+// L'aide de jeu, et l'éditeur qui la remplit.
+//
+// Les deux vivent ici parce qu'ils partagent leurs briques : un riff se dessine
+// pareil qu'on le lise sur une fiche de chasseur ou qu'on le coche sur celle
+// d'une prime.
+
+// ========================================
+// La liste, en lecture
+// ========================================
+
+.cowboy-riff-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cowboy-riff {
+  margin: 0.15em 0;
+  border: 1px solid #0002;
+  border-radius: 0.25em;
+  background: #ffffff18;
+
+  // Un riff écrit pour cette session seule : marqué à sa tranche, pour qu'on
+  // sache d'un coup d'œil ce qui vient du livre et ce qui vient de la table.
+  &.is-custom {
+    border-left: 3px solid #0dcaca;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.45em;
+    cursor: pointer;
+    font-size: 0.9em;
+
+    > i {
+      opacity: 0.6;
+    }
+  }
+
+  .cowboy-riff-name {
+    font-weight: bold;
+  }
+
+  .cowboy-riff-text {
+    margin: 0;
+    padding: 0 0.6em 0.5em 1.9em;
+    font-size: 0.85em;
+    line-height: 1.35;
+    opacity: 0.85;
+  }
+}
+
+// Le mouvement que la liste décrit. Sans lui, une aide qui change toute seule
+// quand Big Shot avance n'a pas l'air d'avoir changé pour une raison.
+.cowboy-riff-mouvement {
+  font-size: 0.85em;
+  font-weight: bold;
+  opacity: 0.7;
+}
+
+.cowboy-riff-session-type {
+  margin-left: 0.5em;
+  padding: 0.1em 0.5em;
+  border-radius: 1em;
+  background: #0dcaca24;
+  font-size: 0.75em;
+  text-transform: uppercase;
+}
+
+// Sur la fiche du chasseur : la même boîte que les autres sections de prime,
+// puisque c'est la même matière.
+.cowboy-actor-riffs {
+  margin: 0.65em;
+  padding: 0.75em;
+  border: 1px solid #0003;
+  border-radius: 0.35em;
+  background: #ffffff18;
+}
+
+.cowboy-actor-riffs-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1em;
+  margin-bottom: 0.4em;
+  border-bottom: 1px solid #0003;
+
+  h3 {
+    margin: 0;
+    border: 0;
+    font-size: 1em;
+    text-transform: uppercase;
+  }
+}
+
+// ========================================
+// L'éditeur
+// ========================================
+
+.cowboy-riff-apply {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin-bottom: 0.6em;
+
+  button {
+    width: auto;
+  }
+}
+
+.cowboy-riff-apply-hint {
+  font-size: 0.8em;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.cowboy-riff-block {
+  margin: 0.3em 0;
+  border: 1px solid #0003;
+  border-radius: 0.3em;
+
+  > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.35em 0.5em;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  // Le mouvement joué en ce moment, distingué des deux autres : c'est le seul
+  // dont le contenu se voit ailleurs qu'ici.
+  &.is-current > summary {
+    background: #0dcaca1a;
+  }
+}
+
+.cowboy-riff-block-badge {
+  padding: 0.05em 0.45em;
+  border-radius: 1em;
+  background: #0dcaca35;
+  font-size: 0.7em;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+
+.cowboy-riff-family {
+  padding: 0.4em 0.6em 0.6em;
+
+  // Ce que Big Shot s'oppose à lui-même : séparé du reste par une teinte, pour
+  // qu'on ne coche pas une option du MJ en croyant ouvrir un riff aux joueurs.
+  &.is-bigshot {
+    border-top: 1px solid #0002;
+    background: #aa02000a;
+  }
+}
+
+.cowboy-riff-family-title {
+  margin: 0 0 0.3em;
+  border: 0;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.cowboy-riff-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em 0.9em;
+}
+
+.cowboy-riff-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  flex: 0 1 auto;
+  font-size: 0.85em;
+  cursor: pointer;
+
+  input {
+    margin: 0;
+    flex: 0 0 auto;
+  }
+}
+
+.cowboy-riff-customs {
+  margin-top: 0.5em;
+
+  button {
+    width: auto;
+  }
+}
+
+.cowboy-riff-custom {
+  margin-bottom: 0.35em;
+  padding: 0.35em;
+  border: 1px dashed #0004;
+  border-radius: 0.25em;
+
+  textarea {
+    width: 100%;
+    margin: 0.25em 0 0;
+    font-size: 0.85em;
+    resize: vertical;
+  }
+}
+
+.cowboy-riff-custom-head {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+
+  input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 1.7em;
+    margin: 0;
+    font-size: 0.9em;
+  }
+
+  button {
+    flex: 0 0 auto;
+    width: 1.9em;
+    min-width: 1.9em;
+    padding: 0;
+  }
+}
+
+// ========================================
+// La fiche d'un type de session
+// ========================================
+
+.cowboy-session-type {
+  .cowboy-session-type-fields {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: 0.6em;
+  }
+
+  textarea {
+    width: 100%;
+    resize: vertical;
+  }
+}

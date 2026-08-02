@@ -17,16 +17,17 @@ own: the genres, and the economy of tokens and false notes.
 
 ## Consequences
 
-- Everything this system says to the module lives in `src/ts/slicedDials.ts`: a
-  registered ruleset, a validator, and a debit. Nothing else in the codebase
-  knows dials exist.
+- The integration entry point lives in `src/ts/slicedDials.ts`: it registers the
+  ruleset and arbitrates placement intents. The system-side economy and the
+  link between world dials and primes live in their own modules; see ADR 0002.
 - **This system no longer draws a dial.** The prime sheet hands a container to
   `api.mountDials` and stays out of it.
-- "Objective or threat" stops being a boolean and becomes *which sign the dial
-  accepts* — the module's vocabulary. Tokens fill `+`, false notes fill `-`.
-- The validator refuses a genre whose pool is empty, so the module greys the
-  button out with a reason instead of failing after the click. The token is
-  spent on `slicedDials.slicePlaced`, once the slice has landed.
+- Objective and threat are names, not payment constraints: both accept either
+  sign. Cartons fill `+`; false notes fill `-`. Cartons normally belong to a
+  hunter, but each prime also has a GM-managed reserve for tests and bonuses.
+- The validator refuses a genre nobody can pay for. The system then asks both
+  which genre and which actor pays, places the slice through the module API,
+  and debits that actor once the placement has landed.
 - The debit is not atomic with the placement. The validator has already refused
   what the pool could not pay for, so it cannot go negative. Accepted.
 - `isImportant` and `mouvement` had no generic meaning and were dropped rather

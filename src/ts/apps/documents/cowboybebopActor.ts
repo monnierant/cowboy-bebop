@@ -1,5 +1,7 @@
-import { genres } from "../../constants";
-import { Trait, Traits } from "../../types";
+import { genres, SESSION_TRAITS } from "../../constants";
+import { adjust } from "../../economy";
+import { getActivePrime, isActivePrime, setActivePrime } from "../../prime";
+import { Settlement, SessionTrait, Trait, Traits } from "../../types";
 import CowboyBebopRollDialog from "../dialog/cowboybebopRollDialog";
 import CowboyBebopRoll from "../rolls/cowboybebopRoll";
 
@@ -28,7 +30,7 @@ export default class CowboyBebopActor extends Actor {
   public async roll(
     genre: string,
     category: string,
-    rang: any,
+    mouvementIndex: number,
     mouvement: any,
     advantage: number,
     traitsUsed: any
@@ -38,7 +40,7 @@ export default class CowboyBebopActor extends Actor {
       this,
       genre,
       category,
-      rang,
+      mouvementIndex,
       mouvement,
       advantage,
       traitsUsed
@@ -125,14 +127,12 @@ export default class CowboyBebopActor extends Actor {
       .filter((trait: Trait) => trait.name != "")
       .map((trait: Trait) => trait.name);
 
-    const target = (game as any).actors
-      ?.filter((actor: any) => {
-        return actor.system.isCurrentTarget && actor.type === "prime";
-      })
-      .at(0);
+    const target = getActivePrime();
 
     if (!target) {
-      ui.notifications?.warn("No target selected");
+      ui.notifications?.warn(
+        (game as any).i18n.localize("COWBOY.actor.noActivePrime")
+      );
       return;
     }
 
@@ -157,6 +157,19 @@ export default class CowboyBebopActor extends Actor {
     await this.update({
       "system.cartridge": (this as any).system.cartridge + points,
     });
+  }
+
+  // Adjust Rythme
+  /**
+   * Moves the rhythm by `points`. A negative rhythm is not a state the sheet
+   * can show or a roll can read, so the floor is enforced here rather than
+   * trusting the button that happens to be disabled at zero.
+   */
+  public async updateRythme(points: number) {
+    const rythme = Math.max(0, ((this as any).system.rythme ?? 0) + points);
+    if (rythme === (this as any).system.rythme) return;
+
+    await this.update({ "system.rythme": rythme });
   }
 
   // Rename Trait
@@ -251,50 +264,56 @@ export default class CowboyBebopActor extends Actor {
   // NPC
   //=============================================================================
 
-  public async actionCollectCarton(
+  /**
+   * Settles a roll. Cartons stay with the hunter who produced them; false notes
+   * collect on the prime currently in play.
+   *
+   * Crediting the prime is a write on a document no player owns, so the whole
+   * settlement is the GM's gesture. The chat card offers it to them alone
+   * rather than letting a player press a button that would throw.
+   *
+   * Returns what was actually credited and to whom, so the caller can leave
+   * that account in the chat log; `undefined` when nothing was written.
+   */
+  public async actionCollect(
     genre: string,
     cartons: number,
     notes: number
-  ) {
-    await this.collectNotes(genre, notes);
-    await this.collectCartons(genre, cartons);
-  }
+  ): Promise<Settlement | undefined> {
+    if (!(game as any).user?.isGM) return undefined;
 
-
-  public async collectNotes(genre: string, notes: number) {
-    let newNotes = (this as any).system.notes;
-    newNotes[genre] += notes;
-    await this.update({
-      "system.notes": newNotes,
-    });
-  }
-
-  public async collectCartons(genre: string, cartons: number) {
-    let newCartons = (this as any).system.cartons;
-    newCartons[genre] += cartons;
-    await this.update({
-      "system.cartons": newCartons,
-    });
-  }
-
-  public async setCurrentTarget(newTarget: boolean = true) {
-    await this.update({
-      "system.isCurrentTarget": newTarget,
-    });
-    if (newTarget) {
-      (game as any).actors
-        ?.filter(
-          (actor: CowboyBebopActor) =>
-            actor.id !== this.id && actor.type === "prime"
-        )
-        .forEach((actor: CowboyBebopActor) => {
-          actor.setCurrentTarget(false);
-        });
+    // Validate the whole settlement before writing either pool. Otherwise a
+    // missing prime would credit the cartons, leave the card in chat, and
+    // credit those same cartons again when the GM retried.
+    const prime = notes > 0 ? getActivePrime() : undefined;
+    if (notes > 0 && !prime) {
+      ui.notifications?.warn(
+        (game as any).i18n.localize("COWBOY.actor.noActivePrime")
+      );
+      return undefined;
     }
+
+    if (cartons > 0) await adjust(this, "cartons", genre, cartons);
+    if (notes > 0) await adjust(prime, "notes", genre, notes);
+
+    return {
+      genre,
+      cartons,
+      notes,
+      hunterName: this.name ?? "",
+      primeName: prime?.name ?? "",
+    };
   }
 
+  public async setActive() {
+    await setActivePrime(this);
+  }
 
-
+  /** Takes this prime out of play, leaving the table without an active prime. */
+  public async setInactive() {
+    if (!isActivePrime(this)) return;
+    await setActivePrime(undefined);
+  }
 
 
   public async setGenre(genre: string) {
@@ -309,24 +328,64 @@ export default class CowboyBebopActor extends Actor {
     });
   }
 
+  /** The GM's correction, for when a roll was read wrong or a slice misplaced. */
   public async addToken(genre: string, type: string, value: number) {
-    const tokens = (this as any).system[type];
-
-    console.log(type);
-    console.log((this as any).system);
-    tokens[genre] = Math.max(0, tokens[genre] + value);
-
-    switch (type) {
-      case "cartons":
-        await this.update({
-          "system.cartons": tokens,
-        });
-        break;
-      case "notes":
-        await this.update({
-          "system.notes": tokens,
-        });
-        break;
-    }
+    if (type !== "cartons" && type !== "notes") return;
+    await adjust(this, type, genre, value);
   }
+
+  // ========================================
+  // Session
+  // ========================================
+
+  /**
+   * The three session traits, as they are rather than as they may be stored:
+   * a prime made before the field existed has none, and the sheet still has to
+   * draw three lines for the GM to write on.
+   */
+  public sessionTraits(): SessionTrait[] {
+    const stored: SessionTrait[] = (this as any).system.sessionTraits ?? [];
+    return Array.from({ length: SESSION_TRAITS }, (_unused, index) => ({
+      name: stored[index]?.name ?? "",
+      revealed: stored[index]?.revealed === true,
+    }));
+  }
+
+  public secret(): { text: string; revealed: boolean } {
+    const stored = (this as any).system.secret ?? {};
+    return {
+      text: stored.text ?? "",
+      revealed: stored.revealed === true,
+    };
+  }
+
+  public async renameSessionTrait(index: number, name: string) {
+    await this.updateSessionTrait(index, (trait) => ({ ...trait, name }));
+  }
+
+  public async revealSessionTrait(index: number, revealed: boolean) {
+    await this.updateSessionTrait(index, (trait) => ({ ...trait, revealed }));
+  }
+
+  public async revealSecret(revealed: boolean) {
+    await this.update({ "system.secret.revealed": revealed });
+  }
+
+  // Foundry replaces an array wholesale rather than merging into it, so the
+  // whole of it is read, changed and written back - the same shape the trait
+  // helpers above already use.
+  private async updateSessionTrait(
+    index: number,
+    change: (trait: SessionTrait) => SessionTrait
+  ) {
+    const traits = this.sessionTraits();
+    if (index < 0 || index >= traits.length) return;
+
+    await this.update({
+      "system.sessionTraits": traits.map((trait, i) =>
+        i === index ? change(trait) : trait
+      ),
+    });
+  }
+
 }

@@ -1,0 +1,62 @@
+{{!-- Un bloc par mouvement, chacun coupé en deux : ce que les chasseurs
+peuvent plaquer, ce que Big Shot peut leur opposer. Le mouvement en cours est
+déplié - sur un type de session, aucun ne l'est, puisqu'il ne se joue pas.
+
+Chaque ligne porte son propre `data-mouvement` : il vient des données, pas d'un
+comptage de contextes parents. --}}
+{{#each riffEditor as |block|}}
+<details class="cowboy-riff-block {{#if block.current}}is-current{{/if}}" {{#if block.current}}open{{/if}}>
+  <summary>
+    <span class="cowboy-riff-block-name">{{ block.name }}</span>
+    {{#if block.current}}
+    <span class="cowboy-riff-block-badge">{{localize 'COWBOY.riffs.current'}}</span>
+    {{/if}}
+  </summary>
+
+  {{#each block.families as |family|}}
+  <section class="cowboy-riff-family is-{{ family.audience }}">
+    <h4 class="cowboy-riff-family-title">
+      <i class="fa-solid {{ family.icon }}"></i> {{ family.title }}
+    </h4>
+
+    <div class="cowboy-riff-choices">
+      {{#each family.catalog as |riff|}}
+      <label class="cowboy-riff-choice" title="{{ riff.description }}">
+        <input type="checkbox" class="cowboy-riff-toggle" data-mouvement="{{ riff.mouvement }}"
+          data-riff="{{ riff.id }}" {{#if riff.selected}}checked{{/if}} />
+        <span>{{ riff.name }}</span>
+      </label>
+      {{/each}}
+    </div>
+
+    {{!-- Les riffs que cette histoire seule offre. C'est le nom qui les met sur
+    la table : une ligne laissée vide n'est montrée à personne. --}}
+    <div class="cowboy-riff-customs">
+      {{#each family.custom as |riff|}}
+      <div class="cowboy-riff-custom">
+        <div class="cowboy-riff-custom-head">
+          <input type="text" class="cowboy-riff-custom-name" data-mouvement="{{ riff.mouvement }}"
+            data-index="{{ riff.index }}" value="{{ riff.name }}"
+            placeholder="{{localize 'COWBOY.riffs.customNamePlaceholder'}}" />
+          <button type="button" class="cowboy-riff-custom-remove" data-mouvement="{{ riff.mouvement }}"
+            data-index="{{ riff.index }}" title="{{localize 'COWBOY.riffs.removeCustom'}}"
+            aria-label="{{localize 'COWBOY.riffs.removeCustom'}}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        <textarea class="cowboy-riff-custom-description" rows="2" data-mouvement="{{ riff.mouvement }}"
+          data-index="{{ riff.index }}"
+          placeholder="{{localize 'COWBOY.riffs.customDescriptionPlaceholder'}}">{{ riff.description }}</textarea>
+      </div>
+      {{/each}}
+
+      <button type="button" class="cowboy-riff-custom-add" data-mouvement="{{ family.mouvement }}"
+        data-audience="{{ family.audience }}">
+        <i class="fa-solid fa-plus"></i>
+        {{localize 'COWBOY.riffs.addCustom'}}
+      </button>
+    </div>
+  </section>
+  {{/each}}
+</details>
+{{/each}}

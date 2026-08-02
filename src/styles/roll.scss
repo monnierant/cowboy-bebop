@@ -7,6 +7,44 @@
     background-color: rgba(51, 193, 75, 0.2);
   }
 
+  // What the settled card shows in place of its actions.
+  .cowboy-roll-collected {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    padding: 0.4em;
+    margin: 0.2em 0;
+
+    .cowboy-roll-collected-title {
+      font-weight: bold;
+      margin-bottom: 0.3em;
+      opacity: 0.8;
+    }
+
+    .cowboy-roll-collected-line {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4em;
+      margin: 0.2em 0;
+
+      .cowboy-roll-collected-holder {
+        flex: 1;
+      }
+
+      .cowboy-roll-collected-tokens {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.2em;
+      }
+
+      .cowboy-roll-collected-genre {
+        opacity: 0.6;
+        font-style: italic;
+      }
+    }
+  }
+
   .cowboy-roll-traits {
     display: flex;
     flex-direction: row;

@@ -32,10 +32,26 @@
     </div>
   </header>
 
+  {{!-- Cartons follow the hunter who made them until they are spent. The GM
+  corrects each hunter's genre pools directly from this sheet. --}}
+  <section class="cowboy-prime-tokens">
+    <div class="cowboy-prime-tokens-container">
+      {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=cartons on=false type="cartons" label=(localize 'COWBOY.actor.cartons') isGM=isGM }}
+    </div>
+  </section>
+
   <section class="cowboy-actor-traits">
     {{#each actor.system.traits as |traitCategory traitCategoryId|}}
     <div class="cowboy-actor-trait-cat-header">
-      <h3 class="cowboy-actor-trait-name">{{ traitCategoryId }}</h3>
+      <h3 class="cowboy-actor-trait-name">
+        {{!-- The same icon and colour this genre is drawn with on the dice, the
+        tokens and the slice picker, read from the one table. --}}
+        {{#with (lookup ../genreColors traitCategoryId)}}
+        <i class="fa-solid {{ fa }} cowboy-actor-trait-cat-icon" style="color: {{ on }}"
+          aria-hidden="true"></i>
+        {{/with}}
+        {{ traitCategoryId }}
+      </h3>
       <button
         type="button"
         class="cowboy-actor-roll unbutton"
@@ -69,6 +85,8 @@
           class="cowboy-actor-trait-heal"
           data-index="{{ traitId }}"
           data-category="{{ traitCategoryId }}"
+          title="{{localize 'COWBOY.actor.healTrait'}}"
+          aria-label="{{localize 'COWBOY.actor.healTrait'}}"
         >
           <i class="fa-solid fa-notes-medical"></i>
         </button>
@@ -84,5 +102,25 @@
       {{/each}}
     </div>
     {{/each}}
+  </section>
+
+  {{!-- Ce que ce chasseur peut réellement jouer, là, maintenant. Quels riffs
+  ce sont appartient à la session, donc la liste est lue sur la prime en jeu au
+  lieu d'être tenue ici - et le dit franchement quand il n'y a pas de prime. --}}
+  <section class="cowboy-actor-riffs">
+    <header class="cowboy-actor-riffs-header">
+      <h3><i class="fa-solid fa-guitar"></i> {{localize 'COWBOY.riffs.title'}}</h3>
+      {{#if riffPrimeName}}
+      <span class="cowboy-riff-mouvement">
+        {{ riffMouvementName }}{{#if sessionType}} · {{ sessionType }}{{/if}}
+      </span>
+      {{/if}}
+    </header>
+
+    {{#if riffPrimeName}}
+    {{> "systems/cowboy-bebop/templates/partials/riff-list.hbs" riffs=riffs}}
+    {{else}}
+    <p class="cowboy-prime-empty">{{localize 'COWBOY.actor.noActivePrime'}}</p>
+    {{/if}}
   </section>
 </form>

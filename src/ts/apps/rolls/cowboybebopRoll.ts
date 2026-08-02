@@ -8,7 +8,7 @@ export default class CowboyBebopRoll {
     public actor: CowboyBebopActor,
     public genre: string,
     public category: string,
-    public rang: any,
+    public mouvementIndex: number,
     public mouvement: any,
     public advantage: number,
     public traitsUsed: any
@@ -16,7 +16,7 @@ export default class CowboyBebopRoll {
     this._actor = actor;
     this._genre = genre;
     this._category = category;
-    this._rang = rang;
+    this._mouvementIndex = mouvementIndex;
     this._mouvement = mouvement;
 
     this._advantage = advantage;
@@ -44,7 +44,7 @@ export default class CowboyBebopRoll {
   private _actor: CowboyBebopActor;
   private _genre: string;
   private _category: string;
-  private _rang: any;
+  private _mouvementIndex: number;
   private _mouvement: any;
   private _advantage: number;
   private _bonus: any;
@@ -101,7 +101,7 @@ export default class CowboyBebopRoll {
         actor: this._actor,
         genre: this._genre,
         category: this._category,
-        rang: this._rang,
+        mouvementIndex: this._mouvementIndex,
         mouvement: this._mouvement,
         advantage: this._advantage,
         bonus: this._bonus,

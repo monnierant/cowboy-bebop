@@ -83,6 +83,8 @@
             data-actor-id="{{ ../actor.id }}"
             data-trait="{{ trait }}"
             data-category="{{ ../category }}"
+            title="{{localize 'COWBOY.roll.actions.damageTrait'}}"
+            aria-label="{{localize 'COWBOY.roll.actions.damageTrait'}}"
           >
             <i class="fa-solid fa-user-tag"></i>
           </button>
@@ -94,6 +96,8 @@
             data-actor-id="{{ ../actor.id }}"
             data-trait="{{ trait }}"
             data-category="{{ ../category }}"
+            title="{{localize 'COWBOY.roll.actions.hyperDamageTrait'}}"
+            aria-label="{{localize 'COWBOY.roll.actions.hyperDamageTrait'}}"
           >
             <i class="fa-solid fa-house-chimney-crack"></i>
           </button>
@@ -104,8 +108,11 @@
       {{/if}}
       {{/if}}
       {{#if (or (gt notes 0) (gt carton 0))}}
+      {{!-- Collecting credits the prime, which no player may write to. The card
+      is rendered once by whoever rolled and stored as content, so this cannot
+      be gated here: the render hook strips it per reader instead. --}}
       <button
-        class="cowboy-roll-action"
+        class="cowboy-roll-action cowboy-roll-action-gm"
         type="button"
         data-action="collect"
         data-rollid="{{ rollId }}"

@@ -1,4 +1,15 @@
 {
+  "TYPES": {
+    "Actor": {
+      "chasseur": "Chasseur",
+      "prime": "Prime"
+    },
+    "Item": {
+      "mono": "Mono",
+      "sessionType": "Type de session"
+    }
+  },
+
   "COWBOY": {
     "actor": {
       "goal": "Objectif",
@@ -8,23 +19,175 @@
       "roll": "Lancer",
       "name": "NOM",
       "genre": "GENRE",
-      "rang": "MOUVEMENT",
+      "mouvement": "MOUVEMENT",
       "concept": "CONCEPT",
       "memory": "SOUVENIR",
+      "groove": "GROOVE",
       "burden": "FARDEAU",
+      "healTrait": "Réparer ce trait",
+      "rythme": "Rythme",
+      "rythmeUp": "Gagner un rythme",
+      "rythmeDown": "Perdre un rythme",
       "currentTarget": "Cible actuelle",
       "setCurrentTarget": "Choisir cette Cible",
+      "activePrime": "Prime active",
+      "inactivePrime": "Prime inactive",
+      "activePrimeHint": "Cette prime reçoit les fausses notes produites par les jets.",
+      "inactivePrimeHint": "Activer cette prime remplacera automatiquement la prime actuelle.",
+      "setActivePrime": "Activer cette prime",
+      "clearActivePrime": "Désactiver cette prime",
+      "cartons": "Cartons",
+      "notes": "Fausses notes",
+      "notesHint": "Les fausses notes des jets sont créditées ici tant que cette prime est active. Le MJ peut corriger chaque réserve avec + et −.",
+      "noActivePrime": "Aucune prime active. Le MJ doit en choisir une.",
+      "playerCartons": "Cartons",
+      "playerCartonsHint": "La prime peut conserver une réserve de test ou de bonus gérée par le MJ. Chaque chasseur ayant des cartons apparaît sur sa propre ligne, puis le total est regroupé par genre.",
+      "primeCartons": "Prime",
+      "cartonTotals": "Tous les chasseurs",
+      "noHunters": "Aucun chasseur dans ce monde.",
       "admin": {
         "heal": "Soin",
         "damage": "Dégat",
         "restore": "Restore"
       }
     },
+    "session": {
+      "title": "Session",
+      "hint": "Le MJ écrit ces lignes avant la partie et les retourne quand elles entrent en jeu. Tant qu'une ligne n'est pas révélée, les joueurs ne la voient pas sur cette fiche.",
+      "traits": "Traits de session",
+      "traitPlaceholder": "Un trait de cette session…",
+      "secret": "Secret",
+      "secretPlaceholder": "Ce que la prime cache…",
+      "reveal": "Révéler aux joueurs",
+      "conceal": "Cacher aux joueurs"
+    },
+    "riffs": {
+      "title": "Riffs",
+      "hint": "Les actions de gameplay ouvertes par le type de session, pour le mouvement en cours. C'est Big Shot qui décide lesquelles sont sur la table.",
+      "editorHint": "Cochez, mouvement par mouvement, ce que la session ouvre. Le livre veut les riffs cumulatifs : ce qui est ouvert à un mouvement le reste aux suivants, mais rien ici ne vous y oblige.",
+      "current": "en cours",
+      "none": "Aucun riff sur la table pour ce mouvement.",
+      "hunters": "Chasseurs",
+      "bigshot": "Big Shot",
+      "addCustom": "Ajouter un riff",
+      "removeCustom": "Supprimer ce riff",
+      "customNamePlaceholder": "Nom du riff…",
+      "customDescriptionPlaceholder": "Ce qu'il permet, et ce qu'il coûte…",
+      "catalog": {
+        "involve": {
+          "name": "S'impliquer",
+          "description": "Cochez une cartouche pour ajouter deux dés à votre groupement."
+        },
+        "showWounds": {
+          "name": "Montrer ses blessures",
+          "description": "Testez avec désavantage en racontant comment vos dommages vous compliquent la vie : après résolution, effacez jusqu'à deux dommages des traits décrits. Sans effet sur les dommages sévères."
+        },
+        "force": {
+          "name": "Forcer",
+          "description": "Juste après le lancer, si vous n'avez pas les deux cartons, déclenchez deux fausses notes pour faire un carton."
+        },
+        "doubleOrNothing": {
+          "name": "Quitte ou double",
+          "description": "Ignorez le premier jet et relancez avec un dé de plus, un trait mis en jeu. Sans les deux cartons, ce trait est rayé jusqu'à la fin de la session ; le second résultat compte, meilleur ou pire."
+        },
+        "solo": {
+          "name": "Solo !",
+          "description": "Une fois par session, dépensez un point de rythme, avant ou après un test : vous gagnez et dépensez aussitôt un carton, même sans intervenir dans le test."
+        },
+        "assist": {
+          "name": "Assister",
+          "description": "Dépensez un point de rythme pour conférer l'avantage au test d'un autre chasseur. À la fin du test, effacez les dommages d'un de vos traits."
+        },
+        "improvise": {
+          "name": "Improviser",
+          "description": "Dépensez un point de rythme pour utiliser dans votre test les traits d'une seconde approche."
+        },
+        "jam": {
+          "name": "Jam !",
+          "description": "Comme assister, mais vous conférez aussi votre groove au test. Vous effacez de même les dommages d'un de vos traits après résolution."
+        },
+        "risqueNote": {
+          "name": "Fausse note",
+          "description": "Dépensez un risque pour ajouter une fausse note au résultat d'un test, et l'utiliser aussitôt."
+        },
+        "risqueDisadvantage": {
+          "name": "Désavantage",
+          "description": "Dépensez un risque pour imposer un désavantage lors d'un test."
+        },
+        "risqueDoubleNote": {
+          "name": "Double fausse note",
+          "description": "Dépensez un risque pour ajouter deux fausses notes au résultat d'un test. Elles doivent être utilisées aussitôt et ne rapportent aucun risque."
+        }
+      }
+    },
+    "sessionType": {
+      "name": "NOM",
+      "label": "Type de session",
+      "apply": "Appliquer un type de session",
+      "applied": "{name} est appliqué à cette prime.",
+      "overwrite": "Appliquer {name} remplacera les riffs de cette prime, riffs libres compris. Continuer ?",
+      "noneAvailable": "Aucun type de session disponible.",
+      "dropHint": "…ou déposez un type de session ici.",
+      "dropTypeOnly": "Seul un Item de type Type de session peut être appliqué ici.",
+      "fromWorld": "Monde",
+      "setup": "Mise en place",
+      "setupHint": "Ce que Big Shot doit préparer pour ce type de session : rythme de départ, risques, cartouches. Le système ne calcule rien de tout cela, il vous le rappelle au moment où vous appliquez le type.",
+      "setupPlaceholder": "Le rythme de départ, les risques de Big Shot, ce qui change…"
+    },
     "roll": {
       "actions": {
         "collect": "Collecter",
+        "collected": "Collecté",
         "cartridge": "Cartouche",
-        "show": "Montrer"
+        "show": "Montrer",
+        "damageTrait": "Entamer ce trait : il annule une fausse note, et reste entamé.",
+        "hyperDamageTrait": "Briser ce trait : le jet est relancé sans lui, et il reste brisé."
+      }
+    },
+    "dials": {
+      "title": "Cadrans associés",
+      "hint": "Objectifs et menaces acceptent les cartons positifs d’un chasseur ou les fausses notes négatives de cette prime. Le MJ choisit ce qui paie.",
+      "manage": "Créer ou associer un cadran",
+      "createGoal": "Nouvel objectif — taille",
+      "createThreat": "Nouvelle menace — taille",
+      "link": "Associer un cadran",
+      "unlink": "Dissocier un cadran",
+      "noneFree": "Aucun cadran libre à associer.",
+      "noneLinked": "Aucun cadran associé à cette prime.",
+      "noneVisible": "Aucun cadran visible n’est associé à cette prime.",
+      "dropHint": "Glissez-déposez ici un cadran du monde pour l’associer à cette prime.",
+      "dropDialOnly": "Seul un Item de type Cadran peut être associé ici.",
+      "dropWorldDialOnly": "Ce cadran doit d’abord être importé dans les Items du monde.",
+      "dropLinked": "{name} est maintenant associé à cette prime.",
+      "payCarton": "1 carton {genre}",
+      "payNote": "1 fausse note {genre}",
+      "noneLeft": "Rien à dépenser.",
+      "noPayer": "Personne ne peut payer une tranche sur ce cadran.",
+      "close": "Fermer"
+    },
+    "poster": {
+      "wanted": "AVIS DE RECHERCHE",
+      "options": "Avis de recherche",
+      "optionsHint": "Ce que cette prime affiche sur l’avis de recherche à l’écran, tant qu’elle est la prime active. Tout décocher garde son identité secrète.",
+      "showImage": "Portrait",
+      "showName": "Nom",
+      "inactiveNote": "Visible seulement quand cette prime est active."
+    },
+
+    "settings": {
+      "activePrime": "Prime active",
+      "posterPosition": "Position de l’avis de recherche",
+      "posterPositionHint": "Où s’affiche l’avis de recherche de la prime active, pour toute la table.",
+      "posterPositions": {
+        "top": "En haut",
+        "bottom": "En bas",
+        "left": "À gauche",
+        "right": "À droite",
+        "top-left": "Coin haut gauche",
+        "top-right": "Coin haut droit",
+        "bottom-left": "Coin bas gauche",
+        "bottom-right": "Coin bas droit",
+        "hidden": "Caché"
       }
     },
 

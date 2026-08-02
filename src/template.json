@@ -3,7 +3,6 @@
     "types": ["chasseur", "prime"],
     "templates": {
       "common": {
-        "isCurrentTarget": false,
         "groove": "",
         "concept": ""
       }
@@ -40,6 +39,13 @@
       },
       "cartridge": 6,
       "rythme": 0,
+      "cartons": {
+        "rock": 0,
+        "blues": 0,
+        "jazz": 0,
+        "dance": 0,
+        "tango": 0
+      },
       "burden": [],
       "ship": {
         "main": "",
@@ -48,13 +54,12 @@
     },
     "prime": {
       "genre": "rock",
-      "notes": {
-        "rock": 0,
-        "blues": 0,
-        "jazz": 0,
-        "dance": 0,
-        "tango": 0
-      },
+      "secret": { "text": "", "revealed": false },
+      "sessionTraits": [
+        { "name": "", "revealed": false },
+        { "name": "", "revealed": false },
+        { "name": "", "revealed": false }
+      ],
       "cartons": {
         "rock": 0,
         "blues": 0,
@@ -62,16 +67,33 @@
         "dance": 0,
         "tango": 0
       },
+      "notes": {
+        "rock": 0,
+        "blues": 0,
+        "jazz": 0,
+        "dance": 0,
+        "tango": 0
+      },
       "mouvement": 0,
+      "riffs": [],
+      "sessionType": "",
+      "poster": {
+        "showImage": true,
+        "showName": true
+      },
       "templates": ["common"]
     }
   },
   "Item": {
-    "types": ["mono"],
+    "types": ["mono", "sessionType"],
     "mono": {
       "weapon-trait": "",
       "equipment-trait": "",
       "health": 1
+    },
+    "sessionType": {
+      "setup": "",
+      "riffs": []
     }
   }
 }

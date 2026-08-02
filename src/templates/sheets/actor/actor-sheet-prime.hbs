@@ -1,18 +1,15 @@
 <form class="actor-sheet {{ cssClass }}" autocomplete="off">
-  <header
-    class="sheet-header 
-  {{#if actor.system.isCurrentTarget}}
-  cowboy-prime-selected
-  {{/if}}"
-  >
+  <header class="sheet-header cowboy-prime-header">
+    {{!-- Upright, and as tall as the three fields beside it: the header's
+    height is what says how big the portrait gets, so it never has to be a
+    number kept in step with the number of rows by hand. --}}
     <img
+      class="cowboy-prime-portrait"
       src="{{ actor.img }}"
       data-edit="img"
       title="{{ actor.name }}"
-      height="64"
-      width="64"
     />
-    <div>
+    <div class="cowboy-prime-header-fields">
       <label>{{localize 'COWBOY.actor.name'}}</label>
       <input name="name" type="text" value="{{ actor.name }}" />
       <label>{{localize 'COWBOY.actor.concept'}}</label>
@@ -20,6 +17,12 @@
         name="system.concept"
         type="text"
         value="{{ actor.system.concept }}"
+      />
+      <label>{{localize 'COWBOY.actor.groove'}}</label>
+      <input
+        name="system.groove"
+        type="text"
+        value="{{ actor.system.groove }}"
       />
     </div>
     <div class="cowboy-prime-header-selects">
@@ -37,63 +40,239 @@
         {{/if}}
         {{/each}}
       </select>
-      <label>{{localize 'COWBOY.actor.rang'}}</label>
-      {{log actor}}
+      <label>{{localize 'COWBOY.actor.mouvement'}}</label>
       <select class="cowboy-prime-mouvement">
-        {{#each rangs as |rang rangIndex|}}
-        {{#if (eq rangIndex ../actor.system.mouvement)}}
-        <option value="{{ rangIndex }}" selected>
-          {{ rang.name }}
+        {{#each mouvements as |mouvement index|}}
+        {{#if (eq index ../actor.system.mouvement)}}
+        <option value="{{ index }}" selected>
+          {{ mouvement.name }}
         </option>
         {{else}}
-        <option value="{{ rangIndex }}" selected>
-          {{ rang.name }}
+        <option value="{{ index }}">
+          {{ mouvement.name }}
         </option>
         {{/if}}
         {{/each}}
       </select>
     </div>
-    <div class="cowboy-prime-current-target">
-      {{#if actor.system.isCurrentTarget}}
-      {{localize 'COWBOY.actor.currentTarget'}}
-      {{else}}
+    {{!-- Whether this prime is the one in play, and what it shows on the poster
+    while it is. The second only ever matters because of the first, so it hangs
+    directly under it rather than as a section of its own. --}}
+    <div class="cowboy-prime-header-status">
+      <section class="cowboy-prime-status {{#if isActivePrime}}is-active{{else}}is-inactive{{/if}}"
+        title="{{#if isActivePrime}}{{localize 'COWBOY.actor.activePrimeHint'}}{{else}}{{localize 'COWBOY.actor.inactivePrimeHint'}}{{/if}}">
+        <i class="fa-solid {{#if isActivePrime}}fa-crosshairs{{else}}fa-circle-pause{{/if}}"></i>
+        <strong>
+          {{#if isActivePrime}}
+          {{localize 'COWBOY.actor.activePrime'}}
+          {{else}}
+          {{localize 'COWBOY.actor.inactivePrime'}}
+          {{/if}}
+        </strong>
+        {{#if isGM}}
+        {{#if isActivePrime}}
+        <button type="button" class="cowboy-prime-clear-target-button" title="{{localize 'COWBOY.actor.clearActivePrime'}}">
+          <i class="fa-solid fa-ban"></i>
+        </button>
+        {{else}}
+        <button type="button" class="cowboy-prime-current-target-button" title="{{localize 'COWBOY.actor.setActivePrime'}}">
+          <i class="fa-solid fa-crosshairs"></i>
+        </button>
+        {{/if}}
+        {{/if}}
+      </section>
+
       {{#if isGM}}
-      <button class="cowboy-prime-current-target-button">
-        {{localize 'COWBOY.actor.currentTarget'}}
-      </button>
-      {{/if}}
+      <section class="cowboy-prime-poster-options">
+        <span class="cowboy-poster-options-title">
+          <i class="fa-solid fa-scroll"></i> {{localize 'COWBOY.poster.options'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help" title="{{localize 'COWBOY.poster.optionsHint'}}"></i>
+        </span>
+        <label>
+          <input type="checkbox" name="system.poster.showImage" {{checked poster.showImage}} />
+          {{localize 'COWBOY.poster.showImage'}}
+        </label>
+        <label>
+          <input type="checkbox" name="system.poster.showName" {{checked poster.showName}} />
+          {{localize 'COWBOY.poster.showName'}}
+        </label>
+        {{#unless isActivePrime}}
+        <span class="cowboy-poster-options-note">{{localize 'COWBOY.poster.inactiveNote'}}</span>
+        {{/unless}}
+      </section>
       {{/if}}
     </div>
   </header>
-  <section class="cowboy-prime-tokens">
+
+  {{!-- Written before play, turned over during it. The GM sees the three lines
+  and the secret whatever their state; everyone else sees only what has been
+  revealed, and nothing at all until something has. --}}
+  {{#if showSession}}
+  <section class="cowboy-prime-section cowboy-prime-session">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-masks-theater"></i> {{localize 'COWBOY.session.title'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help" title="{{localize 'COWBOY.session.hint'}}"></i>
+        </h2>
+      </div>
+    </header>
+
+    {{!-- A trait is four or five words, so the three of them share one row and
+    the secret takes the next. The eye tucks inside the field rather than
+    beside it: it is that field's state, not a control of its own. --}}
+    {{#if visibleSessionTraits.length}}
+    <div class="cowboy-session-row">
+      <span class="cowboy-session-label">{{localize 'COWBOY.session.traits'}}</span>
+      {{#each visibleSessionTraits as |trait|}}
+      <div class="cowboy-session-field {{#unless trait.revealed}}is-hidden{{/unless}}">
+        {{#if ../isGM}}
+        <input type="text" class="cowboy-session-trait-name" data-index="{{ trait.index }}"
+          value="{{ trait.name }}" placeholder="{{localize 'COWBOY.session.traitPlaceholder'}}" />
+        <button type="button" class="cowboy-session-reveal" data-index="{{ trait.index }}"
+          data-revealed="{{ trait.revealed }}"
+          title="{{#if trait.revealed}}{{localize 'COWBOY.session.conceal'}}{{else}}{{localize 'COWBOY.session.reveal'}}{{/if}}"
+          aria-label="{{#if trait.revealed}}{{localize 'COWBOY.session.conceal'}}{{else}}{{localize 'COWBOY.session.reveal'}}{{/if}}">
+          <i class="fa-solid {{#if trait.revealed}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+        </button>
+        {{else}}
+        <span class="cowboy-session-read">{{ trait.name }}</span>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if secretVisible}}
+    <div class="cowboy-session-row">
+      <span class="cowboy-session-label">{{localize 'COWBOY.session.secret'}}</span>
+      <div class="cowboy-session-field cowboy-session-field-solo {{#unless secret.revealed}}is-hidden{{/unless}}">
+        {{#if isGM}}
+        <input type="text" name="system.secret.text" value="{{ secret.text }}"
+          placeholder="{{localize 'COWBOY.session.secretPlaceholder'}}" />
+        <button type="button" class="cowboy-session-reveal" data-target="secret"
+          data-revealed="{{ secret.revealed }}"
+          title="{{#if secret.revealed}}{{localize 'COWBOY.session.conceal'}}{{else}}{{localize 'COWBOY.session.reveal'}}{{/if}}"
+          aria-label="{{#if secret.revealed}}{{localize 'COWBOY.session.conceal'}}{{else}}{{localize 'COWBOY.session.reveal'}}{{/if}}">
+          <i class="fa-solid {{#if secret.revealed}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+        </button>
+        {{else}}
+        <span class="cowboy-session-read">{{ secret.text }}</span>
+        {{/if}}
+      </div>
+    </div>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  <section class="cowboy-prime-section cowboy-prime-tokens">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-music"></i> {{localize 'COWBOY.actor.notes'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help" title="{{localize 'COWBOY.actor.notesHint'}}"></i>
+        </h2>
+      </div>
+    </header>
+    {{!-- False notes are the shared negative pool, so the active prime holds them. --}}
     <div class="cowboy-prime-tokens-container">
-      {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=actor.system.notes on=false type="notes" add="+1" }}
-      {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=actor.system.cartons on=true type="cartons" add="-1"}}
+      {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=actor.system.notes on=true type="notes" hideLabel=true isGM=isGM}}
     </div>
   </section>
-  <section class="cowboy-prime-cadrans">
+
+  {{!-- Les actions de gameplay que cette session met sur la table. Big Shot
+  règle les trois mouvements ici ; les autres lisent celui qu'on joue, la même
+  aide que porte leur propre fiche. --}}
+  <section class="cowboy-prime-section cowboy-prime-riffs">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-guitar"></i> {{localize 'COWBOY.riffs.title'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help"
+            title="{{#if isGM}}{{localize 'COWBOY.riffs.editorHint'}}{{else}}{{localize 'COWBOY.riffs.hint'}}{{/if}}"></i>
+        </h2>
+        {{#if sessionType}}
+        <span class="cowboy-riff-session-type">{{ sessionType }}</span>
+        {{/if}}
+      </div>
+      <span class="cowboy-prime-count">{{ riffCount }}</span>
+    </header>
+
+    {{#if isGM}}
+    {{!-- La zone de dépôt entoure l'éditeur : on lâche un type de session
+    n'importe où dessus. --}}
+    <div class="cowboy-riff-apply">
+      <button type="button" class="cowboy-riff-apply-button">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        {{localize 'COWBOY.sessionType.apply'}}
+      </button>
+      <span class="cowboy-riff-apply-hint">{{localize 'COWBOY.sessionType.dropHint'}}</span>
+    </div>
+    {{> "systems/cowboy-bebop/templates/partials/riff-editor.hbs"}}
+    {{else}}
+    <p class="cowboy-riff-mouvement">{{localize 'COWBOY.actor.mouvement'}} : <strong>{{ riffMouvementName }}</strong></p>
+    {{> "systems/cowboy-bebop/templates/partials/riff-list.hbs" riffs=riffs}}
+    {{/if}}
+  </section>
+
+  <section class="cowboy-prime-section cowboy-prime-cadrans">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-regular fa-clock"></i> {{localize 'COWBOY.dials.title'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help" title="{{localize 'COWBOY.dials.hint'}}"></i>
+        </h2>
+      </div>
+      <span class="cowboy-prime-count">{{ linkedDialCount }}</span>
+    </header>
     {{!-- Filled by Sliced Dials; this system never draws a dial itself. --}}
     <div class="cowboy-prime-dials"></div>
 
     {{#if isGM}}
-    <div class="cowboy-prime-cadrans-admin">
+    <details class="cowboy-prime-cadrans-admin">
+      <summary><i class="fa-solid fa-screwdriver-wrench"></i> {{localize 'COWBOY.dials.manage'}}</summary>
       <div class="cowboy-prime-cadrans-buttons">
         <span class="cowboy-dials-group-label">
-          {{localize 'COWBOY.actor.goal'}}
+          {{localize 'COWBOY.dials.createGoal'}}
         </span>
-        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="4">+4</button>
-        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="6">+6</button>
-        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="8">+8</button>
+        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="4">4</button>
+        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="6">6</button>
+        <button type="button" class="cowboy-dials-add" data-goal="true" data-size="8">8</button>
       </div>
       <div class="cowboy-prime-cadrans-buttons">
         <span class="cowboy-dials-group-label">
-          {{localize 'COWBOY.actor.threat'}}
+          {{localize 'COWBOY.dials.createThreat'}}
         </span>
-        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="4">+4</button>
-        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="6">+6</button>
-        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="8">+8</button>
+        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="4">4</button>
+        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="6">6</button>
+        <button type="button" class="cowboy-dials-add" data-goal="false" data-size="8">8</button>
       </div>
-    </div>
+      <div class="cowboy-prime-cadrans-buttons">
+        <button type="button" class="cowboy-dials-link">
+          <i class="fa-solid fa-link"></i>
+          {{localize 'COWBOY.dials.link'}}
+        </button>
+        <button type="button" class="cowboy-dials-unlink">
+          <i class="fa-solid fa-link-slash"></i>
+          {{localize 'COWBOY.dials.unlink'}}
+        </button>
+      </div>
+    </details>
     {{/if}}
+  </section>
+
+  {{!-- Hunter breakdown plus aggregate. The GM corrects each hunter's pool from
+  here as well as from their own sheet; the prime's bonus reserve is GM-managed. --}}
+  <section class="cowboy-prime-section cowboy-prime-cartons">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-record-vinyl"></i> {{localize 'COWBOY.actor.playerCartons'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help" title="{{localize 'COWBOY.actor.playerCartonsHint'}}"></i>
+        </h2>
+      </div>
+    </header>
+    {{!-- The total first: it is what the GM reads at a glance, and the rows
+    under it are the breakdown of it. --}}
+    {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=cartonTotals on=false type="cartons" label=(localize 'COWBOY.actor.cartonTotals') isGM=false}}
+    {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=primeCartons on=false type="cartons" label=(localize 'COWBOY.actor.primeCartons') isGM=isGM}}
+    {{#each cartonHolders as |holder|}}
+    {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=holder.cartons on=false type="cartons" label=holder.name isGM=../isGM actorId=holder.actorId}}
+    {{/each}}
   </section>
 </form>

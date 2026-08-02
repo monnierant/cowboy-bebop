@@ -1,8 +1,23 @@
 <div class="cowboy-actor-counters">
   <div class="cowboy-actor-counter">
-    <i class="fa-solid fa-guitar cowboy-rythme"></i>
-    <div class="cowboy-actor-counter-value">
-      {{ actor.system.rythme }}
+    {{!-- Nothing else writes the rhythm, so the counter carries its own two
+    buttons. They follow the sheet's editable state rather than isGM: this is
+    the hunter's own count, like the memory field above it. --}}
+    <button type="button" class="cowboy-rythme-add" data-value="-1"
+      title="{{localize 'COWBOY.actor.rythmeDown'}}"
+      aria-label="{{localize 'COWBOY.actor.rythmeDown'}}"
+      {{#unless actor.system.rythme}}disabled{{/unless}}>&minus;</button>
+
+    <div class="cowboy-actor-counter-box cowboy-rythme"
+      title="{{localize 'COWBOY.actor.rythme'}}">
+      <i class="fa-solid fa-guitar" aria-hidden="true"></i>
+      <div class="cowboy-actor-counter-value">
+        {{ actor.system.rythme }}
+      </div>
     </div>
+
+    <button type="button" class="cowboy-rythme-add" data-value="1"
+      title="{{localize 'COWBOY.actor.rythmeUp'}}"
+      aria-label="{{localize 'COWBOY.actor.rythmeUp'}}">+</button>
   </div>
 </div>
