@@ -1,0 +1,10 @@
+{
+  "_id": "sessionSpecial01",
+  "_key": "!folders!sessionSpecial01",
+  "name": "Sessions spéciales",
+  "type": "Item",
+  "folder": null,
+  "sorting": "a",
+  "sort": 100000,
+  "color": "#9b3647"
+}

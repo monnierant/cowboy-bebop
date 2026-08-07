@@ -17,7 +17,46 @@
           "risqueNote",
           "risqueDisadvantage"
         ],
-        "custom": []
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
       },
       {
         "selected": [
@@ -32,7 +71,46 @@
           "risqueDisadvantage",
           "risqueDoubleNote"
         ],
-        "custom": []
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
       },
       {
         "selected": [
@@ -48,7 +126,46 @@
           "risqueDisadvantage",
           "risqueDoubleNote"
         ],
-        "custom": []
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
       }
     ]
   }

@@ -7,11 +7,47 @@
   "packs": [
     {
       "name": "types-de-session",
-      "label": "Types de session",
+      "label": "Types de session (FR)",
       "path": "packs/types-de-session",
       "type": "Item",
       "system": "cowboy-bebop",
-      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "types-de-session-en",
+      "label": "Session Types (EN)",
+      "path": "packs/types-de-session-en",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "grooves",
+      "label": "Grooves (FR)",
+      "path": "packs/grooves",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "grooves-en",
+      "label": "Grooves (EN)",
+      "path": "packs/grooves-en",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
     }
   ],
   "system": [],
@@ -48,6 +84,10 @@
       "path": "languages/fr.json"
     }
   ],
-  "styles": ["scripts/assets/module.css"],
-  "esmodules": ["scripts/module.js"]
+  "styles": [
+    "scripts/assets/module.css"
+  ],
+  "esmodules": [
+    "scripts/module.js"
+  ]
 }
