@@ -1,4 +1,15 @@
-<div class="dice-roll" data-rollid="{{ rollId }}">
+<div class="dice-roll">
+  {{#if history.length}}
+  <ol class="cowboy-test-history" aria-label="{{localize 'COWBOY.roll.history'}}">
+    {{#each history as |step|}}
+    <li class="cowboy-test-history-step is-past">
+      <s>#{{step.index}} — {{step.diceLabel}} = {{step.score.total}}
+        ({{step.score.cartons}} / {{step.score.notes}})</s>
+      {{#if step.source}}<small>{{step.source}}</small>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  {{/if}}
   <div class="dice-result">
     <div
       class="cowboy-dice-tooltip dice-tooltip expanded"
@@ -11,21 +22,32 @@
               >{{ result.formula }} ({{ category }}/{{ genre }})</span
             >
 
+            {{!-- Le seuil affiché est déjà corrigé. L'écart est rappelé à côté
+            pour qu'un 12/17 ne passe pas pour une erreur de lecture. --}}
+            {{!-- Le total vient de l'état du test, pas du jet : c'est celui sur
+            lequel les cartons ont été comptés. Les deux s'accordent, mais un
+            seul fait foi. --}}
             <span
-              class="part-total {{#if (gte result.total mouvement.difficulty)}}success{{/if}}"
-              >{{ result.total }}/{{ mouvement.difficulty }}</span
+              class="part-total {{#if (gte total mouvement.difficulty)}}success{{/if}}"
+              >{{ total }}/{{ mouvement.difficulty }}{{#if mouvement.modifier }}
+              <span class="cowboy-roll-difficulty-delta">({{#if (gt mouvement.modifier 0)}}+{{/if}}{{ mouvement.modifier }})</span>
+              {{/if}}</span
             >
           </header>
           <ol class="dice-rolls">
             {{#each result.terms as |term|}}
             {{#each term.results as |dice key|}}
+            {{!-- Le dé qu'un avantage a retiré est encore là mais ne compte
+            plus : sans cette marque, la somme affichée ne correspondait pas aux
+            dés affichés. Il ne porte donc ni le 1 ni le 6 des autres. --}}
             <li
-              class="roll die d6 
-              {{#if discarded }}
+              class="roll die d6
+              {{#if dice.discarded }}
               discarded
-              {{/if}}
+              {{else}}
               {{#if (eq dice.result 1)}}min{{/if}}
               {{#if (eq dice.result 6)}}max{{/if}}
+              {{/if}}
               "
             >
               {{ dice.result }}
@@ -33,6 +55,14 @@
 
             {{/each}}
             {{/each}}
+            {{#if plannedResult}}
+            <li class="roll die d6 cowboy-roll-planned-die
+              {{#if (eq plannedResult 1)}}min{{/if}}
+              {{#if (eq plannedResult 6)}}max{{/if}}"
+              data-tooltip="{{localize 'COWBOY.groove.plan.planned'}}">
+              {{ plannedResult }}
+            </li>
+            {{/if}}
           </ol>
         </div>
       </section>
@@ -53,76 +83,287 @@
       {{/range}}
     </h4>
     <section class="cowboy-roll-actions">
-      {{#if (gt notes 0)}}
-      {{#if (gt actor.system.cartridge 0)}}
+      {{!-- « Le CP peut alors retirer jusqu'à deux fausses notes. » Passé les
+      deux, la carte ne propose plus rien : ce qui reste part chez Big Shot.
+
+      Ce qu'une correction coûte n'est plus écrit ici : le type de session le
+      dit, mouvement par mouvement (ADR 0008). Une session classique fait payer
+      la cartouche, une filler le rythme, une personnelle laisse le choix. --}}
+      {{#if canCorrect}}
+      {{#each correction.counters as |choice|}}
       <button
         class="cowboy-roll-action cowboy-roll-action-notes"
         type="button"
-        data-action="damage-cartridge"
-        data-rollid="{{ rollId }}"
-        data-actor-id="{{ actor.id }}"
+        data-action="correct-pay"
+        data-actor-id="{{ ../actor.id }}"
+        data-resource="{{ choice.resource }}"
+        data-amount="{{ choice.amount }}"
+        {{#if choice.blocked}}disabled data-tooltip="{{ choice.blocked }}"{{/if}}
       >
         <i class="fa-solid fa-user-injured"></i>
-        {{ localize "COWBOY.roll.actions.cartridge" }} ({{
-          actor.system.cartridge
-        }}/6)
+        {{ choice.label }}
       </button>
+      {{/each}}
       {{/if}}
-      {{#if (gt traitsUsed.length 0)}}
-      <div class="cowboy-roll-traits cowboy-roll-action-notes">
-        {{#each traitsUsed as |trait|}}
-        <div class="cowboy-roll-trait">
+
+      {{!-- Les traits du MONO d'abord, et tant qu'il en reste un, ceux du
+      chasseur sont grisés avec leur motif : le livre veut que le vaisseau
+      encaisse avant son pilote, « et même sévèrement endommagé » - donc la
+      priorité vaut pour la correction comme pour la mise. --}}
+      {{#if (gt traits.length 0)}}
+      <div class="cowboy-roll-traits">
+        {{#each traits as |trait|}}
+        <div
+          class="cowboy-roll-trait cowboy-roll-trait-{{ trait.state }}
+          {{#if trait.isMono}}cowboy-roll-trait-mono{{/if}}
+          {{#if trait.blocked}}cowboy-roll-trait-blocked{{/if}}"
+        >
           <div class="cowboy-roll-trait-name">
-            {{ trait }}
+            {{#if trait.isMono}}
+            <i
+              class="fa-solid fa-rocket cowboy-roll-trait-badge"
+              title="{{localize 'COWBOY.mono.traitBadge'}}"
+              aria-label="{{localize 'COWBOY.mono.traitBadge'}}"
+            ></i>
+            {{/if}}
+            {{ trait.name }}
           </div>
+
+          {{#if (eq trait.state "usable")}}
+          {{!-- Entamer un trait est l'un des paiements de la correction, et une
+          session peut le retirer comme elle retire la cartouche. --}}
+          {{#if ../correction.byTrait}}
           <button
             class="cowboy-roll-action"
             type="button"
             data-action="damage-trait"
-            data-rollid="{{ ../rollId }}"
             data-actor-id="{{ ../actor.id }}"
-            data-trait="{{ trait }}"
-            data-category="{{ ../category }}"
-            title="{{localize 'COWBOY.roll.actions.damageTrait'}}"
-            aria-label="{{localize 'COWBOY.roll.actions.damageTrait'}}"
+            data-trait-key="{{ trait.key }}"
+            {{#unless trait.canCorrect}}disabled{{/unless}}
+            title="{{#if trait.blocked}}{{localize 'COWBOY.mono.monoFirst'}}{{else}}{{#unless trait.canCorrect}}{{localize 'COWBOY.groove.correctionUnavailable'}}{{else}}{{localize 'COWBOY.roll.actions.damageTrait'}}{{/unless}}{{/if}}"
+            aria-label="{{#if trait.blocked}}{{localize 'COWBOY.mono.monoFirst'}}{{else}}{{#unless trait.canCorrect}}{{localize 'COWBOY.groove.correctionUnavailable'}}{{else}}{{localize 'COWBOY.roll.actions.damageTrait'}}{{/unless}}{{/if}}"
           >
-            <i class="fa-solid fa-user-tag"></i>
+            {{!-- Entamer : le trait encaisse pour absorber une fausse note. La
+            même icône que l'état « entamé » porte sur les fiches. --}}
+            <i class="fa-solid fa-burst"></i>
           </button>
+          {{/if}}
+
+          {{!-- Quitte ou double n'est pas une correction : c'est un riff, que le
+          type de session ouvre ou non, et rien ne le lie au plafond de deux. --}}
+          {{#if ../canStake}}
           <button
             class="cowboy-roll-action"
             type="button"
-            data-action="hyper-damage-trait"
-            data-rollid="{{ ../rollId }}"
+            data-action="stake-trait"
             data-actor-id="{{ ../actor.id }}"
-            data-trait="{{ trait }}"
-            data-category="{{ ../category }}"
-            title="{{localize 'COWBOY.roll.actions.hyperDamageTrait'}}"
-            aria-label="{{localize 'COWBOY.roll.actions.hyperDamageTrait'}}"
+            data-trait-key="{{ trait.key }}"
+            {{#if trait.blocked}}disabled{{/if}}
+            title="{{#if trait.blocked}}{{localize 'COWBOY.mono.monoFirst'}}{{else}}{{localize 'COWBOY.roll.actions.stakeTrait'}}{{/if}}"
+            aria-label="{{#if trait.blocked}}{{localize 'COWBOY.mono.monoFirst'}}{{else}}{{localize 'COWBOY.roll.actions.stakeTrait'}}{{/if}}"
           >
-            <i class="fa-solid fa-house-chimney-crack"></i>
+            {{!-- Miser : ce bouton relance le groupement, donc il porte des dés
+            et non une fêlure de plus. --}}
+            <i class="fa-solid fa-dice"></i>
           </button>
+          {{/if}}
+
+          {{else}}
+          {{!-- Un trait dépensé reste sur la carte, marqué : c'est ce que ce
+          test a coûté, et le relire vaut mieux que le voir disparaître. --}}
+          <span
+            class="cowboy-roll-trait-spent"
+            title="{{#if (eq trait.state 'broken')}}{{localize 'COWBOY.roll.actions.broken'}}{{else}}{{localize 'COWBOY.roll.actions.dented'}}{{/if}}"
+          >
+            {{!-- Les mêmes deux icônes que les fiches donnent à ces états, pour
+            qu'un trait entamé se reconnaisse au même dessin partout. --}}
+            {{#if (eq trait.state "broken")}}
+            <i class="fa-solid fa-skull"></i>
+            {{else}}
+            <i class="fa-solid fa-burst"></i>
+            {{/if}}
+          </span>
+          {{/if}}
         </div>
 
         {{/each}}
       </div>
       {{/if}}
+
+      {{!-- Les riffs d'après le jet : Forcer, et ce que Big Shot achète avec un
+      risque. Un bouton par paiement accepté, grisé avec son motif quand il ne
+      peut pas être payé ou quand son effet ne changerait rien - c'est ainsi que
+      la garde de Forcer s'applique sans avoir été écrite. --}}
+      {{#if hunterRiffs.length}}
+      <div class="cowboy-roll-riffs">
+        {{#each hunterRiffs as |riff|}}
+        <span class="cowboy-roll-riff" data-tooltip="{{ riff.description }}"
+          data-tooltip-class="cowboy-riff-tooltip">
+          <span class="cowboy-roll-riff-name">
+            <i class="fa-solid {{#if riff.custom}}fa-pen-nib{{else}}fa-guitar{{/if}}"></i>
+            {{ riff.name }}
+          </span>
+          {{#each riff.choices as |choice|}}
+          <button
+            class="cowboy-roll-action cowboy-roll-riff-button"
+            type="button"
+            data-action="play-riff"
+            data-actor-id="{{ ../../actor.id }}"
+            data-riff="{{ riff.id }}"
+            data-choice="{{ choice.index }}"
+            {{#if choice.blocked}}disabled data-tooltip="{{ choice.blocked }}"{{/if}}
+          >
+            {{ choice.label }}
+          </button>
+          {{/each}}
+        </span>
+        {{/each}}
+      </div>
       {{/if}}
+
+      {{!-- Ce que Big Shot raye d'autorité, quand les conditions ne la
+      justifiaient pas. Ni un riff - aucun type de session ne l'ouvre ni ne le
+      ferme - ni une correction : rien n'est payé, et le plafond de deux borne
+      ce qu'un chasseur rachète, pas ce que l'arbitre annule. D'où son propre
+      bloc, hors de la liste des riffs, et présent même quand la session
+      n'ouvre rien à Big Shot. --}}
+      {{#if canVoidNote}}
+      <div class="cowboy-roll-void cowboy-roll-action-gm">
+        <button
+          class="cowboy-roll-action cowboy-roll-action-gm"
+          type="button"
+          data-action="void-note"
+          data-tooltip="{{ localize 'COWBOY.roll.actions.voidNoteHint' }}"
+        >
+          <i class="fa-solid fa-eraser"></i>
+          {{ localize "COWBOY.roll.actions.voidNote" }}
+        </button>
+      </div>
+      {{/if}}
+
+      {{#if rewriteDice.length}}
+      <div class="cowboy-roll-transformations">
+        {{#each rewriteDice as |die|}}
+        <button type="button" class="cowboy-roll-action" data-action="rewrite-die"
+          data-die-index="{{die.index}}">{{die.face}} → 6</button>
+        {{/each}}
+      </div>
+      {{/if}}
+      {{#if canRerollRemovedDie}}
+      <button type="button" class="cowboy-roll-action" data-action="reroll-removed-die">
+        {{localize "COWBOY.activation.rerollRemovedDie"}}
+      </button>
+      {{/if}}
+      {{#if reserveDice.length}}
+      <div class="cowboy-roll-plan-actions">
+        <span>{{localize "COWBOY.groove.plan.reserve"}}</span>
+        {{#each reserveDice as |die|}}
+        <button type="button" class="cowboy-roll-action" data-action="reserve-plan"
+          data-actor-id="{{../actor.id}}" data-die-index="{{die.index}}">
+          <i class="fa-solid fa-calendar-plus"></i> {{die.face}}
+        </button>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- Ce que Big Shot oppose. La carte est cuite une fois et lue par tout
+      le monde, donc ça ne se filtre pas ici : `cowboy-roll-action-gm` est la
+      classe que le hook de rendu retire aux joueurs, comme pour la collecte. --}}
+      {{#if bigshotRiffs.length}}
+      <div class="cowboy-roll-riffs is-bigshot cowboy-roll-action-gm">
+        {{#each bigshotRiffs as |riff|}}
+        <span class="cowboy-roll-riff" data-tooltip="{{ riff.description }}"
+          data-tooltip-class="cowboy-riff-tooltip">
+          <span class="cowboy-roll-riff-name">
+            <i class="fa-solid fa-dice-d6"></i>
+            {{ riff.name }}
+          </span>
+          {{#each riff.choices as |choice|}}
+          <button
+            class="cowboy-roll-action cowboy-roll-action-gm cowboy-roll-riff-button"
+            type="button"
+            data-action="play-riff"
+            data-actor-id="{{ ../../actor.id }}"
+            data-riff="{{ riff.id }}"
+            data-choice="{{ choice.index }}"
+            {{#if choice.blocked}}disabled data-tooltip="{{ choice.blocked }}"{{/if}}
+          >
+            {{ choice.label }}
+          </button>
+          {{/each}}
+        </span>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- Les grooves qui étaient sur la table. Quatre des onze grooves de
+      chasseur ne se déclenchent qu'ici — « juste après le lancer », « s'il
+      obtient un double » — donc les rappeler sur la carte est la seule façon
+      qu'ils servent. Rien à cliquer : ce que le moteur en joue s'est appliqué
+      avant, le reste s'applique à la table. --}}
+      {{#if grooves.length}}
+      <div class="cowboy-roll-grooves">
+        {{#each grooves as |groove|}}
+        <span class="cowboy-roll-groove {{#if groove.lentBy}}is-lent{{/if}}"
+          data-tooltip="{{ groove.description }}"
+          data-tooltip-class="cowboy-riff-tooltip">
+          <i class="fa-solid fa-wave-square"></i>
+          {{ groove.name }}
+          {{#if groove.lentBy}}
+          <em class="cowboy-roll-groove-lent">{{ groove.lentBy }}</em>
+          {{/if}}
+        </span>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{#if running.length}}
+      <div class="cowboy-roll-activations">
+        {{#each running as |activation|}}
+        <span class="cowboy-roll-activation" data-tooltip="{{ activation.description }}">
+          <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+          {{ activation.name }}
+        </span>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- Une dette, pas un débit : le camarade retire son rythme lui-même sur
+      sa propre fiche. La carte ne fait que le rappeler, sous son nom, pour que
+      la table le voie passer (ADR 0009). --}}
+      {{#if assist}}
+      <p class="cowboy-roll-assist">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+        {{ localize "COWBOY.riffs.assist" }} <strong>{{ assist.name }}</strong>
+        {{#if assist.costLabel}} — {{ assist.costLabel }}{{/if}}
+      </p>
+      {{/if}}
+
+      {{!-- Ce qui a été plaqué sur ce test. Un fait acquis, qui ne se reprend
+      pas : les riffs *ouverts* sont relus en direct et peuvent se refermer,
+      celui qu'on a joué reste joué. --}}
+      {{#if played.length}}
+      <p class="cowboy-roll-played">
+        <i class="fa-solid fa-music"></i>
+        {{#each played as |riff|}}{{#unless @first}}, {{/unless}}{{ riff.name }}{{/each}}
+      </p>
+      {{/if}}
+
       {{#if (or (gt notes 0) (gt carton 0))}}
-      {{!-- Collecting credits the prime, which no player may write to. The card
-      is rendered once by whoever rolled and stored as content, so this cannot
-      be gated here: the render hook strips it per reader instead. --}}
+      {{!-- Collecter écrit sur la prime, ce qu'aucun joueur ne peut faire. La
+      carte est rendue une fois et stockée telle quelle, donc ça ne se filtre pas
+      ici : le hook de rendu le retire selon qui lit. --}}
       <button
         class="cowboy-roll-action cowboy-roll-action-gm"
         type="button"
         data-action="collect"
-        data-rollid="{{ rollId }}"
         data-actor-id="{{ actor.id }}"
         data-notes="{{ notes }}"
         data-cartons="{{ carton }}"
         data-genre="{{ genre }}"
         data-category="{{ category }}"
       >
-        <i class="fa-solid fa-plus"></i>
+        <i class="fa-solid fa-circle-plus"></i>
         {{ localize "COWBOY.roll.actions.collect" }}
       </button>
       {{/if}}

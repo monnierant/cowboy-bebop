@@ -10,7 +10,7 @@ as they were rolled; this only records where the tokens went. --}}
   <div class="cowboy-roll-collected-line">
     <span class="cowboy-roll-collected-holder">{{ hunterName }}</span>
     <span class="cowboy-roll-collected-tokens">
-      {{#range 1 cartons}}
+      {{#range 1 cartons this}}
       <i class="fa-solid fa-music cowboy-carton"></i>
       {{/range}}
     </span>
@@ -22,7 +22,7 @@ as they were rolled; this only records where the tokens went. --}}
   <div class="cowboy-roll-collected-line">
     <span class="cowboy-roll-collected-holder">{{ primeName }}</span>
     <span class="cowboy-roll-collected-tokens">
-      {{#range 1 notes}}
+      {{#range 1 notes this}}
       <i class="fa-solid fa-record-vinyl cowboy-note"></i>
       {{/range}}
     </span>

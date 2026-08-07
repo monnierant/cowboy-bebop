@@ -45,6 +45,13 @@
     }
   }
 
+  // L'écart de difficulté, rappelé sous le seuil corrigé.
+  .cowboy-roll-difficulty-delta {
+    font-size: 0.8em;
+    font-weight: normal;
+    opacity: 0.7;
+  }
+
   .cowboy-roll-traits {
     display: flex;
     flex-direction: row;
@@ -67,9 +74,225 @@
         width: auto;
         margin-right: 0.5em;
       }
+
+      // Ce qui vient du vaisseau passe en premier et se voit ; ce qui est
+      // encore fermé s'efface, avec son motif dans l'infobulle du bouton.
+      &.cowboy-roll-trait-mono {
+        background-color: rgba(156, 39, 176, 0.25);
+
+        .cowboy-roll-trait-badge {
+          margin-right: 0.3em;
+          opacity: 0.8;
+        }
+      }
+
+      &.cowboy-roll-trait-blocked {
+        opacity: 0.45;
+      }
+
+      // Un trait dépensé reste sur la carte : c'est ce que ce test a coûté.
+      // Entamé se barre et se répare ; brisé se barre plus fort et ne revient
+      // pas avant la fin de la session.
+      &.cowboy-roll-trait-dented,
+      &.cowboy-roll-trait-broken {
+        .cowboy-roll-trait-name {
+          text-decoration: line-through;
+          opacity: 0.6;
+        }
+      }
+
+      &.cowboy-roll-trait-broken {
+        background-color: rgba(244, 67, 54, 0.2);
+
+        .cowboy-roll-trait-name {
+          opacity: 0.45;
+        }
+      }
+
+      .cowboy-roll-trait-spent {
+        width: auto;
+        opacity: 0.6;
+      }
+
       .cowboy-roll-action {
         width: auto;
       }
     }
   }
+}
+
+// Le compteur de difficulté de la boîte de jet. Hors du bloc `.dice-roll`
+// ci-dessus, qui ne couvre que la carte de chat : ce réglage-ci vit dans la
+// fenêtre de test, avant que le dé ne tombe.
+// Les deux compteurs de la boîte de jet - le seuil et les dés ajoutés à la
+// main - se manipulent pareil, donc ils se ressemblent.
+.cowboy-dialog-difficulty,
+.cowboy-dialog-bonus-dice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35em;
+  margin-top: 0.4em;
+  cursor: help;
+
+  button {
+    width: 1.6em;
+    height: 1.6em;
+    line-height: 1;
+    padding: 0;
+    flex: 0 0 auto;
+  }
+
+  .cowboy-dialog-difficulty-total,
+  .cowboy-dialog-bonus-dice-total {
+    font-size: 1.1em;
+  }
+
+  .cowboy-dialog-difficulty-delta,
+  label {
+    font-size: 0.85em;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+}
+
+// Le genre qu'on jette, en tête de la boîte de test. Capitalisé ici et non dans
+// les données : la clef qui indexe traits, couleurs et icônes doit rester le
+// seul mot minuscule qu'elle est - même raisonnement que sur la fiche.
+.cowboy-dialog-category {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0 0 0.4em;
+  text-transform: capitalize;
+}
+
+// La boîte de test, en colonne : deux rangées de réglages compactes, puis les
+// traits qui prennent tout ce qui reste.
+.cowboy-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  height: 100%;
+}
+
+// Un réglage à gauche, son compagnon à droite : le mouvement avec son écart de
+// seuil, l'avantage avec le bonus de genre. Deux rangées au lieu de quatre.
+.cowboy-dialog-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  flex: 0 0 auto;
+}
+
+.cowboy-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  flex: 1;
+  min-width: 0;
+
+  label {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+}
+
+// Constaté, pas choisi : la case est désactivée, donc elle se lit comme une
+// étiquette et n'appelle pas le clic.
+.cowboy-dialog-bonus {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3em;
+  flex: 0 0 auto;
+  padding-bottom: 0.35em;
+  font-size: 0.85em;
+  cursor: help;
+
+  input { flex: 0 0 auto; margin: 0; }
+}
+
+// Les traits se répartissent dans ce qui reste de la fenêtre : ils sont la
+// seule vraie décision de cette boîte, donc ils en occupent le volume.
+.cowboy-dialog-traits {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.3em;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 0.3em;
+  border-top: 1px solid #0002;
+}
+
+.cowboy-dialog-dice-pool {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35em;
+  flex: 1 1 auto;
+  padding: 0.2em 0.5em;
+  border: 1px solid #0002;
+  border-radius: 0.3em;
+  background: #ffffff28;
+  white-space: nowrap;
+
+  input { flex: 0 0 auto; margin: 0; }
+  label { flex: 1; cursor: pointer; }
+}
+
+// Le groupement annoncé avant le jet : le nombre en gros, la formule derrière.
+.cowboy-dialog-dice-count {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35em;
+  flex: 0 0 auto;
+  padding: 0.15em 0.5em;
+  border-radius: 0.3em;
+  background: #0000000d;
+  cursor: help;
+
+  > i { opacity: 0.6; }
+
+  .cowboy-dialog-dice-total { font-size: 1.1em; }
+
+  .cowboy-dialog-dice-formula {
+    font-size: 0.8em;
+    opacity: 0.6;
+  }
+}
+.cowboy-test-history {
+  margin: 0 0 0.5rem;
+  padding-left: 1.5rem;
+  opacity: 0.65;
+
+  .cowboy-test-history-step small { margin-left: 0.4rem; }
+}
+
+.cowboy-dialog-plan,
+.cowboy-planned-die,
+.cowboy-roll-plan-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #0003;
+  border-radius: 0.35rem;
+  background: #f2cf5b24;
+}
+
+.cowboy-roll-planned-die {
+  box-shadow: inset 0 0 0 2px #c49618;
+}
+
+.cowboy-roll-plan-actions {
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
 }
