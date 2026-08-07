@@ -13,7 +13,7 @@ Handlebars.registerHelper("gt", (left, right) => left > right);
 Handlebars.registerHelper("gte", (left, right) => left >= right);
 Handlebars.registerHelper("or", (...values) => values.slice(0, -1).some(Boolean));
 Handlebars.registerHelper("and", (...values) => values.slice(0, -1).every(Boolean));
-Handlebars.registerHelper("range", range);
+Handlebars.registerHelper("cowboyRange", range);
 Handlebars.registerHelper("localize", (key) => ({
   "COWBOY.roll.actions.collect": "Collect",
   "COWBOY.roll.actions.collected": "Collected",
@@ -186,8 +186,23 @@ const settledSource = fs.readFileSync(
   new URL("../src/templates/chat/roll-collected.hbs", import.meta.url),
   "utf8"
 );
-if (/{{#range\s+\S+\s+\S+}}/.test(settledSource)) {
-  throw new Error("Un bloc range omet le contexte requis par Foundry");
+// Le registre Handlebars est global à la partie, et `range` est un nom que
+// d'autres modules revendiquent — `sliced-dials` le fait, s'initialise après
+// nous, et le sien exige trois arguments. Un gabarit qui appelle `range` tout
+// court rend donc juste, seul, et casse dès qu'un module est installé à côté.
+//
+// Le contournement précédent — toujours passer un contexte, même inutile —
+// tenait tant que l'autre helper avait la même arité. Le nom préfixé, lui, ne
+// dépend de personne.
+for (const path of [
+  "chat/roll.hbs",
+  "chat/roll-collected.hbs",
+  "partials/health-counter.hbs",
+]) {
+  const source = fs.readFileSync(new URL(`../src/templates/${path}`, import.meta.url), "utf8");
+  if (/{{[#/]range[\s}]/.test(source)) {
+    throw new Error(`${path} appelle le helper « range », qu'un autre module peut voler`);
+  }
 }
 const settledTemplate = Handlebars.compile(settledSource);
 const settledHtml = settledTemplate({

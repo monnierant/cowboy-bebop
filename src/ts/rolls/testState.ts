@@ -28,7 +28,7 @@ import {
 } from "./score.js";
 // `types.ts` ne contient que des types : l'import s'efface à l'émission, donc
 // le harnais node ne voit jamais ce fichier passer.
-import type { Activation, ActiveActivation, BespokeGrooveRules, Payment } from "../types";
+import type { ActiveActivation, BespokeGrooveRules, Payment, SourcedActivation } from "../types";
 import { applyResultEffects } from "./activationTerms.js";
 import { correctionLimit, grooveScore } from "./bespokeGrooves.js";
 
@@ -90,6 +90,24 @@ export interface TestState {
    * descendre.
    */
   rerolled: boolean;
+  /**
+   * La relance du dé retiré a-t-elle déjà eu lieu ?
+   *
+   * Le désavantage n'écarte qu'un dé, donc Maître de la bidouille n'a qu'une
+   * relance à offrir. Sans ce drapeau, chaque clic en ajoutait un de plus.
+   */
+  rerolledRemovedDie?: boolean;
+  /**
+   * Une face a-t-elle déjà été réécrite sur ce test ?
+   *
+   * « Transformer *un* résultat » : le geste vaut une fois, comme la relance du
+   * dé écarté. Le prix seul ne le bornait pas - avec assez de fausses notes à
+   * dépenser, tout un groupement finissait en 6.
+   *
+   * Quitte ou double ne le rend pas : il refait le jet, mais le groove reste
+   * joué pour ce test.
+   */
+  rewroteDie?: boolean;
   settled: boolean;
   /**
    * Les riffs joués sur ce test, dans l'ordre, pour mémoire.
@@ -114,7 +132,7 @@ export interface TestState {
   /** Les Activations en cours qui visaient ce test, gelées pour la carte. */
   running?: ActiveActivation[];
   /** Activations applicables gelées avec le Test (ADR 0012). */
-  activations?: Activation[];
+  activations?: SourcedActivation[];
   /** Exceptions de la prime, figées avec le Test (ADR 0014). */
   grooveRules?: BespokeGrooveRules;
   /** Le lanceur pouvait-il réserver un résultat grâce à son groove ou à Jam ! ? */
@@ -161,6 +179,14 @@ export interface Assist {
  * raconter un autre test que celui qui a eu lieu.
  */
 export interface TestGroove {
+  /**
+   * L'identité de catalogue du groove, gelée avec la carte.
+   *
+   * Elle sert au rendu à ranger chaque bouton sous le badge du groove qui
+   * l'ouvre : le nom ne suffit pas, une table peut renommer son exemplaire.
+   * Absente sur les cartes posées avant que ce champ existe.
+   */
+  id?: string;
   name: string;
   description: string;
   /** Vide pour le groove du lanceur ; sinon, qui l'a prêté. */
@@ -181,7 +207,7 @@ export interface OpenTest {
   assist?: Assist;
   grooves?: TestGroove[];
   running?: ActiveActivation[];
-  activations?: Activation[];
+  activations?: SourcedActivation[];
   grooveRules?: BespokeGrooveRules;
   canReservePlan?: boolean;
   /** Valeur consommée depuis la fiche pour ce lancer seulement. */
@@ -494,7 +520,7 @@ export function rewriteDie(
   face: number,
   source?: string
 ): TestState {
-  if (state.settled) return state;
+  if (state.settled || state.rewroteDie) return state;
   const current = state.history?.[state.history.length - 1];
   if (!current || dieIndex < 0 || dieIndex >= current.dice.length) return state;
   const value = Math.trunc(Number(face));
@@ -506,21 +532,30 @@ export function rewriteDie(
     state.advantage,
     (state.activations ?? []).flatMap((activation) => activation.effects)
   );
+  // `corrected` n'est pas remis à zéro : le plafond de deux corrections est
+  // global au test. Seul Quitte ou double le rend, parce qu'il refait le jet en
+  // entier ; réécrire une face ne refait pas le test.
   return {
     ...state,
     score: result,
-    corrected: 0,
+    rewroteDie: true,
     history: [...state.history, { kind: "rewrite", dice, score: result, source, plannedIndex: current.plannedIndex }],
   };
 }
 
-/** Ajoute le dé relancé au groupement courant et conserve les deux étapes. */
+/**
+ * Ajoute le dé relancé au groupement courant et conserve les deux étapes.
+ *
+ * Une seule fois par test : il n'y a qu'un dé retiré par le désavantage, donc
+ * qu'une relance possible. `rerolledRemovedDie` marque que c'est fait, sans quoi
+ * chaque clic ajouterait un dé de plus.
+ */
 export function rerollRemovedDie(
   state: TestState,
   face: number,
   source?: string
 ): TestState {
-  if (state.settled) return state;
+  if (state.settled || state.rerolledRemovedDie) return state;
   const current = state.history?.[state.history.length - 1];
   const value = Math.trunc(Number(face));
   if (!current || value < 1 || value > 6) return state;
@@ -534,7 +569,7 @@ export function rerollRemovedDie(
   return {
     ...state,
     score: result,
-    corrected: 0,
+    rerolledRemovedDie: true,
     history: [...state.history, { kind: "rerollRemovedDie", dice, score: result, source, plannedIndex: current.plannedIndex }],
   };
 }

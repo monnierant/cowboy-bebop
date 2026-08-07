@@ -14,7 +14,9 @@ import {
   applyDice,
   poolOf,
   rerollPool,
+  rerollRemovedDie,
   resolveReroll,
+  rewriteDie,
   settle,
   stakeableTraits,
   usableTraits,
@@ -308,6 +310,35 @@ check("un test soldé ne porte plus de jetons", settle(rolled).score, {
 check("il est marqué soldé", settle(rolled).settled, true);
 check("et ne se corrige plus", canCorrect(settle(rolled)), false);
 check("ni ne se relance", keys(stakeableTraits(settle(rolled))), []);
+
+// ==========================================================================
+// TRANSFORMER UNE FACE
+// ==========================================================================
+//
+// Réécrire une face ou relancer le dé retiré ne refait pas le test : le plafond
+// de deux corrections lui reste global. Seul Quitte ou double le rend, parce
+// qu'il relance tout.
+
+const corrected1 = correctByCartridge(rolled);
+
+check("réécrire une face garde les corrections faites", rewriteDie(corrected1, 0, 6).corrected, corrected1.corrected);
+check("relancer le dé retiré aussi", rerollRemovedDie(corrected1, 4).corrected, corrected1.corrected);
+check("mais Quitte ou double les rend", resolveReroll(corrected1, "A", [3, 3, 3, 3]).corrected, 0);
+
+// « Transformer *un* résultat » : le geste vaut une fois par test. Le prix seul
+// ne le bornait pas — avec assez de fausses notes, tout un groupement finissait
+// en 6.
+const rewritten = rewriteDie(rolled, 0, 6);
+check("la première réécriture change la face", rewritten.history.at(-1).dice[0], 6);
+check("elle est marquée faite", rewritten.rewroteDie, true);
+check("la seconde ne fait rien", rewriteDie(rewritten, 1, 6), rewritten);
+
+// Le désavantage n'écarte qu'un dé : Maître de la bidouille n'a qu'une relance.
+const once = rerollRemovedDie(rolled, 4);
+check("la première relance ajoute son dé", once.history.at(-1).dice.length, rolled.history.at(-1).dice.length + 1);
+check("elle est marquée faite", once.rerolledRemovedDie, true);
+check("la seconde ne fait rien", rerollRemovedDie(once, 6), once);
+check("un test soldé ne relance pas", rerollRemovedDie(settle(rolled), 4), settle(rolled));
 
 // ==========================================================================
 
