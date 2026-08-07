@@ -8,47 +8,39 @@
 // La liste, en lecture
 // ========================================
 
+// Une rangée de badges plutôt qu'une pile de blocs : ce qu'on veut de cette
+// aide, c'est balayer les noms. Le détail vit dans l'infobulle.
 .cowboy-riff-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.3em;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.cowboy-riff {
-  margin: 0.15em 0;
+.cowboy-riff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.15em 0.6em;
   border: 1px solid #0002;
-  border-radius: 0.25em;
-  background: #ffffff18;
+  border-radius: 1em;
+  background: #ffffff28;
+  font-size: 0.85em;
+  white-space: nowrap;
+  cursor: help;
 
-  // Un riff écrit pour cette session seule : marqué à sa tranche, pour qu'on
-  // sache d'un coup d'œil ce qui vient du livre et ce qui vient de la table.
+  > i { opacity: 0.55; font-size: 0.9em; }
+
+  .cowboy-riff-name { font-weight: bold; }
+
+  // Un riff écrit pour cette session seule : teinté, pour qu'on sache d'un coup
+  // d'œil ce qui vient du livre et ce qui vient de la table.
   &.is-custom {
-    border-left: 3px solid #0dcaca;
-  }
-
-  summary {
-    display: flex;
-    align-items: center;
-    gap: 0.45em;
-    padding: 0.3em 0.45em;
-    cursor: pointer;
-    font-size: 0.9em;
-
-    > i {
-      opacity: 0.6;
-    }
-  }
-
-  .cowboy-riff-name {
-    font-weight: bold;
-  }
-
-  .cowboy-riff-text {
-    margin: 0;
-    padding: 0 0.6em 0.5em 1.9em;
-    font-size: 0.85em;
-    line-height: 1.35;
-    opacity: 0.85;
+    border-color: #0dcaca;
+    background: #0dcaca24;
   }
 }
 
@@ -69,14 +61,37 @@
   text-transform: uppercase;
 }
 
-// Sur la fiche du chasseur : la même boîte que les autres sections de prime,
-// puisque c'est la même matière.
+// Sur la fiche du chasseur : une seule ligne, « Riffs : » puis les badges
+// juste à sa droite. C'est une aide qu'on balaie avant de décider d'un jet, pas
+// une section à parcourir - d'où le format d'une phrase plutôt que d'une boîte.
 .cowboy-actor-riffs {
-  margin: 0.65em;
-  padding: 0.75em;
-  border: 1px solid #0003;
-  border-radius: 0.35em;
-  background: #ffffff18;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  margin: 0.4em 0.65em;
+}
+
+.cowboy-actor-riffs-label {
+  flex: 0 0 auto;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-transform: uppercase;
+  opacity: 0.75;
+  cursor: help;
+}
+
+.cowboy-actor-riffs-empty {
+  font-size: 0.85em;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+// Les badges prennent la place qui reste sur la même ligne.
+.cowboy-actor-riffs .cowboy-riff-list {
+  flex: 1;
+  min-width: 0;
 }
 
 .cowboy-actor-riffs-header {
@@ -117,7 +132,7 @@
 }
 
 .cowboy-riff-block {
-  margin: 0.3em 0;
+  margin: 0.15em 0;
   border: 1px solid #0003;
   border-radius: 0.3em;
 
@@ -125,7 +140,8 @@
     display: flex;
     align-items: center;
     gap: 0.5em;
-    padding: 0.35em 0.5em;
+    padding: 0.15em 0.4em;
+    font-size: 0.9em;
     cursor: pointer;
     font-weight: bold;
   }
@@ -147,7 +163,7 @@
 }
 
 .cowboy-riff-family {
-  padding: 0.4em 0.6em 0.6em;
+  padding: 0.15em 0.4em 0.3em;
 
   // Ce que Big Shot s'oppose à lui-même : séparé du reste par une teinte, pour
   // qu'on ne coche pas une option du MJ en croyant ouvrir un riff aux joueurs.
@@ -158,17 +174,11 @@
 }
 
 .cowboy-riff-family-title {
-  margin: 0 0 0.3em;
+  margin: 0 0 0.1em;
   border: 0;
-  font-size: 0.8em;
+  font-size: 0.75em;
   text-transform: uppercase;
   opacity: 0.7;
-}
-
-.cowboy-riff-choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25em 0.9em;
 }
 
 .cowboy-riff-choice {
@@ -185,47 +195,13 @@
   }
 }
 
-.cowboy-riff-customs {
-  margin-top: 0.5em;
-
-  button {
-    width: auto;
-  }
-}
-
-.cowboy-riff-custom {
-  margin-bottom: 0.35em;
-  padding: 0.35em;
-  border: 1px dashed #0004;
-  border-radius: 0.25em;
-
-  textarea {
-    width: 100%;
-    margin: 0.25em 0 0;
-    font-size: 0.85em;
-    resize: vertical;
-  }
-}
-
-.cowboy-riff-custom-head {
-  display: flex;
-  align-items: center;
-  gap: 0.3em;
-
-  input {
-    flex: 1 1 auto;
-    min-width: 0;
-    height: 1.7em;
-    margin: 0;
-    font-size: 0.9em;
-  }
-
-  button {
-    flex: 0 0 auto;
-    width: 1.9em;
-    min-width: 1.9em;
-    padding: 0;
-  }
+.cowboy-riff-custom-add {
+  width: auto;
+  height: 1.6em;
+  margin-top: 0.2em;
+  padding: 0 0.5em;
+  font-size: 0.8em;
+  line-height: 1;
 }
 
 // ========================================
@@ -244,3 +220,906 @@
     resize: vertical;
   }
 }
+
+// ========================================
+// Prix et effets, dans l'éditeur
+// ========================================
+//
+// Une ligne par riff ouvert, prix et effets compris. Cet écran n'est vu que par
+// Big Shot, qui prépare une session d'un coup puis n'y revient qu'à la marge :
+// ce qui compte est de voir les trois mouvements ensemble, pas de lire
+// confortablement l'un d'eux. Tout est donc serré à dessein, et ce qui
+// s'écrivait en toutes lettres passe en icône à infobulle.
+
+.cowboy-riff-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25em;
+  min-height: 1.5em;
+  padding: 0.05em 0;
+  font-size: 0.85em;
+
+  & + & { border-top: 1px dotted #0000001a; }
+
+  // La correction n'est pas un riff : elle est posée au-dessus des deux
+  // familles, et se distingue par sa teinte plutôt que par une section à elle.
+  &.is-rule {
+    margin-bottom: 0.15em;
+    padding: 0.15em 0.4em;
+    border-radius: 0.25em;
+    background: #ffffff1c;
+  }
+
+  &.is-custom { color: #0dcaca; }
+}
+
+.cowboy-riff-row-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  flex: 0 0 auto;
+  // Assez pour « Montrer ses blessures » sans que les pastilles dansent d'une
+  // ligne à l'autre ; au-delà, le nom déborde plutôt que d'élargir la colonne.
+  width: 11em;
+  cursor: help;
+
+  > i { flex: 0 0 auto; opacity: 0.5; font-size: 0.9em; }
+
+  input[type="checkbox"] { flex: 0 0 auto; margin: 0; }
+
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Le nom d'un riff libre s'écrit dans la ligne elle-même.
+  input[type="text"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 1.5em;
+    margin: 0;
+    padding: 0 0.2em;
+    font-size: 1em;
+  }
+}
+
+.cowboy-correction-terms {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25em;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+// « Coût » et « Effets » tenaient chacun une colonne de libellé. Une icône à
+// infobulle rend cette largeur aux réglages eux-mêmes.
+.cowboy-riff-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+
+  > i {
+    opacity: 0.45;
+    font-size: 0.85em;
+    cursor: help;
+  }
+}
+
+.cowboy-riff-term {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #0002;
+  border-radius: 0.8em;
+  background: #ffffff28;
+  line-height: 1;
+
+  input[type="number"] {
+    width: 2.1em;
+    height: 1.45em;
+    padding: 0 0.1em 0 0.3em;
+    border: none;
+    background: transparent;
+    font-size: 0.95em;
+    text-align: right;
+  }
+
+  select {
+    width: auto;
+    height: 1.45em;
+    padding: 0 0.1em;
+    border: none;
+    background: transparent;
+    font-size: 0.9em;
+  }
+
+  // Un prix pris sur le test lui-même ne peut pas être vérifié d'avance : il
+  // est marqué pour qu'on n'attende pas de lui qu'il grise son propre bouton.
+  &.is-uncounted {
+    border-style: dashed;
+    cursor: help;
+  }
+}
+
+// Les trois boutons de la ligne - retirer un terme, en ajouter un, rendre le
+// prix du livre - sont des glyphes de la taille du texte. Pleine largeur, ils
+// occupaient plus de place que ce qu'ils commandent.
+.cowboy-correction-payment-remove,
+.cowboy-correction-payment-add,
+.cowboy-correction-reset,
+.cowboy-riff-row .cowboy-riff-custom-remove {
+  width: 1.3em;
+  min-width: 1.3em;
+  height: 1.3em;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.95em;
+  line-height: 1;
+  opacity: 0.35;
+
+  &:hover { opacity: 1; }
+}
+
+.cowboy-riff-free { opacity: 0.5; }
+
+// Ce qu'une phrase disait sur une ligne à elle : câblé, ou dû par un autre.
+.cowboy-riff-flag {
+  opacity: 0.4;
+  font-size: 0.85em;
+  cursor: help;
+}
+
+// Le rappel d'un riff libre prend la fin de la ligne, et déborde en hauteur
+// seulement si Big Shot le déplie.
+.cowboy-riff-row .cowboy-riff-custom-description {
+  flex: 1 1 100%;
+  height: 1.6em;
+  min-height: 1.6em;
+  margin: 0.1em 0 0.15em 11.3em;
+  padding: 0 0.3em;
+  font-size: 0.9em;
+  resize: vertical;
+}
+
+// Les riffs fermés : des noms à cocher, sur une rangée. Rien à régler, donc
+// rien qui mérite une ligne.
+.cowboy-riff-closed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1em 0.7em;
+  margin-top: 0.2em;
+  padding-top: 0.2em;
+  border-top: 1px dotted #0000001a;
+  opacity: 0.65;
+
+  &:hover { opacity: 1; }
+}
+
+// ========================================
+// Ce qu'on plaque, dans la boîte de jet
+// ========================================
+
+.cowboy-dialog-riffs {
+  margin-top: 0.6em;
+  padding-top: 0.5em;
+  border-top: 1px solid #0002;
+}
+
+.cowboy-dialog-riffs-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0 0 0.35em;
+  border: none;
+  font-size: 1em;
+
+  > i { opacity: 0.55; }
+}
+
+.cowboy-dialog-riffs-empty {
+  margin: 0;
+  font-style: italic;
+  opacity: 0.55;
+}
+
+.cowboy-riff-play-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cowboy-riff-play {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+
+  // Ouvert mais impayable : la ligne reste, pâlie. « Pourquoi ne puis-je pas »
+  // est une question que la table pose, et une ligne disparue n'y répond pas.
+  &.is-stuck { opacity: 0.45; }
+
+  &.is-custom .cowboy-riff-play-name { color: #0dcaca; }
+}
+
+.cowboy-riff-play-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  flex: 1 1 auto;
+  min-width: 8em;
+  cursor: help;
+
+  > i { opacity: 0.55; font-size: 0.9em; }
+}
+
+.cowboy-riff-play-button {
+  flex: 0 0 auto;
+  width: auto;
+  height: 1.7em;
+  padding: 0 0.7em;
+  border-radius: 0.9em;
+  font-size: 0.85em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cowboy-riff-play-owed {
+  opacity: 0.5;
+  cursor: help;
+}
+
+.cowboy-riff-played {
+  margin-top: 0.4em;
+  padding: 0.35em 0.5em;
+  border-radius: 0.4em;
+  background: #ffffff1c;
+}
+
+.cowboy-riff-played-title {
+  margin: 0 0 0.25em;
+  border: none;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.cowboy-riff-played-entry {
+  padding: 0.2em 0;
+
+  & + & { border-top: 1px dashed #0002; }
+}
+
+.cowboy-riff-played-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.cowboy-riff-played-name { font-weight: bold; }
+
+.cowboy-riff-played-cost {
+  flex: 1 1 auto;
+  font-size: 0.85em;
+  opacity: 0.6;
+}
+
+.cowboy-riff-undo {
+  flex: 0 0 auto;
+  width: 1.6em;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0;
+  border: none;
+  background: transparent;
+  opacity: 0.4;
+
+  &:hover { opacity: 1; }
+}
+
+.cowboy-riff-played-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: 0.2em;
+
+  &.is-column {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  label {
+    flex: 0 0 auto;
+    font-size: 0.85em;
+    opacity: 0.7;
+  }
+
+  select { flex: 1 1 auto; height: 1.7em; }
+}
+
+.cowboy-riff-played-note {
+  margin: 0.1em 0 0;
+  font-size: 0.85em;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.cowboy-riff-heal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+}
+
+.cowboy-riff-heal {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.9em;
+
+  em { opacity: 0.55; }
+
+  // Passé le compte que le riff paie, les cases restantes se ferment plutôt que
+  // de disparaître : on voit ce qu'on aurait pu choisir à la place.
+  &.is-blocked { opacity: 0.4; }
+}
+
+.cowboy-dialog-riffs-total {
+  margin: 0.4em 0 0;
+  font-size: 0.9em;
+}
+
+// Une approche qu'aucun Improviser n'ouvre plus quitte la réserve. Elle sort de
+// l'affichage plutôt que de rester grisée : le groupement se lit d'un coup
+// d'œil, et cinq approches empilées le rendraient illisible.
+.cowboy-dialog-dice-pool.is-out { display: none; }
+
+// ========================================
+// Les riffs sur la carte de chat
+// ========================================
+
+.cowboy-roll-riffs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin-top: 0.3em;
+
+  &.is-bigshot { opacity: 0.9; }
+}
+
+// Ce que Big Shot raye d'autorité. Volontairement sobre et à part des riffs :
+// c'est un arbitrage, pas une action de jeu qu'on aurait achetée.
+.cowboy-roll-void {
+  display: flex;
+  margin-top: 0.3em;
+
+  > button {
+    width: auto;
+    height: 1.6em;
+    padding: 0 0.6em;
+    border-radius: 0.8em;
+    font-size: 0.85em;
+    line-height: 1;
+    white-space: nowrap;
+    opacity: 0.8;
+
+    > i { margin-right: 0.3em; }
+  }
+}
+
+.cowboy-roll-riff {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.1em 0.2em 0.1em 0.5em;
+  border: 1px solid #0002;
+  border-radius: 1em;
+  background: #ffffff20;
+  font-size: 0.85em;
+  cursor: help;
+}
+
+.cowboy-roll-riff-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-weight: bold;
+
+  > i { opacity: 0.55; font-weight: normal; }
+}
+
+.cowboy-roll-riff-button {
+  width: auto;
+  height: 1.6em;
+  padding: 0 0.6em;
+  border-radius: 0.8em;
+  font-size: 0.9em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// Une dette rappelée, jamais débitée : elle se lit comme une note en marge, pas
+// comme un bouton dont on attendrait qu'il fasse quelque chose.
+.cowboy-roll-assist,
+.cowboy-roll-played {
+  margin: 0.35em 0 0;
+  font-size: 0.85em;
+  font-style: italic;
+  opacity: 0.7;
+
+  > i { margin-right: 0.3em; opacity: 0.6; }
+}
+
+// Solo ! contre la réserve qu'il dépense, sur la fiche du chasseur.
+.cowboy-solo-play {
+  width: auto;
+  height: 1.8em;
+  margin-left: 0.4em;
+  padding: 0 0.7em;
+  border-radius: 0.9em;
+  font-size: 0.85em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// ========================================
+// Les grooves
+// ========================================
+//
+// Un groove se possède et ne se joue pas : rien ici n'est un bouton. Le dessin
+// est donc volontairement plat — une ligne qu'on lit, pas une action qu'on
+// cherche du regard, contrairement aux riffs juste à côté.
+
+.cowboy-groove-slot {
+  // La vignette suit son contenu au lieu de remplir toute la colonne. Elle
+  // peut néanmoins rétrécir si un nom de groove dépasse la place disponible.
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 0.4em;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 0.2em;
+  padding: 0.15em 0.4em;
+  border: 1px dashed #0003;
+  border-radius: 0.4em;
+  font-size: 0.9em;
+
+  &.is-empty { opacity: 0.55; }
+
+  > button {
+    flex: 0 0 auto;
+    width: auto;
+    opacity: 0.6;
+  }
+  > button:hover { opacity: 1; }
+}
+
+.cowboy-groove-slot-label {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.cowboy-groove-slot-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cowboy-groove-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 0;
+  max-width: min(18em, 100%);
+  padding: 0.15em 0.35em;
+  cursor: pointer;
+}
+
+.cowboy-groove-slot-empty {
+  flex: 0 1 auto;
+  font-style: italic;
+}
+
+// Le rappel dans la boîte de jet : le texte en entier, parce que c'est au
+// réglage qu'on décide de s'en servir et qu'une infobulle se refermerait sous le
+// curseur qui va cocher un trait.
+.cowboy-dialog-grooves {
+  list-style: none;
+  margin: 0 0 0.4em;
+  padding: 0;
+}
+
+.cowboy-dialog-groove {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 0.4em;
+  padding: 0.25em 0.4em;
+  border-left: 2px solid #0003;
+  font-size: 0.85em;
+
+  > i { grid-row: 1 / span 2; align-self: center; opacity: 0.55; }
+
+  &.is-lent { border-left-style: dashed; }
+}
+
+.cowboy-dialog-groove-name { font-weight: bold; }
+.cowboy-dialog-groove-lent { font-style: italic; opacity: 0.7; }
+.cowboy-dialog-groove-text { grid-column: 2; opacity: 0.8; }
+
+// Sur la carte, le texte passe en infobulle : la carte est dense, et le groove
+// n'y est qu'un rappel de ce qu'on peut encore tenter.
+.cowboy-roll-grooves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin-top: 0.3em;
+}
+
+.cowboy-roll-groove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.1em 0.5em;
+  border: 1px solid #0002;
+  border-radius: 1em;
+  background: #ffffff20;
+  font-size: 0.85em;
+  cursor: help;
+
+  > i { opacity: 0.55; }
+
+  &.is-lent { border-style: dashed; }
+}
+
+.cowboy-roll-groove-lent { opacity: 0.7; }
+
+.cowboy-groove-play-offer,
+.cowboy-activations-running {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  padding: 0.2em 0.4em;
+  border: 1px solid #0002;
+  border-radius: 0.4em;
+  background: #ffffff18;
+  font-size: 0.82em;
+}
+
+.cowboy-groove-play {
+  width: auto;
+  height: 1.7em;
+  padding: 0 0.55em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cowboy-activations-running-label { font-weight: bold; white-space: nowrap; }
+.cowboy-activations-running-list { display: flex; flex-wrap: wrap; gap: 0.25em; }
+.cowboy-activation-running,
+.cowboy-roll-activation,
+.cowboy-dialog-activation {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.1em 0.45em;
+  border: 1px solid #0002;
+  border-radius: 1em;
+  cursor: help;
+}
+.cowboy-activation-running small { opacity: 0.65; }
+.cowboy-dialog-activations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  list-style: none;
+  margin: 0 0 0.4em;
+  padding: 0;
+}
+.cowboy-roll-activations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+  margin-top: 0.3em;
+}
+
+// ----------------------------------------
+// La feuille d'un groove
+// ----------------------------------------
+
+.cowboy-groove-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 0.5em;
+}
+
+.cowboy-groove-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+}
+
+.cowboy-groove-portrait {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 0.4em;
+}
+
+.cowboy-groove-header-fields {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.cowboy-groove-audience-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.cowboy-groove-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+
+  > h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    margin: 0;
+    border-bottom: 1px solid #0002;
+    font-size: 1em;
+    text-transform: uppercase;
+
+    > i:first-child { opacity: 0.6; }
+  }
+}
+
+.cowboy-groove-help { opacity: 0.5; cursor: help; font-size: 0.85em; }
+
+.cowboy-groove-substitution {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.cowboy-groove-substitution-targets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.cowboy-groove-substitution-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  white-space: nowrap;
+}
+
+// Un rappel : son texte, et qui a le droit de le lire. Le public sur sa propre
+// ligne parce que c'est ce qu'on relit le plus souvent après coup.
+.cowboy-groove-reminder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.35em 0.45em;
+  border: 1px solid #0002;
+  border-radius: 0.4em;
+}
+
+.cowboy-groove-reminder-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.85em;
+
+  > label { display: inline-flex; align-items: center; gap: 0.3em; }
+  select { width: auto; }
+}
+
+.cowboy-activation-add,
+.cowboy-activation-remove,
+.cowboy-groove-reminder-add,
+.cowboy-groove-reminder-remove {
+  width: auto;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  line-height: 1;
+}
+
+.cowboy-activation-add,
+.cowboy-activation-remove,
+.cowboy-groove-reminder-add,
+.cowboy-groove-reminder-remove { margin-left: auto; }
+
+// Une activation est une carte et non une ligne : ses quatre rangées - les
+// conditions, le prix, les effets, la durée - se lisent l'une sous l'autre, et
+// c'est le cadre qui dit où l'une s'arrête et la suivante commence.
+.cowboy-activation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  padding: 0.35em 0.45em;
+  border: 1px solid #0002;
+  border-radius: 0.4em;
+
+  &.is-invalid { border-color: #a33a3a; }
+
+  // Un riff porte exactement une activation, et la ligne de l'éditeur de riffs
+  // est dense à dessein : elle se replie donc à l'horizontale, sans cadre ni
+  // titre. C'est le même formulaire, pas la même place.
+  &.is-single {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4em;
+    min-width: 0;
+    padding: 0;
+    border: none;
+
+    > .cowboy-activation-row { flex: 0 1 auto; }
+
+    // L'échappatoire ne prend pas une ligne entière sur une rangée de riff :
+    // repliée, elle n'est qu'un chevron de plus.
+    > .cowboy-activation-raw {
+      flex: 0 0 auto;
+      > summary { font-size: 0.75em; }
+    }
+
+    &.is-invalid {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+}
+
+.cowboy-activation-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.cowboy-activation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+
+  // L'icône de rangée tient la place qu'un libellé prendrait : « Conditions »,
+  // « Coût », « Effets » et « Durée » coûtaient plus de largeur que les
+  // réglages eux-mêmes, comme dans l'éditeur de riffs.
+  > i:first-child {
+    width: 1.1em;
+    flex: 0 0 auto;
+    opacity: 0.45;
+    font-size: 0.85em;
+    text-align: center;
+    cursor: help;
+  }
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+    white-space: nowrap;
+  }
+
+  select { width: auto; }
+}
+
+// Une option de paiement s'applique en entier ou pas du tout : ses dépenses
+// tiennent dans un même cadre, et « ou » sépare les cadres.
+.cowboy-activation-option {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2em;
+  padding: 0.15em 0.3em;
+  border: 1px dashed #0003;
+  border-radius: 0.4em;
+}
+
+.cowboy-activation-or {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.cowboy-activation-effect-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3em;
+  min-width: 0;
+}
+
+.cowboy-activation-effect {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  padding: 0.15em 0.3em;
+  border: 1px solid #0002;
+  border-radius: 0.4em;
+  background: #ffffff28;
+
+  input[type="number"] { width: 3em; }
+}
+
+.cowboy-activation-empty {
+  font-style: italic;
+  opacity: 0.5;
+}
+
+.cowboy-activation-option-add {
+  width: auto;
+  height: 1.5em;
+  padding: 0 0.5em;
+  font-size: 0.85em;
+  line-height: 1;
+  opacity: 0.6;
+
+  &:hover { opacity: 1; }
+}
+
+.cowboy-activation-payment-add,
+.cowboy-activation-payment-remove,
+.cowboy-activation-option-remove,
+.cowboy-activation-effect-add,
+.cowboy-activation-effect-remove,
+.cowboy-activation-reset {
+  width: 1.3em;
+  min-width: 1.3em;
+  height: 1.3em;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.95em;
+  line-height: 1;
+  opacity: 0.35;
+
+  &:hover { opacity: 1; }
+}
+
+// L'échappatoire reste repliée : coller une activation entière est plus court
+// que de la recomposer, mais ce n'est pas la voie ordinaire.
+.cowboy-activation-raw {
+  > summary {
+    font-size: 0.8em;
+    opacity: 0.45;
+    cursor: pointer;
+  }
+
+  .cowboy-activation-json { width: 100%; }
+}
+
+.cowboy-activation.is-invalid .cowboy-activation-json {
+  width: 100%;
+}
+
+.cowboy-dialog-dice-dented label {
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.cowboy-groove-empty { margin: 0; font-style: italic; opacity: 0.7; }

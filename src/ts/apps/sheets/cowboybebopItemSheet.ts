@@ -1,4 +1,5 @@
-import { moduleId, sessionTypeItem } from "../../constants";
+import { grooveItem, moduleId, sessionTypeItem } from "../../constants";
+import { grooveEditor, wireGrooveEditor } from "../../grooves";
 import { riffEditor, wireRiffEditor } from "../../riffs";
 
 export default class CowboyBebopItemSheet extends ItemSheet {
@@ -15,6 +16,10 @@ export default class CowboyBebopItemSheet extends ItemSheet {
       data.riffEditor = riffEditor(this.item);
     }
 
+    if (this.item.type === grooveItem) {
+      data.groove = grooveEditor(this.item);
+    }
+
     return data;
   }
 
@@ -22,8 +27,8 @@ export default class CowboyBebopItemSheet extends ItemSheet {
     super.activateListeners(html);
 
     if (!this.options.editable) return;
-    if (this.item.type !== sessionTypeItem) return;
 
-    wireRiffEditor(html, this.item);
+    if (this.item.type === sessionTypeItem) wireRiffEditor(html, this.item);
+    if (this.item.type === grooveItem) wireGrooveEditor(html, this.item);
   }
 }

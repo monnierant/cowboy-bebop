@@ -1,0 +1,185 @@
+{{!-- Ce qu'on peut plaquer sur ce test, et ce qu'on a déjà plaqué.
+
+Ce bloc est redessiné à chaque geste : le mouvement choisi décide des riffs
+ouverts, et chaque riff joué change ce que les suivants coûtent. Rien n'est
+débité ici - c'est le bouton Lancer qui paie, et qui vaut donc confirmation.
+
+Un riff fermé à ce mouvement est absent, pas grisé : ce n'est pas un refus,
+c'est la règle de la session. Un riff ouvert mais impayable reste visible et
+grisé, avec son motif : « pourquoi ne puis-je pas » est une question que la
+table pose vraiment. --}}
+<section class="cowboy-dialog-riffs">
+  {{!-- Les grooves sur la table, rappelés avant les riffs : sept des onze
+  grooves de chasseur se déclenchent au réglage, et c'est ici qu'ils doivent se
+  lire. Rien à cliquer - un groove se possède, il ne se joue pas (ADR 0010). Ce
+  que le moteur en joue, la substitution, a déjà ouvert ses approches dans la
+  réserve ci-dessous ; le reste est du texte que la table applique.
+
+  Le bloc suit les riffs et se redessine avec eux, parce que le groove prêté suit
+  le menu d'assistance, qui est juste en dessous. --}}
+  {{#if grooves.length}}
+  <ul class="cowboy-dialog-grooves">
+    {{#each grooves as |groove|}}
+    <li class="cowboy-dialog-groove {{#if groove.lentBy}}is-lent{{/if}}">
+      <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
+      <span class="cowboy-dialog-groove-name">{{ groove.name }}</span>
+      {{#if groove.lentBy}}
+      <span class="cowboy-dialog-groove-lent">{{ groove.lentBy }}</span>
+      {{/if}}
+      <span class="cowboy-dialog-groove-text">{{ groove.description }}</span>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+
+  {{#if running.length}}
+  <ul class="cowboy-dialog-activations">
+    {{#each running as |activation|}}
+    <li class="cowboy-dialog-activation" data-tooltip="{{ activation.description }}">
+      <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+      <strong>{{ activation.name }}</strong>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+
+  <h3 class="cowboy-dialog-riffs-title">
+    <i class="fa-solid fa-guitar" aria-hidden="true"></i>
+    {{localize 'COWBOY.riffs.openTitle'}}
+  </h3>
+
+  {{#if open.length}}
+  <ul class="cowboy-riff-play-list">
+    {{#each open as |riff|}}
+    <li class="cowboy-riff-play {{#if riff.stuck}}is-stuck{{/if}}
+      {{#if riff.custom}}is-custom{{/if}}">
+      <span class="cowboy-riff-play-name" data-tooltip="{{ riff.description }}"
+        data-tooltip-class="cowboy-riff-tooltip">
+        <i class="fa-solid {{#if riff.custom}}fa-pen-nib{{else}}fa-guitar{{/if}}"></i>
+        {{ riff.name }}
+      </span>
+
+      {{!-- Un bouton par paiement accepté : le choix se fait en cliquant celui
+      qu'on veut payer, plutôt qu'en réglant un menu puis en validant. Un riff
+      qui n'en accepte qu'un n'a donc qu'un bouton. --}}
+      {{#each riff.choices as |choice|}}
+      <button type="button" class="cowboy-riff-play-button"
+        data-riff="{{ riff.id }}" data-choice="{{ choice.index }}"
+        {{#if choice.blocked}}disabled data-tooltip="{{ choice.blocked }}"{{/if}}>
+        {{ choice.label }}
+      </button>
+      {{/each}}
+
+      {{#if riff.owed}}
+      <i class="fa-solid fa-hand-holding-heart cowboy-riff-play-owed"
+        data-tooltip="{{localize 'COWBOY.riffs.owedHint'}}"></i>
+      {{/if}}
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="cowboy-dialog-riffs-empty">{{localize 'COWBOY.riffs.openNone'}}</p>
+  {{/if}}
+
+  {{#if played.length}}
+  <div class="cowboy-riff-played">
+    <h4 class="cowboy-riff-played-title">{{localize 'COWBOY.riffs.played'}}</h4>
+
+    {{#each played as |entry|}}
+    <div class="cowboy-riff-played-entry">
+      <div class="cowboy-riff-played-head">
+        <span class="cowboy-riff-played-name">{{ entry.name }}</span>
+        <span class="cowboy-riff-played-cost">{{ entry.costLabel }}</span>
+        {{!-- Rien n'ayant encore été débité, un riff plaqué par erreur se
+        reprend : sans ça il faudrait annuler la boîte entière. --}}
+        <button type="button" class="cowboy-riff-undo" data-index="{{ entry.index }}"
+          title="{{localize 'COWBOY.riffs.undoPlayed'}}"
+          aria-label="{{localize 'COWBOY.riffs.undoPlayed'}}">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      {{!-- Assister et Jam ! : on nomme le camarade, on ne le débite pas. Il
+      retire son rythme lui-même sur sa propre fiche (ADR 0009). --}}
+      {{#if entry.needsAssist}}
+      <div class="cowboy-riff-played-field">
+        <label>{{localize 'COWBOY.riffs.assist'}}</label>
+        <select class="cowboy-riff-assist" data-index="{{ entry.index }}">
+          <option value="">{{localize 'COWBOY.riffs.assistNone'}}</option>
+          {{#each entry.assistOptions as |option|}}
+          <option value="{{ option.value }}" {{#if option.selected}}selected{{/if}}>
+            {{ option.label }}
+          </option>
+          {{/each}}
+        </select>
+      </div>
+      {{#if entry.assistPayments.length}}
+      <div class="cowboy-riff-played-field">
+        <label>{{localize 'COWBOY.riffs.assistPayment'}}</label>
+        <select class="cowboy-riff-assist-payment" data-index="{{ entry.index }}">
+          {{#each entry.assistPayments as |option|}}
+          <option value="{{option.choice}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+          {{/each}}
+        </select>
+      </div>
+      {{/if}}
+      {{#if entry.assistNote}}
+      <p class="cowboy-riff-played-note">{{ entry.assistNote }}</p>
+      {{/if}}
+      {{/if}}
+
+      {{!-- Improviser : la seconde approche verse ses traits dans la réserve.
+      Le bonus de genre reste attaché à l'approche du test. --}}
+      {{#if entry.needsApproach}}
+      <div class="cowboy-riff-played-field">
+        <label>{{localize 'COWBOY.riffs.approachTitle'}}</label>
+        <select class="cowboy-riff-approach" data-index="{{ entry.index }}">
+          {{#each entry.approachOptions as |option|}}
+          <option value="{{ option.value }}" {{#if option.selected}}selected{{/if}}>
+            {{ option.label }}
+          </option>
+          {{/each}}
+        </select>
+      </div>
+      <p class="cowboy-riff-played-note">{{localize 'COWBOY.riffs.approachHint'}}</p>
+      {{/if}}
+
+      {{!-- Montrer ses blessures : les traits entamés du chasseur, tous genres
+      confondus. Ils sont effacés au lancer, avec le reste. --}}
+      {{#if entry.needsHeal}}
+      <div class="cowboy-riff-played-field is-column">
+        <label>{{localize 'COWBOY.riffs.healTitle'}}</label>
+        {{#if entry.healOptions.length}}
+        <div class="cowboy-riff-heal-list">
+          {{#each entry.healOptions as |option|}}
+          <label class="cowboy-riff-heal {{#if option.blocked}}is-blocked{{/if}}">
+            <input type="checkbox" class="cowboy-riff-heal-toggle"
+              data-index="{{ entry.index }}" data-trait="{{ option.key }}"
+              {{#if option.selected}}checked{{/if}}
+              {{#if option.blocked}}disabled{{/if}} />
+            <span>{{ option.name }} <em>({{ option.category }})</em></span>
+          </label>
+          {{/each}}
+        </div>
+        <p class="cowboy-riff-played-note">{{ entry.healHint }}</p>
+        {{else}}
+        <p class="cowboy-riff-played-note">{{localize 'COWBOY.riffs.healNone'}}</p>
+        {{/if}}
+      </div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{!-- Ce que le clic sur Lancer va réellement débiter, ramassé en une ligne :
+  on a sous les yeux ce qu'on va payer, et Annuler est juste à côté. C'est ce
+  qui dispense d'un second dialogue de confirmation. --}}
+  <p class="cowboy-dialog-riffs-total">
+    {{#if totalLabel}}
+    <strong>{{localize 'COWBOY.riffs.totalCost'}} :</strong> {{ totalLabel }}
+    {{else}}
+    <em>{{localize 'COWBOY.riffs.totalCostNone'}}</em>
+    {{/if}}
+  </p>
+</section>

@@ -1,0 +1,232 @@
+{{!-- L'unité atomique de l'ADR 0012 : des conditions, les prix acceptés, des
+effets, et la durée éventuelle. Un formulaire, et non le JSON brut qui tenait
+cette place : le vocabulaire est fermé — trois conditions, six paiements, treize
+effets, quatre durées — donc il se dessine, exactement comme l'éditeur de riffs
+le fait depuis l'ADR 0008. Un texte libre à parser rendait au contraire une
+activation invalide plus facile à écrire qu'une valide.
+
+Le même bloc sert aux deux fiches (ADR 0012). Ce qui change est la cible : une
+feuille de groove adresse ses activations par leur rang, un type de session par
+son mouvement et l'identifiant de son riff. Le gabarit ne la compose pas, il la
+recopie — donc une cible mal formée est impossible à fabriquer depuis le HTML.
+
+`single` dessine une activation seule, sans bouton d'ajout ni de retrait : un
+riff en porte exactement une, le prix et les effets qu'il a *ici*. --}}
+{{#unless single}}
+<section class="cowboy-groove-section cowboy-activation-editor">
+  <h2><i class="fa-solid fa-bolt"></i> {{localize "COWBOY.activation.title"}}
+    <i class="fa-solid fa-circle-info cowboy-groove-help"
+      title="{{localize 'COWBOY.activation.hint'}}"></i>
+    <button type="button" class="cowboy-activation-add"
+      data-tooltip="{{localize 'COWBOY.activation.add'}}"
+      aria-label="{{localize 'COWBOY.activation.add'}}">+</button>
+  </h2>
+{{/unless}}
+
+  {{#each activations as |activation|}}
+  <div class="cowboy-activation {{#if activation.single}}is-single{{/if}} {{#if activation.invalid}}is-invalid{{/if}}">
+    {{#unless activation.single}}
+    <header class="cowboy-activation-head">
+      <span class="cowboy-activation-title">{{ activation.title }}</span>
+      <button type="button" class="cowboy-activation-remove" data-target="{{activation.target}}"
+        data-tooltip="{{localize 'COWBOY.activation.remove'}}"
+        aria-label="{{localize 'COWBOY.activation.remove'}}">&times;</button>
+    </header>
+    {{/unless}}
+
+    {{#if activation.invalid}}
+    {{!-- Une activation invalide est conservée pour réparation mais entièrement
+    bloquée (ADR 0012). La dessiner en formulaire jetterait sans le dire ce
+    qu'on n'a pas su lire, donc elle se répare là où elle a été écrite. --}}
+    <p class="notification error">{{localize "COWBOY.activation.invalid"}} — {{activation.error}}</p>
+    <textarea class="cowboy-activation-json" data-target="{{activation.target}}" rows="7"
+      aria-invalid="true">{{activation.json}}</textarea>
+    {{else}}
+
+    {{!-- Les conditions sont toutes conjointes : trois cases, et une alternative
+    s'écrit comme une autre activation. --}}
+    <div class="cowboy-activation-row">
+      <i class="fa-solid fa-filter" aria-hidden="true"
+        data-tooltip="{{localize 'COWBOY.activation.conditionsLabel'}}"></i>
+      {{#each activation.conditions as |condition|}}
+      <label>
+        <input type="checkbox" class="cowboy-activation-condition"
+          data-target="{{activation.target}}" value="{{condition.value}}"
+          {{#if condition.checked}}checked{{/if}} />
+        {{ condition.label }}
+      </label>
+      {{/each}}
+      {{#unless activation.conditioned}}
+      <em class="cowboy-activation-empty">{{localize 'COWBOY.activation.always'}}</em>
+      {{/unless}}
+    </div>
+
+    {{!-- Les paiements sont des alternatives composées : le joueur choisit une
+    option, qui s'applique en entier ou pas du tout. Une option vide est
+    gratuite, et zéro option l'est aussi. --}}
+    <div class="cowboy-activation-row">
+      <i class="fa-solid fa-coins" aria-hidden="true"
+        data-tooltip="{{localize 'COWBOY.riffs.cost'}}"></i>
+      {{#each activation.paymentOptions as |option|}}
+      {{#if option.separated}}
+      <span class="cowboy-activation-or">{{localize 'COWBOY.riffs.orPay'}}</span>
+      {{/if}}
+      <span class="cowboy-activation-option">
+        {{#each option.payments as |payment|}}
+        <span class="cowboy-riff-term">
+          <input type="number" class="cowboy-activation-payment-amount" min="1" step="1"
+            value="{{ payment.amount }}" data-target="{{activation.target}}"
+            data-option="{{option.index}}" data-payment="{{payment.index}}" />
+          <select class="cowboy-activation-payment-resource" data-target="{{activation.target}}"
+            data-option="{{option.index}}" data-payment="{{payment.index}}">
+            {{#each payment.options as |choice|}}
+            <option value="{{ choice.value }}" {{#if choice.selected}}selected{{/if}}>{{ choice.label }}</option>
+            {{/each}}
+          </select>
+          <button type="button" class="cowboy-activation-payment-remove"
+            data-target="{{activation.target}}" data-option="{{option.index}}"
+            data-payment="{{payment.index}}"
+            aria-label="{{localize 'COWBOY.riffs.removePayment'}}">&times;</button>
+        </span>
+        {{else}}
+        <em class="cowboy-riff-free">{{localize 'COWBOY.riffs.free'}}</em>
+        {{/each}}
+        <button type="button" class="cowboy-activation-payment-add"
+          data-target="{{activation.target}}" data-option="{{option.index}}"
+          data-tooltip="{{localize 'COWBOY.riffs.addPayment'}}"
+          aria-label="{{localize 'COWBOY.riffs.addPayment'}}">+</button>
+        <button type="button" class="cowboy-activation-option-remove"
+          data-target="{{activation.target}}" data-option="{{option.index}}"
+          data-tooltip="{{localize 'COWBOY.activation.removeOption'}}"
+          aria-label="{{localize 'COWBOY.activation.removeOption'}}">&times;</button>
+      </span>
+      {{else}}
+      <em class="cowboy-riff-free">{{localize 'COWBOY.riffs.free'}}</em>
+      {{/each}}
+      <button type="button" class="cowboy-activation-option-add"
+        data-target="{{activation.target}}"
+        data-tooltip="{{localize 'COWBOY.activation.addOptionHint'}}">
+        {{localize 'COWBOY.activation.addOption'}}
+      </button>
+
+      {{!-- Une dette, pas un débit : le camarade retire son rythme lui-même sur
+      sa propre fiche (ADR 0009). --}}
+      {{#if activation.owed}}
+      <i class="fa-solid fa-hand-holding-heart cowboy-riff-flag"
+        data-tooltip="{{localize 'COWBOY.riffs.owedHint'}}" aria-hidden="true"></i>
+      {{/if}}
+      {{#if activation.resettable}}
+      <button type="button" class="cowboy-activation-reset" data-target="{{activation.target}}"
+        data-tooltip="{{localize 'COWBOY.riffs.resetTerms'}}"
+        aria-label="{{localize 'COWBOY.riffs.resetTerms'}}">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      {{/if}}
+    </div>
+
+    {{!-- Un effet ne porte un montant que si sa nature en admet un ; interdire
+    et transformer portent à la place ce qu'ils visent. Le moment, lui, ne se
+    règle pas : chaque type d'effet impose le sien. --}}
+    <div class="cowboy-activation-row">
+      <i class="fa-solid fa-wave-square" aria-hidden="true"
+        data-tooltip="{{localize 'COWBOY.riffs.effectsLabel'}}"></i>
+      {{#if activation.bespoke}}
+      {{!-- Deux riffs du livre échappent au vocabulaire et restent du code :
+      leur prix se règle, leurs effets non. --}}
+      <i class="fa-solid fa-lock cowboy-riff-flag"
+        data-tooltip="{{localize 'COWBOY.riffs.bespokeEffects'}}" aria-hidden="true"></i>
+      {{else}}
+      <div class="cowboy-activation-effect-list">
+        {{#each activation.effects as |effect|}}
+        <span class="cowboy-activation-effect">
+          {{#if effect.quantified}}
+          <input type="number" class="cowboy-activation-effect-amount" step="1"
+            value="{{ effect.amount }}" data-target="{{activation.target}}"
+            data-effect="{{effect.index}}" />
+          {{/if}}
+          <select class="cowboy-activation-effect-kind" data-target="{{activation.target}}"
+            data-effect="{{effect.index}}">
+            {{#each effect.kinds as |choice|}}
+            <option value="{{ choice.value }}" {{#if choice.selected}}selected{{/if}}>{{ choice.label }}</option>
+            {{/each}}
+          </select>
+          {{#if effect.targets}}
+          <select class="cowboy-activation-effect-target" data-target="{{activation.target}}"
+            data-effect="{{effect.index}}">
+            {{#each effect.targets as |choice|}}
+            <option value="{{ choice.value }}" {{#if choice.selected}}selected{{/if}}>{{ choice.label }}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+          {{#if effect.operations}}
+          <select class="cowboy-activation-effect-operation" data-target="{{activation.target}}"
+            data-effect="{{effect.index}}">
+            {{#each effect.operations as |choice|}}
+            <option value="{{ choice.value }}" {{#if choice.selected}}selected{{/if}}>{{ choice.label }}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+          <button type="button" class="cowboy-activation-effect-remove"
+            data-target="{{activation.target}}" data-effect="{{effect.index}}"
+            aria-label="{{localize 'COWBOY.riffs.removeEffect'}}">&times;</button>
+        </span>
+        {{else}}
+        {{!-- Une activation sans effet ne fait rien : le moteur la lit, ne la
+        bloque pas, et elle ne se verrait nulle part ailleurs. --}}
+        <em class="cowboy-activation-empty">{{localize 'COWBOY.activation.noEffect'}}</em>
+        {{/each}}
+        <button type="button" class="cowboy-activation-effect-add"
+          data-target="{{activation.target}}"
+          data-tooltip="{{localize 'COWBOY.riffs.addEffect'}}"
+          aria-label="{{localize 'COWBOY.riffs.addEffect'}}">+</button>
+      </div>
+      {{/if}}
+    </div>
+
+    {{!-- Instantanée, ou persistante avec sa portée. Un riff n'a pas d'horloge —
+    le livre ne lui en donne jamais — donc la rangée ne se dessine que pour un
+    groove. Le drapeau du secret est une seconde horloge, jamais une portée. --}}
+    {{#if activation.scopes}}
+    <div class="cowboy-activation-row">
+      <i class="fa-solid fa-hourglass-half" aria-hidden="true"
+        data-tooltip="{{localize 'COWBOY.activation.durationLabel'}}"></i>
+      <select class="cowboy-activation-scope" data-target="{{activation.target}}">
+        {{#each activation.scopes as |scope|}}
+        <option value="{{ scope.value }}" {{#if scope.selected}}selected{{/if}}>{{ scope.label }}</option>
+        {{/each}}
+      </select>
+
+      {{#if activation.persistent}}
+      <label data-tooltip="{{localize 'COWBOY.groove.untilSecretHint'}}">
+        <input type="checkbox" class="cowboy-activation-until-secret"
+          data-target="{{activation.target}}"
+          {{#if activation.untilSecret}}checked{{/if}} />
+        {{localize 'COWBOY.groove.untilSecret'}}
+      </label>
+      <label data-tooltip="{{localize 'COWBOY.activation.secretHint'}}">
+        <input type="checkbox" class="cowboy-activation-secret"
+          data-target="{{activation.target}}"
+          {{#if activation.secret}}checked{{/if}} />
+        {{localize 'COWBOY.activation.secret'}}
+      </label>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    {{!-- L'échappatoire, repliée : coller une activation entière reste plus
+    court que de la recomposer champ par champ, et c'est ce que le compendium
+    livre. --}}
+    <details class="cowboy-activation-raw">
+      <summary>{{localize 'COWBOY.activation.raw'}}</summary>
+      <textarea class="cowboy-activation-json" data-target="{{activation.target}}"
+        rows="7">{{activation.json}}</textarea>
+    </details>
+    {{/if}}
+  </div>
+  {{else}}
+  <p class="cowboy-groove-empty">{{localize "COWBOY.activation.none"}}</p>
+  {{/each}}
+
+{{#unless single}}
+</section>
+{{/unless}}

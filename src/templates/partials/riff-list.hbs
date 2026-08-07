@@ -1,16 +1,13 @@
-{{!-- L'aide elle-même : ce qu'on peut jouer maintenant. Repliée, parce qu'à la
-table on lit les noms et on n'ouvre que celui qu'on s'apprête à plaquer. --}}
+{{!-- L'aide elle-même : ce qu'on peut jouer maintenant. Des badges plutôt que
+des blocs dépliables - à la table on balaie les noms, et on ne lit le détail que
+de celui qu'on s'apprête à plaquer. La description vient donc au survol. --}}
 {{#if riffs.length}}
 <ul class="cowboy-riff-list">
   {{#each riffs as |riff|}}
-  <li class="cowboy-riff {{#if riff.custom}}is-custom{{/if}}">
-    <details>
-      <summary>
-        <i class="fa-solid {{#if riff.custom}}fa-pen-nib{{else}}fa-guitar{{/if}}"></i>
-        <span class="cowboy-riff-name">{{ riff.name }}</span>
-      </summary>
-      <p class="cowboy-riff-text">{{ riff.description }}</p>
-    </details>
+  <li class="cowboy-riff-badge {{#if riff.custom}}is-custom{{/if}}"
+    data-tooltip="{{ riff.description }}" data-tooltip-class="cowboy-riff-tooltip">
+    <i class="fa-solid {{#if riff.custom}}fa-pen-nib{{else}}fa-guitar{{/if}}"></i>
+    <span class="cowboy-riff-name">{{ riff.name }}</span>
   </li>
   {{/each}}
 </ul>
