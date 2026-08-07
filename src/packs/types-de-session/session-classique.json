@@ -1,0 +1,55 @@
+{
+  "_id": "sessionClassiq01",
+  "_key": "!items!sessionClassiq01",
+  "name": "Session classique",
+  "type": "sessionType",
+  "img": "icons/svg/book.svg",
+  "system": {
+    "setup": "Big Shot choisit une prime, qui dispose d'un groove et d'un secret par approche.\n\n• Big Shot engrange un risque par joueuse à la table, lui compris.\n• Chaque chasseur lance 1d6 et gagne autant de points de rythme.\n• Chaque chasseur peut gagner un point de rythme de plus en offrant un nouveau risque à Big Shot, autant de fois qu'il le veut, sans dépasser six au début de la session.\n• Si au moins un chasseur a obtenu un 6, c'est à lui de choisir le genre de la session ; sinon c'est à Big Shot. Le secret de la prime repose sur ce genre.\n• Big Shot met en place une introduction et annonce le titre de la session.\n\nTrois mouvements dans l'ordre — OK, puis 3, 2, 1…, puis Let's jam ! — et See You Space Cowboy… en dénouement.",
+    "riffs": [
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "risqueNote",
+          "risqueDisadvantage"
+        ],
+        "custom": []
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": []
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "jam",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": []
+      }
+    ]
+  }
+}

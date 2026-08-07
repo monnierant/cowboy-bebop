@@ -1,7 +1,41 @@
+@import "./counter-box.scss";
 @import "./actor/health-counter.scss";
 
 .cowboy-admin-pannel {
   display: flex;
+  gap: 0.3em;
+}
+
+// Le portrait à gauche, tout le reste à sa droite : panneau d'administration en
+// haut, puis les champs. Sa largeur est fixe et sa hauteur vient de la rangée,
+// comme sur une fiche de prime - c'est ce qui lui permet de dépasser les 64 px
+// auxquels le header seul le contraignait.
+.cowboy-chasseur-top {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.6em;
+  flex: 0 0 auto;
+
+  .cowboy-chasseur-top-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.3em;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sheet-header {
+    height: auto;
+    // Les colonnes n'ont pas la même hauteur (Mémoire porte aussi Groove et
+    // Rythme) : les centrer décalait Name vers le bas. Leurs premiers champs
+    // partent tous du même bord supérieur.
+    align-items: flex-start;
+    border: 0;
+    margin: 0;
+    gap: 0.5em;
+  }
 }
 
 .cowboy-actor-trait-name {
@@ -13,23 +47,35 @@
   min-width: 7em;
 }
 
+.cowboy-carton,
+.cowboy-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.6rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 50%;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .cowboy-carton {
   color: #18520b;
   background-color: #7ca9719a;
-  padding: 0.3rem;
-  border-radius: 50%;
 }
+
 .cowboy-note {
   color: #aa0200;
   background-color: #d98887bb;
-  padding: 0.3rem;
-  border-radius: 50%;
 }
+// The tint the rhythm is known by, worn by its box the way a carton pool wears
+// its genre's - the icon inside only carries the colour.
 .cowboy-rythme {
   color: #00aa85;
   background-color: #92e8d5bb;
-  padding: 0.3rem;
-  border-radius: 50%;
 }
 
 .dice-tooltip .part-total.success {
@@ -47,6 +93,17 @@
 .cowboy-actor-trait-cat-header {
   display: flex;
   margin: 0;
+
+  .cowboy-actor-trait-cat-icon {
+    margin-right: 0.4em;
+  }
+
+  // The category is stored as its key - "rock", "blues" - and shown as a
+  // title. Capitalised here rather than in the data, so the key that indexes
+  // traits, colours and icons stays the one lowercase word it has to be.
+  h3 {
+    text-transform: capitalize;
+  }
 }
 
 .cowboy-actor-counters {
@@ -60,10 +117,14 @@
     justify-content: center;
     align-items: center;
     margin: 0;
+  }
 
-    .cowboy-actor-counter-value {
-      margin-left: 0.5em;
-    }
+  .cowboy-actor-counter-box {
+    @include cowboy-counter-box;
+  }
+
+  .cowboy-rythme-add {
+    @include cowboy-counter-button;
   }
 }
 
@@ -80,12 +141,12 @@
     margin: 0;
   }
 
-  .cowboy-actor-trait-ishyperdamaged {
+  .cowboy-actor-trait-isbroken {
     color: #aa0200;
     background-color: #d98887bb;
   }
 
-  .cowboy-actor-trait-isdamaged {
+  .cowboy-actor-trait-isdented {
     color: #7e5a00;
     background-color: #fbcf61bb;
   }

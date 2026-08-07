@@ -1,0 +1,1 @@
+{"_id":"grooveHunter11","_key":"!items!grooveHunter11","name":"Souvenir de guerre","type":"groove","img":"icons/svg/book.svg","system":{"audience":"chasseur","description":"Joué par le système. Les traits de Blues sont disponibles pour les tests de Tango et de Rock.","substitution":{"from":"blues","to":["tango","rock"]},"activations":[],"reminders":[]}}

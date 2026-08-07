@@ -1,41 +1,115 @@
-<form class="actor-sheet {{ cssClass }}" autocomplete="off">
-  {{> "systems/cowboy-bebop/templates/partials/actor-admin-panel.hbs"}}
-  <header class="sheet-header">
+<form class="actor-sheet cowboy-chasseur-sheet {{ cssClass }}" autocomplete="off">
+  {{!-- Le portrait au même format que sur une fiche de prime : sa largeur est
+  fixe, sa hauteur vient de la rangée. Il passe donc à gauche du panneau
+  d'administration plutôt que de rester enfermé dans le header, où il ne pouvait
+  pas dépasser 64 px. --}}
+  <div class="cowboy-chasseur-top">
     <img
+      class="cowboy-prime-portrait"
       src="{{ actor.img }}"
       data-edit="img"
       title="{{ actor.name }}"
-      height="64"
-      width="64"
     />
-    <div>
-      <label>{{localize 'COWBOY.actor.name'}}</label>
-      <input name="name" type="text" value="{{ actor.name }}" />
-      <label>{{localize 'COWBOY.actor.concept'}}</label>
-      <input
-        name="system.concept"
-        type="text"
-        value="{{ actor.system.concept }}"
-      />
+
+    <div class="cowboy-chasseur-top-main">
+      {{> "systems/cowboy-bebop/templates/partials/actor-admin-panel.hbs"}}
+
+      <header class="sheet-header">
+        <div>
+          <label>{{localize 'COWBOY.actor.name'}}</label>
+          <input name="name" type="text" value="{{ actor.name }}" />
+          <label>{{localize 'COWBOY.actor.concept'}}</label>
+          <input
+            name="system.concept"
+            type="text"
+            value="{{ actor.system.concept }}"
+          />
+        </div>
+        <div class="cowboy-health">
+          {{> "systems/cowboy-bebop/templates/partials/health-counter.hbs"}}
+        </div>
+        <div>
+          <label>{{localize 'COWBOY.actor.memory'}}</label>
+          <input
+            name="system.memory"
+            type="text"
+            value="{{ actor.system.memory }}"
+          />
+          {{!-- Le groove du chasseur, en identité : le seul endroit de la fiche
+          où il figure, puisqu'aucun groove ne se déclenche ici (ADR 0010). --}}
+          {{> "systems/cowboy-bebop/templates/partials/groove-slot.hbs"}}
+          {{> "systems/cowboy-bebop/templates/partials/rythm-counter.hbs"}}
+          {{#if actor.system.plannedDie}}
+          <span class="cowboy-planned-die" data-tooltip="{{localize 'COWBOY.groove.plan.savedHint'}}">
+            <i class="fa-solid fa-calendar-check"></i>
+            {{localize 'COWBOY.groove.plan.saved'}} : <strong>{{ actor.system.plannedDie }}</strong>
+          </span>
+          {{/if}}
+        </div>
+
+        {{!-- L'appareil, en vignette. Une zone de dépôt qui devient son
+        portrait : on clique dessus pour ouvrir sa fiche, l'icône le détache.
+        Les trois hexagones, eux, restent dans le corps - ils se manipulent en
+        jouant. --}}
+        <div class="cowboy-mono-slot {{#unless mono}}is-empty{{/unless}}"
+          data-tooltip="{{#if mono}}{{ mono.name }}{{else}}{{localize 'COWBOY.mono.dropHint'}}{{/if}}">
+          {{#if mono}}
+          <img class="cowboy-mono-slot-image cowboy-mono-open" src="{{ mono.img }}"
+            alt="{{ mono.name }}" />
+          <span class="cowboy-mono-slot-name">{{ mono.name }}</span>
+          <button type="button" class="cowboy-mono-unlink cowboy-mono-slot-unlink"
+            data-tooltip="{{localize 'COWBOY.mono.unlink'}}"
+            aria-label="{{localize 'COWBOY.mono.unlink'}}">
+            <i class="fa-solid fa-link-slash"></i>
+          </button>
+          {{else}}
+          <i class="fa-solid fa-rocket cowboy-mono-slot-ghost"></i>
+          <span class="cowboy-mono-slot-name">{{localize 'COWBOY.mono.title'}}</span>
+          {{/if}}
+        </div>
+      </header>
     </div>
-    <div class="cowboy-health">
-      {{> "systems/cowboy-bebop/templates/partials/health-counter.hbs"}}
+  </div>
+
+  {{!-- Ce que ce chasseur peut jouer, là, maintenant : une seule ligne, juste
+  au-dessus de ses cartons, parce que c'est ce qu'on lit en décidant d'un jet.
+  Quels riffs ce sont appartient à la session, donc la liste est lue sur la
+  prime en jeu - et le dit franchement quand il n'y a pas de prime. --}}
+  <section class="cowboy-actor-riffs">
+    <span class="cowboy-actor-riffs-label"
+      data-tooltip="{{#if riffPrimeName}}{{ riffMouvementName }}{{#if sessionType}} · {{ sessionType }}{{/if}}{{else}}{{localize 'COWBOY.riffs.hint'}}{{/if}}">
+      <i class="fa-solid fa-guitar"></i> {{localize 'COWBOY.riffs.title'}} :
+    </span>
+
+    {{#if riffPrimeName}}
+    {{> "systems/cowboy-bebop/templates/partials/riff-list.hbs" riffs=riffs}}
+    {{else}}
+    <span class="cowboy-actor-riffs-empty">{{localize 'COWBOY.actor.noActivePrime'}}</span>
+    {{/if}}
+  </section>
+
+  {{> "systems/cowboy-bebop/templates/partials/activation-list.hbs"}}
+
+  {{!-- Cartons follow the hunter who made them until they are spent. The GM
+  corrects each hunter's genre pools directly from this sheet. --}}
+  <section class="cowboy-prime-tokens">
+    <div class="cowboy-prime-tokens-container">
+      {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=cartons on=false type="cartons" label=(localize 'COWBOY.actor.cartons') isGM=isGM }}
     </div>
-    <div>
-      <label>{{localize 'COWBOY.actor.memory'}}</label>
-      <input
-        name="system.memory"
-        type="text"
-        value="{{ actor.system.memory }}"
-      />
-      {{> "systems/cowboy-bebop/templates/partials/rythm-counter.hbs"}}
-    </div>
-  </header>
+  </section>
 
   <section class="cowboy-actor-traits">
     {{#each actor.system.traits as |traitCategory traitCategoryId|}}
     <div class="cowboy-actor-trait-cat-header">
-      <h3 class="cowboy-actor-trait-name">{{ traitCategoryId }}</h3>
+      <h3 class="cowboy-actor-trait-name">
+        {{!-- The same icon and colour this genre is drawn with on the dice, the
+        tokens and the slice picker, read from the one table. --}}
+        {{#with (lookup ../genreColors traitCategoryId)}}
+        <i class="fa-solid {{ fa }} cowboy-actor-trait-cat-icon" style="color: {{ on }}"
+          aria-hidden="true"></i>
+        {{/with}}
+        {{ traitCategoryId }}
+      </h3>
       <button
         type="button"
         class="cowboy-actor-roll unbutton"
@@ -49,12 +123,12 @@
       {{#each traitCategory as |trait traitId|}}
       <div class="cowboy-actor-trait">
         <input
-          class="cowboy-actor-trait-name 
-            {{#if trait.hyperdamaged}}
-            cowboy-actor-trait-ishyperdamaged
-            {{else if trait.damaged }}
-              cowboy-actor-trait-isdamaged
-              
+          class="cowboy-actor-trait-name
+            {{#if trait.broken}}
+            cowboy-actor-trait-isbroken
+            {{else if trait.dented }}
+              cowboy-actor-trait-isdented
+
             {{/if}}"
           data-index="{{ traitId }}"
           data-category="{{ traitCategoryId }}"
@@ -63,26 +137,66 @@
           value="{{ trait.name }}"
         />
 
-        {{#if (and trait.damaged (not trait.hyperdamaged))}}
+        {{!-- La réparation reste le geste courant, et garde donc son bouton
+        d'origine chez tout le monde. Big Shot reçoit en plus le passage d'état
+        à la main - intact, entamé, brisé - seule façon de rattraper un clic de
+        trop sur une carte de chat, que rien d'autre ne défait. --}}
+        {{#if (and trait.dented (not trait.broken))}}
         <button
           type="button"
           class="cowboy-actor-trait-heal"
           data-index="{{ traitId }}"
           data-category="{{ traitCategoryId }}"
+          title="{{localize 'COWBOY.actor.healTrait'}}"
+          aria-label="{{localize 'COWBOY.actor.healTrait'}}"
         >
           <i class="fa-solid fa-notes-medical"></i>
         </button>
-        {{else}}
+        {{else if (not ../../isGM)}}
         <input class="cowboy-actor-trait-status" data-index="{{ traitId }}"
         data-category="{{ traitCategoryId }}" name="traits-{{
           traitCategoryId
-        }}-{{ traitId }}-damaged" type="checkbox"
-        {{#if trait.damaged}}checked{{/if}}
+        }}-{{ traitId }}-dented" type="checkbox"
+        {{#if trait.dented}}checked{{/if}}
         disabled />
+        {{/if}}
+
+        {{#if ../../isGM}}
+        <button
+          type="button"
+          class="cowboy-actor-trait-cycle"
+          data-index="{{ traitId }}"
+          data-category="{{ traitCategoryId }}"
+          data-dented="{{ trait.dented }}"
+          data-broken="{{ trait.broken }}"
+          data-tooltip="{{localize 'COWBOY.actor.cycleTrait'}}"
+          aria-label="{{localize 'COWBOY.actor.cycleTrait'}}"
+        >
+          <i class="fa-solid
+            {{#if trait.broken}}fa-skull
+            {{else if trait.dented}}fa-burst
+            {{else}}fa-circle-check{{/if}}"></i>
+        </button>
         {{/if}}
       </div>
       {{/each}}
     </div>
     {{/each}}
   </section>
+
+  {{!-- Le livre dessine les trois hexagones du MONO ici, à l'écart des autres,
+  et c'est bien ici qu'on les manipule : personne n'ouvre une seconde fenêtre en
+  pleine poursuite. L'appareil est pourtant un acteur à part, pour qu'il puisse
+  se poser sur une scène - donc la fiche le désigne au lieu de le contenir. --}}
+  {{#if mono}}
+  <section class="cowboy-mono-block">
+    <header class="cowboy-mono-section-header">
+      <h3><i class="fa-solid fa-rocket"></i> {{ mono.name }}
+        <i class="fa-solid fa-circle-info cowboy-prime-section-help"
+          data-tooltip="{{localize 'COWBOY.mono.traitsHint'}}"></i>
+      </h3>
+    </header>
+    {{> "systems/cowboy-bebop/templates/partials/mono-traits.hbs"}}
+  </section>
+  {{/if}}
 </form>

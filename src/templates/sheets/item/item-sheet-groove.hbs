@@ -1,0 +1,123 @@
+{{!-- Un groove : une capacité nommée qui enfreint une règle de base. Se possède,
+ne se joue pas — c'est ce qui le sépare d'un riff (ADR 0010).
+
+Trois sections, une par chose qu'un groove porte : ses Activations, sa
+Substitution, ses Rappels (ADR 0013). Rien d'autre — un éditeur qui proposerait
+plus que ce que le moteur applique serait un mensonge, ce que l'ADR 0008 avait
+déjà refusé pour les riffs — et rien de moins : une feuille qui cacherait les
+rappels mentirait autant, puisque quinze grooves du livre n'ont que ça. --}}
+<form class="cowboy-groove-sheet {{ cssClass }}" autocomplete="off">
+  <header class="sheet-header cowboy-groove-header">
+    <img class="cowboy-groove-portrait" src="{{ item.img }}" data-edit="img"
+      title="{{ item.name }}" />
+    <div class="cowboy-groove-header-fields">
+      <input name="name" type="text" value="{{ item.name }}"
+        placeholder="{{localize 'COWBOY.groove.namePlaceholder'}}" />
+      <label class="cowboy-groove-audience-field">
+        {{localize 'COWBOY.groove.audience'}}
+        <select class="cowboy-groove-audience">
+          {{#each groove.audience as |option|}}
+          <option value="{{ option.value }}" {{#if option.selected}}selected{{/if}}>
+            {{ option.label }}
+          </option>
+          {{/each}}
+        </select>
+        <i class="fa-solid fa-circle-info cowboy-groove-help"
+          title="{{localize 'COWBOY.groove.audienceHint'}}"></i>
+      </label>
+    </div>
+  </header>
+
+  <section class="cowboy-groove-section">
+    <h2><i class="fa-solid fa-book-open"></i> {{localize 'COWBOY.groove.description'}}
+      <i class="fa-solid fa-circle-info cowboy-groove-help"
+        title="{{localize 'COWBOY.groove.descriptionHint'}}"></i>
+    </h2>
+    {{!-- Le texte du groove : ce que la boîte de jet et la carte rappellent au
+    moment où il peut se déclencher. Le seul champ que les trente-trois
+    remplissent, et il n'est donc jamais décoratif. --}}
+    <textarea class="cowboy-groove-description" rows="3"
+      placeholder="{{localize 'COWBOY.groove.descriptionPlaceholder'}}">{{ groove.description }}</textarea>
+  </section>
+
+  {{> "systems/cowboy-bebop/templates/partials/activation-editor.hbs" activations=groove.activations}}
+
+  <section class="cowboy-groove-section">
+    <h2><i class="fa-solid fa-shuffle"></i> {{localize 'COWBOY.groove.substitution'}}
+      <i class="fa-solid fa-circle-info cowboy-groove-help"
+        title="{{localize 'COWBOY.groove.substitutionHint'}}"></i>
+    </h2>
+    {{!-- « Utiliser systématiquement les traits de X pour les tests de Y ou Z. »
+    Cinq grooves du livre n'ont pas d'autre effet, et c'est le seul réglage qui
+    agit au moment de constituer le groupement. --}}
+    <div class="cowboy-groove-substitution">
+      <label>
+        {{localize 'COWBOY.groove.from'}}
+        <select class="cowboy-groove-substitution-from">
+          <option value="" {{#if groove.substitution.none}}selected{{/if}}>
+            {{localize 'COWBOY.groove.noSubstitution'}}
+          </option>
+          {{#each groove.substitution.from as |approach|}}
+          <option value="{{ approach.value }}"
+            {{#if approach.selected}}selected{{/if}}>
+            {{ approach.value }}
+          </option>
+          {{/each}}
+        </select>
+      </label>
+
+      <span class="cowboy-groove-substitution-targets">
+        {{localize 'COWBOY.groove.to'}}
+        {{#each groove.substitution.to as |approach|}}
+        <label class="cowboy-groove-substitution-target">
+          <input type="checkbox" class="cowboy-groove-substitution-to"
+            value="{{ approach.value }}"
+            {{#if approach.checked}}checked{{/if}}
+            {{#if approach.disabled}}disabled{{/if}} />
+          {{ approach.value }}
+        </label>
+        {{/each}}
+      </span>
+    </div>
+  </section>
+
+  <section class="cowboy-groove-section">
+    <h2><i class="fa-solid fa-comment-dots"></i> {{localize 'COWBOY.groove.reminders'}}
+      <i class="fa-solid fa-circle-info cowboy-groove-help"
+        title="{{localize 'COWBOY.groove.remindersHint'}}"></i>
+      <button type="button" class="cowboy-groove-reminder-add"
+        data-tooltip="{{localize 'COWBOY.groove.addReminder'}}"
+        aria-label="{{localize 'COWBOY.groove.addReminder'}}">+</button>
+    </h2>
+
+    {{!-- Ce que le système dit et n'applique jamais : les cadrans restent chez
+    Big Shot (ADR 0001), et quinze grooves du livre n'ont que ça. Chaque rappel
+    tranche son public pour lui-même — un rappel de prime lu par la table
+    éventerait ce qu'il devait seulement rappeler à Big Shot. --}}
+    {{#each groove.reminders as |reminder|}}
+    <div class="cowboy-groove-reminder">
+      <textarea class="cowboy-groove-reminder-text" rows="2"
+        data-index="{{ reminder.index }}"
+        placeholder="{{localize 'COWBOY.groove.reminderPlaceholder'}}">{{ reminder.text }}</textarea>
+      <div class="cowboy-groove-reminder-foot">
+        <label>
+          {{localize 'COWBOY.groove.reminderAudience'}}
+          <select class="cowboy-groove-reminder-audience" data-index="{{ reminder.index }}">
+            {{#each reminder.audiences as |choice|}}
+            <option value="{{ choice.value }}" {{#if choice.selected}}selected{{/if}}>
+              {{ choice.label }}
+            </option>
+            {{/each}}
+          </select>
+        </label>
+        <button type="button" class="cowboy-groove-reminder-remove"
+          data-index="{{ reminder.index }}"
+          aria-label="{{localize 'COWBOY.groove.removeReminder'}}">&times;</button>
+      </div>
+    </div>
+    {{else}}
+    <p class="cowboy-groove-empty">{{localize 'COWBOY.groove.noReminder'}}</p>
+    {{/each}}
+  </section>
+</form>
+

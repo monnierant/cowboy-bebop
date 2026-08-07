@@ -1,0 +1,32 @@
+{{!-- Replaces the actions once a roll has been settled. The dice above stay
+as they were rolled; this only records where the tokens went. --}}
+<section class="cowboy-roll-collected">
+  <div class="cowboy-roll-collected-title">
+    <i class="fa-solid fa-circle-check"></i>
+    {{ localize "COWBOY.roll.actions.collected" }}
+  </div>
+
+  {{#if (gt cartons 0)}}
+  <div class="cowboy-roll-collected-line">
+    <span class="cowboy-roll-collected-holder">{{ hunterName }}</span>
+    <span class="cowboy-roll-collected-tokens">
+      {{#range 1 cartons this}}
+      <i class="fa-solid fa-music cowboy-carton"></i>
+      {{/range}}
+    </span>
+    <span class="cowboy-roll-collected-genre">{{ genre }}</span>
+  </div>
+  {{/if}}
+
+  {{#if (gt notes 0)}}
+  <div class="cowboy-roll-collected-line">
+    <span class="cowboy-roll-collected-holder">{{ primeName }}</span>
+    <span class="cowboy-roll-collected-tokens">
+      {{#range 1 notes this}}
+      <i class="fa-solid fa-record-vinyl cowboy-note"></i>
+      {{/range}}
+    </span>
+    <span class="cowboy-roll-collected-genre">{{ genre }}</span>
+  </div>
+  {{/if}}
+</section>

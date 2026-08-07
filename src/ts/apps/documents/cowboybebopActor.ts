@@ -1,51 +1,181 @@
-import { genres } from "../../constants";
-import { Cadran, Trait, Traits } from "../../types";
+import { CARTRIDGES, genres, SESSION_TRAITS, soloRiff } from "../../constants";
+import { adjust } from "../../economy";
+import { riffsForPhase } from "../../riffs";
+import { PlayableRiff, confirmPlayOption, payOption, playable } from "../../riffPlay";
+import { damageMonoTrait, monoOf, monoPoolTraits } from "../../mono";
+import { bespokeRulesOf } from "../../grooves";
+import { getActivePrime, isActivePrime, setActivePrime } from "../../prime";
+import {
+  PoolTrait,
+  Activation,
+  ActiveActivation,
+  BespokeGrooveRules,
+  Settlement,
+  SessionTrait,
+  Trait,
+  Traits,
+} from "../../types";
+import { Advantage } from "../../rolls/score";
+import {
+  Assist,
+  PlayedRiff,
+  TestGroove,
+  TestMouvement,
+} from "../../rolls/testState";
 import CowboyBebopRollDialog from "../dialog/cowboybebopRollDialog";
-import CowboyBebopRoll from "../rolls/cowboybebopRoll";
+import { postTest } from "../rolls/testCard";
+import { expireActivations } from "../../grooves";
 
 export default class CowboyBebopActor extends Actor {
-  private _rolls: CowboyBebopRoll[] = [];
-
   //=============================================================================
   // PC
   //=============================================================================
 
   // ========================================
-  // Common
-  // ========================================
-  public async actionRemoveRoll(
-    html: JQuery,
-    element: HTMLInputElement,
-    rollId: number
-  ) {
-    this._rolls[rollId].deletePreviousMessage();
-    this.removeMessage(html, element);
-  }
-
-  // ========================================
   // Roll
   // ========================================
+  /**
+   * Lance un test et pose sa carte dans le chat.
+   *
+   * Le jet ne survit pas à cet appel : tout ce qu'il devient vit sur la carte
+   * (ADR 0007). C'est ce qui a remplacé le tableau `_rolls` que cet acteur
+   * gardait en mémoire, et qui n'existait que chez le client qui avait lancé.
+   */
   public async roll(
     genre: string,
     category: string,
-    rang: any,
-    mouvement: any,
-    advantage: number,
-    traitsUsed: any
+    mouvementIndex: number,
+    mouvement: TestMouvement,
+    advantage: Advantage,
+    bonusDice: number,
+    traitsUsed: PoolTrait[],
+    // Ce qui a été plaqué et payé avant que les dés tombent, et la dette qu'un
+    // camarade a contractée pour ce test sans que rien ne l'en débite.
+    played: PlayedRiff[] = [],
+    assist?: Assist,
+    // Les grooves qui étaient sur la table quand les dés sont tombés : le sien,
+    // et celui qu'un Jam ! lui a prêté. La carte les rappelle sans les rejouer.
+    grooves: TestGroove[] = [],
+    // Les Activations en cours sur la prime au moment du lancer, gelées avec le
+    // nom du groove qui les a posées.
+    running: ActiveActivation[] = [],
+    activations: Activation[] = [],
+    grooveRules: BespokeGrooveRules = {},
+    canReservePlan: boolean = false,
+    plannedDie?: number
   ) {
-    const roll = new CowboyBebopRoll(
-      this._rolls.length,
-      this,
+    await postTest(this, {
+      actorId: this.id ?? "",
       genre,
       category,
-      rang,
+      mouvementIndex,
       mouvement,
       advantage,
-      traitsUsed
-    );
-    this._rolls.push(roll);
-    await roll.roll();
-    await roll.toMessage();
+      bonusDice,
+      traits: traitsUsed,
+      played,
+      assist,
+      grooves,
+      running,
+      activations,
+      grooveRules,
+      canReservePlan,
+      plannedDie,
+    });
+  }
+
+  // ========================================
+  // Solo !
+  // ========================================
+
+  /**
+   * Ce que Solo ! offre à ce chasseur en ce moment, ou rien.
+   *
+   * Le seul riff qui ne se joue ni dans la boîte de jet ni sur une carte :
+   * « avant ou après un test », « même s'il n'intervient pas dans le test ».
+   * Sa place est donc la fiche, et sa disponibilité se lit comme celle des
+   * autres - sur la prime active, au mouvement en cours.
+   */
+  public soloOffer(): PlayableRiff | undefined {
+    const prime = getActivePrime();
+    if (!prime) return undefined;
+
+    const open = riffsForPhase(
+      prime,
+      Number(prime.system?.mouvement ?? 0),
+      "hunter",
+      "sheet"
+    ).filter((riff) => riff.id === soloRiff);
+
+    return playable(open, this, {}, bespokeRulesOf(prime))[0];
+  }
+
+  /** Le solo a-t-il déjà été joué cette session ? */
+  public soloPlayed(): boolean {
+    return (this as any).system?.solo === true;
+  }
+
+  /**
+   * Joue le solo : un point de rythme contre un carton du genre de la session.
+   *
+   * « Il gagne et dépense immédiatement un carton. » Le carton est crédité et
+   * non dépensé : le dépenser signifierait le poser sur un cadran, donc faire
+   * dépendre un riff du module qui les porte (ADR 0001). Il rejoint la réserve
+   * du chasseur et se dépense ensuite par le chemin habituel.
+   */
+  public async playSolo(): Promise<void> {
+    const i18n = (game as any).i18n;
+    const offer = this.soloOffer();
+    if (!offer) return;
+
+    if (this.soloPlayed()) {
+      ui.notifications?.warn(i18n.localize("COWBOY.riffs.soloUsed"));
+      return;
+    }
+
+    const genre = getActivePrime()?.system?.genre ?? "";
+    if (!genres.includes(genre)) {
+      ui.notifications?.warn(i18n.localize("COWBOY.riffs.noCarton"));
+      return;
+    }
+
+    const available = offer.choices.filter((choice) => !choice.blocked);
+    if (available.length === 0) return;
+    let choice = available[0];
+    if (available.length > 1) {
+      const options = available.map((entry, index) =>
+        `<option value="${index}">${(foundry as any).utils.escapeHTML(entry.label)}</option>`
+      ).join("");
+      const selected = await Dialog.prompt({
+        title: offer.name,
+        content: `<label>${i18n.localize("COWBOY.riffs.choosePayment")}<select name="payment">${options}</select></label>`,
+        callback: (html: JQuery) => Number.parseInt(String(html.find("select[name='payment']").val() ?? "0")),
+        rejectClose: false,
+      } as any) as unknown as number | undefined;
+      if (selected === undefined) return;
+      choice = available[selected] ?? available[0];
+    }
+    if (!(await confirmPlayOption(offer.name, choice.payments))) return;
+
+    // Le drapeau part avant le crédit : deux clics rapprochés doivent produire
+    // un carton et non deux, et c'est lui qui ferme la porte.
+    if (this.soloPlayed()) return;
+    await this.update({ "system.solo": true });
+
+    if (!(await payOption(choice.payments, this))) {
+      await this.update({ "system.solo": false });
+      return;
+    }
+
+    await adjust(this, "cartons", genre, 1);
+
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this as any }),
+      content: `<p>${i18n.format("COWBOY.riffs.soloDone", {
+        name: this.name,
+        genre,
+      })}</p>`,
+    } as any);
   }
 
   // ========================================
@@ -58,83 +188,72 @@ export default class CowboyBebopActor extends Actor {
     });
   }
 
-  public async actionDamageCartridge(
-    html: JQuery,
-    element: HTMLInputElement,
-    rollId: number
+  /**
+   * Use le trait qu'une carte désigne, où qu'il vive.
+   *
+   * Le trait porte son adresse complète plutôt que son nom : depuis qu'un MONO
+   * verse ses propres traits dans la même réserve, deux homonymes seraient
+   * indiscernables, et c'est exactement ce que la priorité de dégât a besoin de
+   * distinguer.
+   *
+   * Quand cette écriture doit avoir lieu est décidé sur la carte, pas ici : ce
+   * chasseur ne sait pas si le test avait encore une correction à donner.
+   */
+  public async damagePoolTrait(
+    trait: PoolTrait | undefined,
+    dented: boolean,
+    broken: boolean
   ) {
-    await this.updateCartridge(-1);
-    this._rolls[rollId].actionRemoveNote();
-    this.removeMessage(html, element);
-  }
+    if (!trait) return;
 
-  public async actionDamageTrait(
-    html: JQuery,
-    element: HTMLInputElement,
-    rollId: number,
-    category: string,
-    traitToDamage: string
-  ) {
-    const index = (this as any).system.traits[category].findIndex(
-      (trait: Trait) => trait.name === traitToDamage
-    );
+    if (trait.source === "mono") {
+      const mono =
+        (foundry as any).utils?.fromUuidSync?.(trait.monoUuid) ?? monoOf(this);
+      await damageMonoTrait(mono, trait.index, dented, broken);
+      return;
+    }
 
-    this.damageTrait(category, index, true, false);
-    this._rolls[rollId].actionRemoveNoteByTrait(traitToDamage);
-    this.removeMessage(html, element);
-  }
-
-  public async actionHyperDamageTrait(
-    html: JQuery,
-    element: HTMLInputElement,
-    rollId: number,
-    category: string,
-    traitToDamage: string
-  ) {
-    const index = (this as any).system.traits[category].findIndex(
-      (trait: Trait) => trait.name === traitToDamage
-    );
-
-    await this._rolls[rollId].reRoll(traitToDamage);
-    this.damageTrait(
-      category,
-      index,
-      true,
-      this._rolls[rollId].getCarton() < 2
-    );
-    this._rolls[rollId].toMessage();
-    this.removeMessage(html, element);
-  }
-
-  public removeMessage(html: JQuery, element: HTMLInputElement) {
-    const parent = html.find(element).parents("li.chat-message");
-
-    parent.remove();
+    await this.damageTrait(trait.category, trait.index, dented, broken);
   }
 
   // ========================================
   // Preparation
   // ========================================
   // Dice Pool
+  /**
+   * Ce que ce chasseur peut mettre sur la table pour un genre donné : ses
+   * propres traits de ce genre, puis ceux de son MONO - qui n'ont pas de genre
+   * et se proposent donc à tous les jets.
+   */
   public prepareDicePool(category: string) {
-    // Get the traits
-    const traits = (this as any).system.traits[category];
-    // Get the dice pool
-    const dicePool = traits
-      .filter((trait: Trait) => !trait.damaged)
-      .filter((trait: Trait) => trait.name != "")
-      .map((trait: Trait) => trait.name);
-
-    const target = (game as any).actors
-      ?.filter((actor: any) => {
-        return actor.system.isCurrentTarget && actor.type === "prime";
-      })
-      .at(0);
+    const target = getActivePrime();
 
     if (!target) {
-      ui.notifications?.warn("No target selected");
+      ui.notifications?.warn(
+        (game as any).i18n.localize("COWBOY.actor.noActivePrime")
+      );
       return;
     }
+
+    // Les cinq approches partent, pas seulement celle qu'on a cliquée :
+    // Improviser en ouvre une seconde en cours de réglage, et la boîte n'a plus
+    // le moyen de redemander une réserve une fois qu'elle est ouverte. C'est
+    // elle qui filtre sur les approches réellement en jeu.
+    const dicePool: PoolTrait[] = genres
+      .flatMap<PoolTrait>((approach) =>
+        this.usableTraits(approach).map((entry) => ({
+          key: `hunter:${approach}:${entry.index}`,
+          name: entry.trait.name,
+          source: "hunter" as const,
+          category: approach,
+          index: entry.index,
+          monoUuid: "",
+        }))
+      )
+      // Ceux du MONO n'ont pas de genre et se proposent donc à tous les jets :
+      // ils portent une catégorie vide et la boîte ne les filtre jamais.
+      .concat(this.dentedTraits())
+      .concat(monoPoolTraits(monoOf(this)));
 
     const dialog = new CowboyBebopRollDialog(
       target.system.genre,
@@ -145,18 +264,81 @@ export default class CowboyBebopActor extends Actor {
     );
 
     dialog.render(true);
-    console.log("dialogOpened");
+  }
+
+  /** Les traits d'une approche qui donnent encore un dé. */
+  private usableTraits(category: string): { trait: Trait; index: number }[] {
+    return ((this as any).system.traits?.[category] ?? [])
+      .map((trait: Trait, index: number) => ({ trait, index }))
+      .filter(
+        ({ trait }: { trait: Trait }) =>
+          !trait.dented && !trait.broken && trait.name !== ""
+      );
+  }
+
+  /**
+   * Les traits abîmés de ce chasseur, tous genres confondus.
+   *
+   * Ce que Montrer ses blessures propose d'effacer. La réserve de jet ne peut
+   * pas servir ici : elle ne contient par construction que des traits intacts,
+   * et le livre dit « sur sa fiche de personnage », donc toutes les approches et
+   * pas seulement celle du test. Un trait brisé n'y figure pas - « des dommages
+   * sévères ne peuvent pas être effacés de cette manière » - et ceux d'un MONO
+   * non plus : il a sa propre fiche, et ce riff parle de blessures (ADR 0009).
+   */
+  public dentedTraits(): PoolTrait[] {
+    return genres.flatMap((category) =>
+      ((this as any).system.traits?.[category] ?? [])
+        .map((trait: Trait, index: number) => ({ trait, index }))
+        .filter(
+          ({ trait }: { trait: Trait }) =>
+            trait.dented && !trait.broken && trait.name !== ""
+        )
+        .map(({ trait, index }: { trait: Trait; index: number }) => ({
+          key: `hunter:${category}:${index}`,
+          name: trait.name,
+          source: "hunter" as const,
+          category,
+          index,
+          monoUuid: "",
+          dented: true,
+        }))
+    );
   }
 
   // ========================================
   // Update
   // ========================================
   // Damage Cartridge
+  /**
+   * Coche ou décoche une chambre du barillet.
+   *
+   * Six et pas plus, zéro et pas moins : le barillet n'a que six chambres, et
+   * c'est en tirant la dernière que le chasseur doit affronter son passé. Le
+   * plancher tient ici plutôt que dans le bouton qui se cache, pour la même
+   * raison que `updateRythme`.
+   */
   public async updateCartridge(points: number) {
-    // Save the new data
-    await this.update({
-      "system.cartridge": (this as any).system.cartridge + points,
-    });
+    const cartridge = Math.min(
+      CARTRIDGES,
+      Math.max(0, ((this as any).system.cartridge ?? 0) + points)
+    );
+    if (cartridge === (this as any).system.cartridge) return;
+
+    await this.update({ "system.cartridge": cartridge });
+  }
+
+  // Adjust Rythme
+  /**
+   * Moves the rhythm by `points`. A negative rhythm is not a state the sheet
+   * can show or a roll can read, so the floor is enforced here rather than
+   * trusting the button that happens to be disabled at zero.
+   */
+  public async updateRythme(points: number) {
+    const rythme = Math.max(0, ((this as any).system.rythme ?? 0) + points);
+    if (rythme === (this as any).system.rythme) return;
+
+    await this.update({ "system.rythme": rythme });
   }
 
   // Rename Trait
@@ -176,8 +358,8 @@ export default class CowboyBebopActor extends Actor {
   public async damageTrait(
     category: string,
     index: number,
-    newDamaged: boolean,
-    hyperDamaged: boolean = false
+    dented: boolean,
+    broken: boolean = false
   ) {
     // Save the new data
     await this.update({
@@ -185,8 +367,8 @@ export default class CowboyBebopActor extends Actor {
         (this as any).system.traits,
         category,
         index,
-        newDamaged,
-        hyperDamaged
+        dented,
+        broken
       ),
     });
   }
@@ -200,7 +382,7 @@ export default class CowboyBebopActor extends Actor {
     index: number,
     newName: string
   ): Traits {
-    if (traits[category] && traits[category][index]) {
+    if (traits[category]?.[index]) {
       return {
         ...traits,
         [category]: traits[category].map((trait: Trait, i: number) =>
@@ -217,16 +399,14 @@ export default class CowboyBebopActor extends Actor {
     traits: Traits,
     category: string,
     index: number,
-    newDamaged: boolean,
-    newHyperDamaged: boolean = false
+    dented: boolean,
+    broken: boolean = false
   ): Traits {
-    if (traits[category] && traits[category][index]) {
+    if (traits[category]?.[index]) {
       return {
         ...traits,
         [category]: traits[category].map((trait: Trait, i: number) =>
-          i === index
-            ? { ...trait, damaged: newDamaged, hyperdamaged: newHyperDamaged }
-            : trait
+          i === index ? { ...trait, dented, broken } : trait
         ),
       };
     } else {
@@ -240,7 +420,7 @@ export default class CowboyBebopActor extends Actor {
 
     genres.forEach((category: string) => {
       result[category] = traits[category].map((trait: Trait) => {
-        return { ...trait, damaged: false, hyperdamaged: false };
+        return { ...trait, dented: false, broken: false };
       });
     });
 
@@ -251,153 +431,57 @@ export default class CowboyBebopActor extends Actor {
   // NPC
   //=============================================================================
 
-  public async actionCollectCarton(
+  /**
+   * Settles a roll. Cartons stay with the hunter who produced them; false notes
+   * collect on the prime currently in play.
+   *
+   * Crediting the prime is a write on a document no player owns, so the whole
+   * settlement is the GM's gesture. The chat card offers it to them alone
+   * rather than letting a player press a button that would throw.
+   *
+   * Returns what was actually credited and to whom, so the caller can leave
+   * that account in the chat log; `undefined` when nothing was written.
+   */
+  public async actionCollect(
     genre: string,
     cartons: number,
     notes: number
-  ) {
-    await this.collectNotes(genre, notes);
-    await this.collectCartons(genre, cartons);
-  }
+  ): Promise<Settlement | undefined> {
+    if (!(game as any).user?.isGM) return undefined;
 
-  public async addCadran(
-    genre: string,
-    size: number,
-    isObjective: boolean,
-    isImportant: boolean
-  ) {
-    const cadran: Cadran = {
-      name: "",
-      size: size,
-      genre: genre,
-      isImportant: isImportant,
-      secretNote: "",
-      mouvement: 0,
-      value: 0,
-      isObjective: isObjective,
-      isVisibleByPlayers: false,
-      isClosed: false,
+    // Validate the whole settlement before writing either pool. Otherwise a
+    // missing prime would credit the cartons, leave the card in chat, and
+    // credit those same cartons again when the GM retried.
+    const prime = notes > 0 ? getActivePrime() : undefined;
+    if (notes > 0 && !prime) {
+      ui.notifications?.warn(
+        (game as any).i18n.localize("COWBOY.actor.noActivePrime")
+      );
+      return undefined;
+    }
+
+    if (cartons > 0) await adjust(this, "cartons", genre, cartons);
+    if (notes > 0) await adjust(prime, "notes", genre, notes);
+
+    return {
+      genre,
+      cartons,
+      notes,
+      hunterName: this.name ?? "",
+      primeName: prime?.name ?? "",
     };
-    await this.update({
-      "system.cadrans": [...(this as any).system.cadrans, cadran],
-    });
   }
 
-  public async collectNotes(genre: string, notes: number) {
-    let newNotes = (this as any).system.notes;
-    newNotes[genre] += notes;
-    await this.update({
-      "system.notes": newNotes,
-    });
+  public async setActive() {
+    await setActivePrime(this);
   }
 
-  public async collectCartons(genre: string, cartons: number) {
-    let newCartons = (this as any).system.cartons;
-    newCartons[genre] += cartons;
-    await this.update({
-      "system.cartons": newCartons,
-    });
+  /** Takes this prime out of play, leaving the table without an active prime. */
+  public async setInactive() {
+    if (!isActivePrime(this)) return;
+    await setActivePrime(undefined);
   }
 
-  public async setCurrentTarget(newTarget: boolean = true) {
-    await this.update({
-      "system.isCurrentTarget": newTarget,
-    });
-    if (newTarget) {
-      (game as any).actors
-        ?.filter(
-          (actor: CowboyBebopActor) =>
-            actor.id !== this.id && actor.type === "prime"
-        )
-        .forEach((actor: CowboyBebopActor) => {
-          actor.setCurrentTarget(false);
-        });
-    }
-  }
-
-  public async deleteCadran(index: number) {
-    const cadrans = [...(this as any).system.cadrans];
-    cadrans.splice(index, 1);
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-  }
-
-  public async closeCadran(index: number) {
-    const cadrans = (this as any).system.cadrans;
-    cadrans[index].isClosed = true;
-
-    // open a modal to ask for confirmation
-    const confirmed = await Dialog.confirm({
-      title: "Close Cadran",
-      content: "Are you sure you want to close this cadran?",
-      yes: () => true,
-      no: () => false,
-    });
-
-    if (confirmed) {
-      await this.update({
-        "system.cadrans": cadrans,
-      });
-    }
-  }
-
-  public async increaseCadran(
-    index: number,
-    genre: string,
-    type: string
-  ): Promise<boolean> {
-    const cadrans = (this as any).system.cadrans;
-    const cadran = cadrans[index];
-
-    console.log(cadran, genre, type);
-
-    if ((this as any).system[type][genre] <= 0) {
-      console.log("this as any).system[type][genre] <= 0");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    // Check if the cadran is at the last value
-    if (cadran.value >= cadran.size - 1 && cadran.genre != genre) {
-      console.log("cadran.value >= cadran.size - 1 && cadran.genre != genre");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    if (cadran.value >= cadran.size) {
-      console.log("cadran.value >= cadran.size");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    if (type !== (cadran.isObjective ? "cartons" : "notes")) {
-      console.log("type !== cadran.isObjective ? cartons : notes");
-      return new Promise<boolean>((resolve) => resolve(false));
-    }
-
-    cadrans[index].value += 1;
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-
-    this.addToken(genre, type, -1);
-
-    return new Promise<boolean>((resolve) => resolve(true));
-  }
-
-  public async toggleCadranVisibility(index: number) {
-    const cadrans = (this as any).system.cadrans;
-    cadrans[index].isVisibleByPlayers = !cadrans[index].isVisibleByPlayers;
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-  }
-
-  public async renameCadran(index: number, name: string) {
-    const cadrans = (this as any).system.cadrans;
-    cadrans[index].name = name;
-    await this.update({
-      "system.cadrans": cadrans,
-    });
-  }
 
   public async setGenre(genre: string) {
     await this.update({
@@ -406,29 +490,89 @@ export default class CowboyBebopActor extends Actor {
   }
 
   public async setMouvement(mouvement: number) {
+    if (mouvement === Number((this as any).system?.mouvement ?? 0)) return;
+
     await this.update({
       "system.mouvement": mouvement,
     });
+    await expireActivations(this, "mouvement");
   }
 
+  /**
+   * Déplace le risque de Big Shot, la réserve qu'il gagne à la mise en place et
+   * dépense pour durcir un test.
+   *
+   * Plancher à zéro tenu ici plutôt que par le bouton qui se désactive : c'est
+   * une réserve, pas un solde, et un risque négatif n'est un état qu'aucune
+   * fiche ne sait montrer - exactement le raisonnement de `updateRythme`.
+   */
+  public async updateRisque(points: number) {
+    const risque = Math.max(0, ((this as any).system.risque ?? 0) + points);
+    if (risque === (this as any).system.risque) return;
+
+    await this.update({ "system.risque": risque });
+  }
+
+  /** The GM's correction, for when a roll was read wrong or a slice misplaced. */
   public async addToken(genre: string, type: string, value: number) {
-    const tokens = (this as any).system[type];
-
-    console.log(type);
-    console.log((this as any).system);
-    tokens[genre] = Math.max(0, tokens[genre] + value);
-
-    switch (type) {
-      case "cartons":
-        await this.update({
-          "system.cartons": tokens,
-        });
-        break;
-      case "notes":
-        await this.update({
-          "system.notes": tokens,
-        });
-        break;
-    }
+    if (type !== "cartons" && type !== "notes") return;
+    await adjust(this, type, genre, value);
   }
+
+  // ========================================
+  // Session
+  // ========================================
+
+  /**
+   * The three session traits, as they are rather than as they may be stored:
+   * a prime made before the field existed has none, and the sheet still has to
+   * draw three lines for the GM to write on.
+   */
+  public sessionTraits(): SessionTrait[] {
+    const stored: SessionTrait[] = (this as any).system.sessionTraits ?? [];
+    return Array.from({ length: SESSION_TRAITS }, (_unused, index) => ({
+      name: stored[index]?.name ?? "",
+      revealed: stored[index]?.revealed === true,
+    }));
+  }
+
+  public secret(): { text: string; revealed: boolean } {
+    const stored = (this as any).system.secret ?? {};
+    return {
+      text: stored.text ?? "",
+      revealed: stored.revealed === true,
+    };
+  }
+
+  public async renameSessionTrait(index: number, name: string) {
+    await this.updateSessionTrait(index, (trait) => ({ ...trait, name }));
+  }
+
+  public async revealSessionTrait(index: number, revealed: boolean) {
+    await this.updateSessionTrait(index, (trait) => ({ ...trait, revealed }));
+  }
+
+  public async revealSecret(revealed: boolean) {
+    const wasRevealed = this.secret().revealed;
+    await this.update({ "system.secret.revealed": revealed });
+    if (revealed && !wasRevealed) await expireActivations(this, "secret");
+  }
+
+  // Foundry replaces an array wholesale rather than merging into it, so the
+  // whole of it is read, changed and written back - the same shape the trait
+  // helpers above already use.
+  private async updateSessionTrait(
+    index: number,
+    change: (trait: SessionTrait) => SessionTrait
+  ) {
+    const traits = this.sessionTraits();
+    if (index < 0 || index >= traits.length) return;
+
+    await this.update({
+      "system.sessionTraits": traits.map((trait, i) =>
+        i === index ? change(trait) : trait
+      ),
+    });
+  }
+
 }

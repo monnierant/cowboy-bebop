@@ -1,0 +1,142 @@
+{
+  "_id": "sessionFiller003",
+  "_key": "!items!sessionFiller003",
+  "name": "Session filler",
+  "type": "sessionType",
+  "img": "icons/svg/sun.svg",
+  "system": {
+    "setup": "L'épisode qui s'écarte de la trame : enjeux moindres, personnages qui changent et se rapprochent. Une session filler ne nécessite ni prime ni genre — créez tout de même une prime au titre de l'épisode, c'est elle qui porte la session.\n\n• Chaque chasseur commence avec un point de rythme par cartouche NON cochée, plus un par fardeau.\n• Les cartouches ne servent pas : on dépense un point de rythme à la place.\n• Big Shot gagne un risque par cartouche cochée sur les fiches, au minimum un.\n\nStructure, au choix de Big Shot :\n• Inversée — la session commence par Let's jam !, enchaîne 3, 2, 1… et se conclut par OK. Chacun devient de moins en moins capable d'aider ses camarades et finit seul face à son fardeau.\n• Libre — choisissez un seul mouvement, tout le monde en garde les bénéfices toute la session. Quelques activités à terminer sur des cadrans H–4, une par joueuse ; la session s'arrête quand elles sont closes.\n• La vôtre.\n\nSans répétition : c'est l'occasion d'inventer. De nouveaux riffs, de nouvelles options de mouvement, d'autres façons d'assister ou d'improviser — ajoutez-les ici même, mouvement par mouvement.\n\nFin : chaque chasseur peut déplacer un trait dans une autre approche, renommer un fardeau, ou changer un trait. Chaque échec supprime l'une de ces options pour tout le monde.",
+    "riffs": [
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "risqueNote",
+          "risqueDisadvantage"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "jam",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

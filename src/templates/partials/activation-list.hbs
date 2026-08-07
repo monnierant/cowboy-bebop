@@ -1,0 +1,23 @@
+{{!-- Les Activations en cours sur la prime : nommées partout où elles agissent,
+c'est ce qui tient lieu de journal (ADR 0012). Le sous-titre dit ce qui les
+déclenche et ce qui les éteindra ; une activation sans condition n'en montre
+qu'une moitié, et c'est juste. --}}
+{{#if running.length}}
+<section class="cowboy-activations-running" aria-label="{{localize 'COWBOY.activation.running'}}">
+  <span class="cowboy-activations-running-label">
+    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+    {{localize 'COWBOY.activation.running'}}
+  </span>
+  <span class="cowboy-activations-running-list">
+    {{#each running as |activation|}}
+    <span class="cowboy-activation-running" data-tooltip="{{ activation.description }}">
+      <strong>{{ activation.name }}</strong>
+      <small>
+        {{#if activation.conditionLabel}}{{ activation.conditionLabel }} · {{/if}}
+        {{ activation.scopeLabel }}
+      </small>
+    </span>
+    {{/each}}
+  </span>
+</section>
+{{/if}}

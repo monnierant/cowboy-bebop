@@ -1,0 +1,45 @@
+{{!-- Le prix d'une correction, et rien d'autre.
+
+Corriger une fausse note n'est pas un riff et n'est pas une Activation : c'est
+une règle de base du Test, ce que l'ADR 0008 puis l'ADR 0013 ont tranché. Elle
+n'a donc ni condition, ni effet, ni durée — seulement un prix, dont le joueur
+choisit une ligne. C'est le seul endroit de l'éditeur où unifier serait faux.
+
+Chaque champ porte son mouvement, qui vient des données et non d'un comptage de
+contextes parents. --}}
+<span class="cowboy-correction-terms">
+  <span class="cowboy-riff-group" data-tooltip="{{localize 'COWBOY.riffs.cost'}}">
+    <i class="fa-solid fa-coins" aria-hidden="true"></i>
+
+    {{#each payments}}
+    <span class="cowboy-riff-term {{#unless counter}}is-uncounted{{/unless}}"
+      {{#unless counter}}data-tooltip="{{localize 'COWBOY.riffs.notCounted'}}"{{/unless}}>
+      <input type="number" class="cowboy-correction-payment-amount" min="1" step="1"
+        value="{{ amount }}" data-mouvement="{{ ../mouvement }}" data-index="{{ index }}" />
+      <select class="cowboy-correction-payment-resource"
+        data-mouvement="{{ ../mouvement }}" data-index="{{ index }}">
+        {{#each options}}
+        <option value="{{ value }}" {{#if selected}}selected{{/if}}>{{ label }}</option>
+        {{/each}}
+      </select>
+      <button type="button" class="cowboy-correction-payment-remove"
+        data-mouvement="{{ ../mouvement }}" data-index="{{ index }}"
+        aria-label="{{localize 'COWBOY.riffs.removePayment'}}">&times;</button>
+    </span>
+    {{else}}
+    {{!-- Zéro paiement vaut gratuit, et il faut le dire : une place vide se
+    lirait comme un réglage oublié. --}}
+    <em class="cowboy-riff-free">{{localize 'COWBOY.riffs.free'}}</em>
+    {{/each}}
+
+    <button type="button" class="cowboy-correction-payment-add"
+      data-mouvement="{{ mouvement }}"
+      aria-label="{{localize 'COWBOY.riffs.addPayment'}}">+</button>
+  </span>
+
+  <button type="button" class="cowboy-correction-reset" data-mouvement="{{ mouvement }}"
+    data-tooltip="{{localize 'COWBOY.riffs.resetTerms'}}"
+    aria-label="{{localize 'COWBOY.riffs.resetTerms'}}">
+    <i class="fa-solid fa-rotate-left"></i>
+  </button>
+</span>

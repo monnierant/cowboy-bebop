@@ -1,0 +1,172 @@
+{
+  "_id": "sessionPivotSa04",
+  "_key": "!items!sessionPivotSa04",
+  "name": "Pivot de saison",
+  "type": "sessionType",
+  "img": "icons/svg/explosion.svg",
+  "system": {
+    "setup": "Une double session centrée sur les souvenirs, quand chaque chasseur ploie sous au moins un fardeau. Rejouée en final de campagne quand tous en ont deux et l'un d'eux trois.\n\nPremière session\n• Chaque chasseur gagne trois points de rythme, plus deux par fardeau sur son souvenir.\n• Big Shot choisit le genre, et gagne un risque par joueuse, lui compris, plus deux par fardeau sans X. Il note l'un de ces fardeaux pour chaque chasseur et s'efforce de tous les impliquer.\n• Big Shot applique les règles des primes — groove et secret — à un ennemi déjà présent dans le récit, puis lui choisit une seconde approche et un second secret.\n• Se joue comme une classique jusqu'à Let's jam !. À la fin, réussite ou échec, l'ennemi révèle que le second secret met les personnages en danger : la session s'arrête sur ce suspense, personne ne tourne la page.\n\nSeconde session\n• Big Shot choisit le genre. Les chasseurs gagnent un point de rythme par cartouche cochée, comme en session personnelle, et peuvent dépenser du rythme au lieu de cocher une cartouche.\n• À la fin, toutes les cartouches sont décochées et Big Shot gagne autant de risques que le total des points de rythme.\n• Se déroule comme une classique jusqu'à la fin de Let's jam !.\n\nFin : les chasseurs peuvent changer le groove de leur personnage. En cas de réussite, chacun note un X à côté d'un fardeau approprié.",
+    "riffs": [
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "risqueNote",
+          "risqueDisadvantage"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "jam",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

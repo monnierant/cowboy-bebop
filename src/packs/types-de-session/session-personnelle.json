@@ -1,0 +1,172 @@
+{
+  "_id": "sessionPersonn02",
+  "_key": "!items!sessionPersonn02",
+  "name": "Session personnelle",
+  "type": "sessionType",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+    "setup": "Déclenchée quand un chasseur coche sa dernière cartouche : son personnage passe sous les feux de la rampe. Même structure qu'une session classique, avec des ajustements.\n\n• Pas de dé pour le rythme : chaque chasseur en gagne autant qu'il a de cartouches cochées.\n• Pendant la session, on peut dépenser du rythme au lieu de cocher une cartouche pour s'impliquer ou corriger les fausses notes.\n• À la fin, tous les barillets sont décochés. Big Shot gagne autant de risques que le total des points de rythme des chasseurs.\n\nLe chasseur sous les projecteurs choisit un fardeau, dont l'histoire apparaîtra dans la session, puis un aspect à contrôler : le genre et le titre, la mise en place de l'introduction, ou celle de la conclusion. Les autres chasseurs choisissent ensemble parmi les deux restants, Big Shot prend le dernier.\n\nLa session ne se termine pas par See You Space Cowboy… : en cas de réussite, le chasseur note un X à côté du fardeau utilisé.",
+    "riffs": [
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "risqueNote",
+          "risqueDisadvantage"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "selected": [
+          "involve",
+          "showWounds",
+          "force",
+          "doubleOrNothing",
+          "solo",
+          "assist",
+          "improvise",
+          "jam",
+          "risqueNote",
+          "risqueDisadvantage",
+          "risqueDoubleNote"
+        ],
+        "custom": [],
+        "correction": [
+          {
+            "resource": "cartridge",
+            "amount": 1
+          },
+          {
+            "resource": "rythme",
+            "amount": 1
+          },
+          {
+            "resource": "dentTrait",
+            "amount": 1
+          }
+        ],
+        "activations": {
+          "involve": {
+            "conditions": [],
+            "paymentOptions": [
+              [
+                {
+                  "resource": "cartridge",
+                  "amount": 1
+                }
+              ],
+              [
+                {
+                  "resource": "rythme",
+                  "amount": 1
+                }
+              ]
+            ],
+            "effects": [
+              {
+                "kind": "dice",
+                "amount": 2
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

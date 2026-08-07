@@ -1,17 +1,71 @@
 {
   "$schema": "https://json.schemastore.org/foundryvtt-manifest.json",
   "id": "cowboy-bebop",
-  "title": "Cowboy Bebop System",
+  "title": "Cowboy Bebop",
   "description": "A template module using Typescript. You should change name, title, and description in module.json.",
   "version": "1.0.0",
-  "packs": [],
+  "packs": [
+    {
+      "name": "types-de-session",
+      "label": "Types de session (FR)",
+      "path": "packs/types-de-session",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "types-de-session-en",
+      "label": "Session Types (EN)",
+      "path": "packs/types-de-session-en",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "grooves",
+      "label": "Grooves (FR)",
+      "path": "packs/grooves",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "grooves-en",
+      "label": "Grooves (EN)",
+      "path": "packs/grooves-en",
+      "type": "Item",
+      "system": "cowboy-bebop",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
   "system": [],
   "dependencies": [],
   "scripts": [],
   "compatibility": {
-    "minimum": "9",
-    "verified": "10",
-    "maximum": "12"
+    "minimum": "13",
+    "verified": "14",
+    "maximum": "14"
+  },
+  "relationships": {
+    "requires": [
+      {
+        "id": "sliced-dials",
+        "type": "module",
+        "reason": "Objective and threat dials are drawn and driven by Sliced Dials."
+      }
+    ]
   },
   "documentTypes": {
     "ChatMessage": {
@@ -30,6 +84,10 @@
       "path": "languages/fr.json"
     }
   ],
-  "styles": ["scripts/assets/module.css"],
-  "esmodules": ["scripts/module.js"]
+  "styles": [
+    "scripts/assets/module.css"
+  ],
+  "esmodules": [
+    "scripts/module.js"
+  ]
 }
