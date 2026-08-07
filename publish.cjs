@@ -28,8 +28,8 @@ async function updateReleaseVersion(githubUrl, version, authToken) {
         id: moduleId,
         release: {
           version: version,
-          manifest: `${githubUrl}/issues/releases/download/${version}/system.json`,
-          notes: `${githubUrl}/releases/tag/${version}`,
+          manifest: `${githubUrl}/releases/download/v${version}/system.json`,
+          notes: `${githubUrl}/releases/tag/v${version}`,
           compatibility: {
             minimum: compatibilityInfo.minimum,
             verified: compatibilityInfo.verified,
