@@ -26,6 +26,7 @@ import {
   actRewriteDie,
   actRerollRemovedDie,
   actReservePlan,
+  openCollect,
   actVoidNote,
   mayAct,
   settleUpdate,
@@ -57,7 +58,12 @@ async function preloadTemplates(): Promise<any> {
 Hooks.once("init", () => {
   console.log(`Initializing ${moduleId}`);
 
-  Handlebars.registerHelper("range", range);
+  // Préfixé, et pas `range` : le registre Handlebars est global à la partie,
+  // et le premier module venu peut y poser son propre `range`. `sliced-dials`
+  // le fait, s'initialise après nous, et gagnait donc le nom - ses trois
+  // arguments obligatoires faisaient planter le rendu de nos cartes. Un nom que
+  // personne d'autre ne revendique est la seule garantie.
+  Handlebars.registerHelper("cowboyRange", range);
   Handlebars.registerHelper("genreToIcon", genreToIcon);
 
   // `circlePortion` and `divide` existed only to draw the old dial partial by
@@ -221,21 +227,30 @@ Hooks.on(
               await actVoidNote(message);
               break;
             case "rewrite-die":
-              await actRewriteDie(message, Number.parseInt(datas.dieIndex ?? "-1"));
+              await actRewriteDie(message);
               break;
             case "reroll-removed-die":
               await actRerollRemovedDie(message);
               break;
             case "reserve-plan":
-              await actReservePlan(message, actor, Number.parseInt(datas.dieIndex ?? "-1"));
+              await actReservePlan(message, actor);
               break;
             case "collect": {
+              // La boîte répartit d'abord - cadrans, seuil du mouvement, rachat
+              // de Passe-partout - et n'écrit l'écart qu'à sa validation. Ce
+              // qu'elle rend est ce qu'il reste à créditer (ADR 0015).
+              const plan = await openCollect(message, actor);
+              if (!plan) break;
+
               const settled = await actor?.actionCollect(
-                datas.genre ?? "",
-                Number.parseInt(datas.cartons ?? "0"),
-                Number.parseInt(datas.notes ?? "0")
+                plan.genre,
+                plan.cartons,
+                plan.notes
               );
-              if (settled) await settleCard(message, settled);
+              // L'écart déplacé rejoint le bandeau : c'est là que partent les
+              // jetons qui ne sont crédités à personne.
+              if (settled)
+                await settleCard(message, { ...settled, difficulty: plan.difficulty });
               break;
             }
           }

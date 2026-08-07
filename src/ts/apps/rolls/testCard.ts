@@ -2,8 +2,17 @@ import { moduleId } from "../../constants";
 import { getActivePrime } from "../../prime";
 import { correctionPayments, riffSelection, riffsForPhase } from "../../riffs";
 import { confirmPlayOption, payOption, paymentLabel, paymentOptionBlocked, paymentOptionLabel, playable } from "../../riffPlay";
-import { hunterPaymentOptions } from "../../rolls/bespokeGrooves";
+import { BESPOKE_GROOVES, hunterPaymentOptions } from "../../rolls/bespokeGrooves";
+import { pickDie } from "./dicePicker";
 import { cardEffects, isCounter } from "../../rolls/activationTerms";
+import {
+  cartonAgainstDifficultyForbidden,
+  consumeDifficultyRelief,
+  difficultyOffsetOf,
+  hasDifficultyRelief,
+  setDifficultyOffset,
+} from "../../difficulty";
+import { planCollect } from "./collectDialog";
 import { keptDice } from "../../rolls/score";
 import { Payment, RiffAudience } from "../../types";
 import {
@@ -191,6 +200,189 @@ const localize = (key: string): string =>
   (game as any)?.i18n?.localize(key) ?? key;
 
 /**
+ * Tous les Effets que ce Test a figés, applicables et en cours confondus.
+ *
+ * Les interdictions se lisent ici et non sur la prime : un Groove retiré après
+ * le lancer ne doit pas rouvrir un geste que la Carte avait fermé (ADR 0007).
+ */
+function frozenEffects(state: TestState) {
+  return [
+    ...(state.activations ?? []).flatMap((activation) => activation.effects),
+    ...(state.running ?? []).flatMap((activation) => activation.effects),
+  ];
+}
+
+/** Le dernier palier du test : les dés en l'air, et ce qui les a produits. */
+function currentStepOf(state: TestState) {
+  return state.history?.[state.history.length - 1];
+}
+
+/** Les faces qu'une réécriture peut prendre : « un résultat de 2 à 5 en 6 ». */
+const rewritable = (face: number): boolean => face >= 2 && face <= 5;
+
+/** Le dé réservé se prend parmi ceux qu'on a réellement lancés. */
+const reservable = (index: number, state: TestState): boolean =>
+  index !== currentStepOf(state)?.plannedIndex;
+
+/**
+ * Un geste que la carte offre au-dessous du badge qui l'ouvre.
+ *
+ * Le rattachement se fait par identité de catalogue quand la règle est câblée à
+ * un groove nommé, et par nom de source quand c'est une Activation qui la porte
+ * - c'est le nom du groove que l'Activation a gelé en s'inscrivant sur la carte.
+ * Un geste que rien ne rattache reste offert, sous les badges : ouvert par un
+ * riff, il n'a pas de badge sous lequel se ranger.
+ */
+interface CardAction {
+  action: string;
+  label: string;
+  icon: string;
+  grooveId?: string;
+  grooveName?: string;
+  /** Pourquoi il ne se clique plus, ou rien s'il se clique. */
+  blocked?: string;
+}
+
+/**
+ * Les gestes portant sur un dé que ce test a offerts, épuisés compris.
+ *
+ * Un geste joué reste sur la carte, grisé, avec son motif : le faire
+ * disparaître laissait croire qu'il n'avait jamais été offert, alors que
+ * l'étape barrée juste au-dessus dit qu'on s'en est servi. C'est aussi ce qui
+ * distingue « déjà joué » de « plus aucune face ne s'y prête ».
+ *
+ * Un test soldé, lui, n'offre plus rien du tout : la carte entière est close.
+ */
+function diceActions(state: TestState): CardAction[] {
+  if (state.settled) return [];
+
+  const dice = currentStepOf(state)?.dice ?? [];
+  const actions: CardAction[] = [];
+
+  const rewrite = transformationBy(state, "rewriteDie");
+  if (rewrite) {
+    actions.push({
+      action: "rewrite-die",
+      label: localize("COWBOY.activation.rewriteDie"),
+      icon: "fa-solid fa-wand-magic-sparkles",
+      grooveName: rewrite.source,
+      blocked: state.rewroteDie
+        ? localize("COWBOY.activation.alreadyPlayed")
+        : dice.some(rewritable)
+          ? undefined
+          : localize("COWBOY.roll.dice.noneRewritable"),
+    });
+  }
+
+  const reroll = transformationBy(state, "rerollRemovedDie");
+  if (reroll && state.advantage < 0) {
+    actions.push({
+      action: "reroll-removed-die",
+      label: localize("COWBOY.activation.rerollRemovedDie"),
+      icon: "fa-solid fa-rotate",
+      grooveName: reroll.source,
+      blocked: state.rerolledRemovedDie
+        ? localize("COWBOY.activation.alreadyPlayed")
+        : undefined,
+    });
+  }
+
+  if (state.canReservePlan) {
+    actions.push({
+      action: "reserve-plan",
+      label: localize("COWBOY.groove.plan.reserve"),
+      icon: "fa-solid fa-calendar-plus",
+      grooveId: BESPOKE_GROOVES.longTermPlan,
+      blocked: dice.some((_, index) => reservable(index, state))
+        ? undefined
+        : localize("COWBOY.roll.dice.noneReservable"),
+    });
+  }
+
+  return actions;
+}
+
+/**
+ * Le groupement tel qu'il se lit maintenant, et non tel qu'il est tombé.
+ *
+ * Le jet Foundry reste la vérité du hasard, mais il ne bouge plus après coup :
+ * réécrire une face ou relancer le dé écarté n'écrit que dans l'état. Afficher
+ * `result.terms` faisait donc mentir la carte - des dés qui ne totalisaient pas
+ * le total affiché juste à côté.
+ *
+ * Le dé écarté par le désavantage est la seule chose qui vienne encore du jet :
+ * l'état ne garde que les dés comptés.
+ *
+ * Le dé réservé n'est pas dans cette liste : il a sa propre marque, plus loin
+ * dans le gabarit, parce qu'il vient d'un autre test.
+ */
+function resultDice(state: TestState, roll: any) {
+  const step = currentStepOf(state);
+  const dice = step?.dice ?? [];
+
+  // Le dernier vrai lancer, pour dire ce qu'une face montrait avant d'être
+  // réécrite. Les réécritures s'empilent, donc la comparaison remonte jusqu'au
+  // jet et non jusqu'à l'étape précédente.
+  const rolled = [...(state.history ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "roll" || entry.kind === "reroll");
+
+  const kept = dice
+    .map((face, index) => ({ face, index }))
+    .filter((die) => die.index !== step?.plannedIndex)
+    .map((die) => {
+      const before = rolled?.dice[die.index];
+      return {
+        face: die.face,
+        discarded: false,
+        // Une face ajoutée après coup - le dé écarté qu'on a relancé - n'a pas
+        // d'avant, et ne doit pas passer pour une réécriture.
+        rewritten: before !== undefined && before !== die.face,
+        from: before,
+      };
+    });
+
+  // Ce que l'avantage négatif a retiré : encore montré, jamais compté.
+  const removed = (Array.isArray(roll?.terms) ? roll.terms : [])
+    .flatMap((term: any) => (Array.isArray(term?.results) ? term.results : []))
+    .filter((die: any) => die && !die.active)
+    .map((die: any) => ({
+      face: Number(die.result),
+      discarded: true,
+      rewritten: false,
+      from: undefined,
+    }));
+
+  return [...kept, ...removed];
+}
+
+/**
+ * Les badges de groove, chacun avec ce qu'il ouvre encore.
+ *
+ * Un geste ne se range que sous un badge, et sous le premier qui le reconnaît :
+ * un groove prêté porte le même nom que celui du lanceur, et le bouton doit
+ * apparaître une fois, pas deux.
+ */
+function grooveRows(state: TestState) {
+  const actions = diceActions(state);
+  const placed = new Set<number>();
+
+  const rows = (state.grooves ?? []).map((groove) => ({
+    ...groove,
+    actions: actions.filter((action, index) => {
+      if (placed.has(index)) return false;
+      const mine =
+        (action.grooveId !== undefined && action.grooveId === groove.id) ||
+        (action.grooveName !== undefined && action.grooveName === groove.name);
+      if (mine) placed.add(index);
+      return mine;
+    }),
+  }));
+
+  return { rows, loose: actions.filter((_, index) => !placed.has(index)) };
+}
+
+/**
  * La carte, telle qu'elle se lit.
  *
  * Le jet voyage à part de l'état parce que Foundry le garde déjà sur le message,
@@ -201,31 +393,22 @@ const localize = (key: string): string =>
  */
 async function renderCard(state: TestState, roll: any): Promise<string> {
   const actor = (game as any).actors?.get(state.actorId);
-  const currentDice = state.history?.[state.history.length - 1]?.dice ?? [];
-  const currentStep = state.history?.[state.history.length - 1];
-  const transformations = (state.activations ?? []).flatMap((activation) =>
-    activation.effects.filter((effect) => effect.kind === "transformResult")
-  );
+  const currentStep = currentStepOf(state);
+  const currentDice = currentStep?.dice ?? [];
+  const grooves = grooveRows(state);
 
   return renderTemplate(`systems/${moduleId}/templates/chat/roll.hbs`, {
-    history: (state.history ?? []).slice(0, -1).map((step, index) => ({
-      ...step,
-      index: index + 1,
-      diceLabel: step.dice.join(" + "),
-    })),
+    // Les étapes dépassées, la courante exclue : elle est affichée en grand
+    // juste dessous. Rien à préparer, le gabarit dessine les faces et les
+    // jetons comme il le fait du résultat qui compte.
+    history: (state.history ?? []).slice(0, -1),
     result: roll,
-    rewriteDice: transformations.some((effect: any) => effect.operation === "rewriteDie")
-      ? currentDice.map((face, index) => ({ face, index })).filter((die) => die.face >= 2 && die.face <= 5)
-      : [],
+    // Les dés tels que l'état les compte, réécritures comprises. Le jet ne sert
+    // plus qu'à sa formule et au dé que l'avantage a retiré.
+    resultDice: resultDice(state, roll),
     plannedResult: currentStep?.plannedIndex !== undefined
       ? currentDice[currentStep.plannedIndex]
       : 0,
-    reserveDice: state.canReservePlan && !state.settled
-      ? currentDice
-          .map((face, index) => ({ face, index }))
-          .filter((die) => die.index !== currentStep?.plannedIndex)
-      : [],
-    canRerollRemovedDie: state.advantage < 0 && transformations.some((effect: any) => effect.operation === "rerollRemovedDie"),
     total: state.score.total,
     actor,
     genre: state.genre,
@@ -248,6 +431,14 @@ async function renderCard(state: TestState, roll: any): Promise<string> {
     // Rien à voir avec le plafond de deux : voir `actVoidNote`.
     canVoidNote: !state.settled && state.score.notes > 0,
     canStake: stakeOpen(state) && stakeableTraits(state).length > 0,
+    // L'écart de difficulté du moment, rappelé pour mémoire (ADR 0015). Le
+    // déplacer se fait dans la boîte de collecte, pas ici : les dépenses se
+    // décident quand les jetons sont stables, et elles n'agissent de toute façon
+    // que sur les tests suivants - celui-ci a figé sa difficulté.
+    difficultyOffsetLabel: (() => {
+      const offset = difficultyOffsetOf(getActivePrime());
+      return offset >= 0 ? `+${offset}` : String(offset);
+    })(),
     // Ce que corriger coûte dans cette session-ci : une cartouche en classique,
     // un rythme en filler, ou les deux au choix en personnelle.
     correction: correctionChoices(state, actor),
@@ -263,8 +454,12 @@ async function renderCard(state: TestState, roll: any): Promise<string> {
     // onze grooves de chasseur ne peuvent se déclencher qu'ici - « juste après
     // le lancer », « s'il obtient un double » - donc c'est ici qu'ils se lisent.
     // Gelés dans l'état, contrairement aux riffs ouverts qui se relisent en
-    // direct : l'assistant peut avoir changé de groove depuis.
-    grooves: state.grooves ?? [],
+    // direct : l'assistant peut avoir changé de groove depuis. Chacun porte les
+    // gestes qu'il ouvre encore, dessous, plutôt qu'ailleurs sur la carte.
+    grooves: grooves.rows,
+    // Les mêmes gestes quand aucun badge ne les revendique : un riff les a
+    // ouverts, ou la carte date d'avant que les badges portent une identité.
+    looseActions: grooves.loose,
     running: state.running ?? [],
     assist: state.assist
       ? {
@@ -494,46 +689,206 @@ export async function actStake(
   });
 }
 
+/**
+ * L'Activation gelée qui porte cette transformation, s'il y en a une.
+ *
+ * C'est elle qui dit le prix et le nom à inscrire, plutôt que la carte : un
+ * Groove maison portant la même opération à un autre prix est facturé
+ * correctement, et rien ne reste codé en dur ici.
+ */
+function transformationBy(state: TestState, operation: string) {
+  return (state.activations ?? []).find((activation) =>
+    activation.effects.some(
+      (effect) => effect.kind === "transformResult" && (effect as any).operation === operation
+    )
+  );
+}
+
+/**
+ * Débite sur la Carte ce qu'une Activation instantanée coûte.
+ *
+ * Deux moitiés : les compteurs partent des fiches par le chemin commun, les
+ * fausses notes s'inscrivent sur le test lui-même. Une option qui exige un trait
+ * n'est pas payable ici - aucune ne le demande, et il faudrait un sélecteur.
+ * Rend l'état d'après, ou rien si le prix ne passe pas.
+ */
+async function payOnCard(
+  state: TestState,
+  options: Payment[][],
+  actor: any
+): Promise<TestState | undefined> {
+  const option = options[0] ?? [];
+  if (option.some((payment) => payment.resource === "dentTrait" || payment.resource === "stakeTrait")) {
+    return undefined;
+  }
+
+  const counters = option.filter((payment) => isCounter(payment.resource));
+  if (counters.length > 0 && !(await payOption(counters, actor))) return undefined;
+
+  const notes = option
+    .filter((payment) => payment.resource === "note")
+    .reduce((sum, payment) => sum + payment.amount, 0);
+
+  return notes > 0 ? addNotes(state, notes) : state;
+}
+
 /** Hors des sentiers battus : une nouvelle étape, jamais un score écrasé. */
-export async function actRewriteDie(message: any, index: number): Promise<void> {
+export async function actRewriteDie(message: any): Promise<void> {
+  const opened = testOf(message);
+  if (!opened || opened.settled || opened.rewroteDie) return;
+  const offer = transformationBy(opened, "rewriteDie");
+  if (!offer) return;
+
+  const index = await pickDie({
+    title: offer.source ?? localize("COWBOY.activation.rewriteDie"),
+    prompt: localize("COWBOY.roll.dice.pickRewrite"),
+    becomes: 6,
+    dice: (currentStepOf(opened)?.dice ?? []).map((face, rank) => ({
+      face,
+      index: rank,
+      eligible: rewritable(face),
+      hint: localize("COWBOY.roll.dice.notRewritable"),
+    })),
+  });
+  if (index === undefined) return;
+
+  // L'état est relu après la boîte : elle a laissé le temps à quelqu'un d'autre
+  // de corriger, de relancer, ou de solder la carte.
   const state = testOf(message);
   if (!state || state.settled) return;
-  const allowed = (state.activations ?? []).some((activation) =>
-    activation.effects.some((effect) => effect.kind === "transformResult" && effect.operation === "rewriteDie")
-  );
-  if (!allowed) return;
-  const transformed = rewriteDie(state, index, 6, "Hors des sentiers battus");
-  const after = transformed === state ? state : addNotes(transformed, 1);
-  if (after === state) return;
+  const activation = transformationBy(state, "rewriteDie");
+  if (!activation) return;
+
+  const transformed = rewriteDie(state, index, 6, activation.source);
+  if (transformed === state) return;
+
+  const actor = (game as any).actors?.get(state.actorId);
+  const after = await payOnCard(transformed, activation.paymentOptions, actor);
+  if (!after || after === state) return;
   await rewrite(message, after);
 }
 
 /** Maître de la bidouille : relance le dé écarté et ajoute une étape. */
 export async function actRerollRemovedDie(message: any): Promise<void> {
   const state = testOf(message);
-  if (!state || state.settled || state.advantage >= 0) return;
-  const allowed = (state.activations ?? []).some((activation) =>
-    activation.effects.some((effect) => effect.kind === "transformResult" && effect.operation === "rerollRemovedDie")
-  );
-  if (!allowed) return;
+  if (!state || state.settled || state.advantage >= 0 || state.rerolledRemovedDie) return;
+  const activation = transformationBy(state, "rerollRemovedDie");
+  if (!activation) return;
   const roll = new Roll("1d6");
   await roll.roll();
   const face = keptDice((roll as any).terms)[0];
   if (!face) return;
   const keep = await Dialog.confirm({
-    title: "Maître de la bidouille",
+    title: activation.source ?? localize("COWBOY.activation.rerollRemovedDie"),
     content: `<p>${localize("COWBOY.activation.keepRerolledDie")} <strong>${face}</strong> ?</p>`,
     defaultYes: true,
   } as any) as unknown as boolean;
-  if (!keep) return;
-  await rewrite(message, rerollRemovedDie(state, face, "Maître de la bidouille"));
+  // Refuser consomme quand même la relance : le dé retiré n'en a qu'une, et
+  // rouvrir le bouton laisserait relancer jusqu'à tomber sur un bon résultat.
+  const rerolled = keep
+    ? rerollRemovedDie(state, face, activation.source)
+    : { ...state, rerolledRemovedDie: true };
+
+  const actor = (game as any).actors?.get(state.actorId);
+  const after = await payOnCard(rerolled, activation.paymentOptions, actor);
+  if (!after) return;
+  await rewrite(message, after);
+}
+
+/**
+ * Ce que la collecte va créditer, une fois la boîte validée.
+ *
+ * Toute l'économie du résultat se décide là : ce qui part aux cadrans, ce qui
+ * part contre le seuil du mouvement, et le rachat de *Passe-partout* (ADR 0015).
+ * Le geste n'est proposé qu'à la fin parce que c'est le seul moment où les
+ * jetons sont stables - jusque-là, chaque relance et chaque réécriture recalcule
+ * le score depuis les dés, et un jeton dépensé plus tôt serait rendu.
+ *
+ * L'écart est écrit ici, la créance sur les fiches reste à l'appelant : ce qui
+ * touche la prime et le chasseur passe par `actionCollect`, qui sait le refuser.
+ * Rend ce qu'il reste à créditer, ou rien si la boîte a été fermée.
+ */
+export async function openCollect(
+  message: any,
+  actor: any
+): Promise<
+  | {
+      genre: string;
+      cartons: number;
+      notes: number;
+      difficulty?: { from: string; to: string };
+    }
+  | undefined
+> {
+  const state = testOf(message);
+  if (!state || state.settled || !(game as any).user?.isGM) return undefined;
+
+  const prime = getActivePrime();
+  const offer = {
+    cartons: state.score.cartons,
+    notes: state.score.notes,
+    genre: state.genre,
+    offset: difficultyOffsetOf(prime),
+    forbidden: cartonAgainstDifficultyForbidden(frozenEffects(state)),
+    relief: hasDifficultyRelief(actor),
+    // Le rachat appartient à Passe-partout, et à lui seul : l'exception est
+    // gelée avec le Test, donc changer de Groove entre le lancer et la collecte
+    // ne retire ni n'ouvre le geste après coup (ADR 0014).
+    masterKey: state.grooveRules?.masterKey === true,
+  };
+
+  const plan = await planCollect({
+    offer,
+    hunterName: actor?.name ?? "",
+    primeName: prime?.name ?? localize("COWBOY.roll.collect.prime"),
+  });
+  if (!plan) return undefined;
+
+  // L'écart vit sur la prime : sans prime en jeu, rien n'a où s'écrire, et il
+  // vaut mieux le dire avant de créditer quoi que ce soit - `actionCollect`
+  // tient le même raisonnement pour les fausses notes.
+  if (plan.offset !== offer.offset) {
+    if (!prime) {
+      ui.notifications?.warn(localize("COWBOY.actor.noActivePrime"));
+      return undefined;
+    }
+    await setDifficultyOffset(prime, plan.offset);
+  }
+  if (plan.reliefUsed) await consumeDifficultyRelief(actor);
+
+  const signed = (offset: number) => (offset >= 0 ? `+${offset}` : String(offset));
+  return {
+    genre: state.genre,
+    cartons: plan.cartons,
+    notes: plan.notes,
+    ...(plan.offset !== offer.offset
+      ? { difficulty: { from: signed(offer.offset), to: signed(plan.offset) } }
+      : {}),
+  };
 }
 
 /** Plan sur le long terme : mémorise un résultat réellement lancé. */
-export async function actReservePlan(message: any, actor: any, index: number): Promise<void> {
+export async function actReservePlan(message: any, actor: any): Promise<void> {
+  const opened = testOf(message);
+  if (!opened || opened.settled || !opened.canReservePlan || actor?.id !== opened.actorId) return;
+
+  const index = await pickDie({
+    title: localize("COWBOY.groove.plan.title"),
+    prompt: localize("COWBOY.roll.dice.pickReserve"),
+    dice: (currentStepOf(opened)?.dice ?? []).map((face, rank) => ({
+      face,
+      index: rank,
+      eligible: reservable(rank, opened),
+      hint: localize("COWBOY.roll.dice.notReservable"),
+    })),
+  });
+  if (index === undefined) return;
+
+  // Relu après la boîte, comme partout : la carte a pu bouger pendant qu'on
+  // regardait le groupement.
   const state = testOf(message);
   if (!state || state.settled || !state.canReservePlan || actor?.id !== state.actorId) return;
-  const current = state.history?.[state.history.length - 1];
+  const current = currentStepOf(state);
   if (!current || index < 0 || index >= current.dice.length || index === current.plannedIndex) return;
   const face = Math.trunc(Number(current.dice[index]));
   if (face < 1 || face > 6) return;

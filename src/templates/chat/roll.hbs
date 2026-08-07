@@ -2,9 +2,25 @@
   {{#if history.length}}
   <ol class="cowboy-test-history" aria-label="{{localize 'COWBOY.roll.history'}}">
     {{#each history as |step|}}
+    {{!-- Une étape dépassée se lit comme celle qui compte : les mêmes faces,
+    les mêmes jetons. C'est ce qui permet de voir d'un coup d'œil ce qu'une
+    réécriture a changé, là où « 3 + 4 + 5 = 12 (1 / 0) » demandait de traduire.
+    Le numéro vient du marqueur de la liste, pas du texte. --}}
     <li class="cowboy-test-history-step is-past">
-      <s>#{{step.index}} — {{step.diceLabel}} = {{step.score.total}}
-        ({{step.score.cartons}} / {{step.score.notes}})</s>
+      <ol class="dice-rolls cowboy-test-history-dice">
+        {{#each step.dice as |face|}}
+        <li class="roll die d6
+          {{#if (eq face 1)}}min{{/if}}
+          {{#if (eq face 6)}}max{{/if}}">{{ face }}</li>
+        {{/each}}
+      </ol>
+      <s class="cowboy-test-history-total">{{ step.score.total }}</s>
+      {{#cowboyRange 1 step.score.cartons}}
+      <i class="fa-solid fa-music cowboy-carton"></i>
+      {{/cowboyRange}}
+      {{#cowboyRange 1 step.score.notes}}
+      <i class="fa-solid fa-record-vinyl cowboy-note"></i>
+      {{/cowboyRange}}
       {{#if step.source}}<small>{{step.source}}</small>{{/if}}
     </li>
     {{/each}}
@@ -35,25 +51,29 @@
             >
           </header>
           <ol class="dice-rolls">
-            {{#each result.terms as |term|}}
-            {{#each term.results as |dice key|}}
-            {{!-- Le dé qu'un avantage a retiré est encore là mais ne compte
-            plus : sans cette marque, la somme affichée ne correspondait pas aux
-            dés affichés. Il ne porte donc ni le 1 ni le 6 des autres. --}}
+            {{!-- Les dés viennent de l'état, pas du jet : une face réécrite
+            après coup n'existe que là, et afficher le jet brut faisait mentir
+            le total juste à côté.
+
+            Le dé qu'un avantage a retiré est encore là mais ne compte plus :
+            sans cette marque, la somme affichée ne correspondait pas aux dés
+            affichés. Il ne porte donc ni le 1 ni le 6 des autres. --}}
+            {{#each resultDice as |dice|}}
             <li
               class="roll die d6
               {{#if dice.discarded }}
               discarded
               {{else}}
-              {{#if (eq dice.result 1)}}min{{/if}}
-              {{#if (eq dice.result 6)}}max{{/if}}
+              {{#if dice.rewritten}}cowboy-roll-rewritten-die{{/if}}
+              {{#if (eq dice.face 1)}}min{{/if}}
+              {{#if (eq dice.face 6)}}max{{/if}}
               {{/if}}
               "
+              {{#if dice.rewritten}}data-tooltip="{{ dice.from }} → {{ dice.face }}"{{/if}}
             >
-              {{ dice.result }}
+              {{ dice.face }}
             </li>
 
-            {{/each}}
             {{/each}}
             {{#if plannedResult}}
             <li class="roll die d6 cowboy-roll-planned-die
@@ -75,12 +95,12 @@
       data-notes="{{ notes }}"
       data-carton="{{ carton }}"
     >
-      {{#range 1 carton mouvement}}
+      {{#cowboyRange 1 carton mouvement}}
       <i class="fa-solid fa-music cowboy-carton"></i>
-      {{/range}}
-      {{#range 1 notes mouvement}}
+      {{/cowboyRange}}
+      {{#cowboyRange 1 notes mouvement}}
       <i class="fa-solid fa-record-vinyl cowboy-note"></i>
-      {{/range}}
+      {{/cowboyRange}}
     </h4>
     <section class="cowboy-roll-actions">
       {{!-- « Le CP peut alors retirer jusqu'à deux fausses notes. » Passé les
@@ -241,30 +261,16 @@
       </div>
       {{/if}}
 
-      {{#if rewriteDice.length}}
-      <div class="cowboy-roll-transformations">
-        {{#each rewriteDice as |die|}}
-        <button type="button" class="cowboy-roll-action" data-action="rewrite-die"
-          data-die-index="{{die.index}}">{{die.face}} → 6</button>
-        {{/each}}
+      {{!-- Le seuil du mouvement pour les tests suivants, rappelé pour mémoire
+      (ADR 0015). Ce qui le déplace - un carton, une fausse note, le rachat de
+      Passe-partout - se joue dans la boîte de collecte : les jetons d'un test ne
+      sont stables qu'une fois qu'on ne le retouche plus, et ces dépenses ne
+      changent de toute façon rien à ce test-ci, dont la difficulté est figée. --}}
+      <div class="cowboy-roll-difficulty">
+        <span class="cowboy-roll-difficulty-offset">
+          {{ localize "COWBOY.difficulty.offset" }} {{ difficultyOffsetLabel }}
+        </span>
       </div>
-      {{/if}}
-      {{#if canRerollRemovedDie}}
-      <button type="button" class="cowboy-roll-action" data-action="reroll-removed-die">
-        {{localize "COWBOY.activation.rerollRemovedDie"}}
-      </button>
-      {{/if}}
-      {{#if reserveDice.length}}
-      <div class="cowboy-roll-plan-actions">
-        <span>{{localize "COWBOY.groove.plan.reserve"}}</span>
-        {{#each reserveDice as |die|}}
-        <button type="button" class="cowboy-roll-action" data-action="reserve-plan"
-          data-actor-id="{{../actor.id}}" data-die-index="{{die.index}}">
-          <i class="fa-solid fa-calendar-plus"></i> {{die.face}}
-        </button>
-        {{/each}}
-      </div>
-      {{/if}}
 
       {{!-- Ce que Big Shot oppose. La carte est cuite une fois et lue par tout
       le monde, donc ça ne se filtre pas ici : `cowboy-roll-action-gm` est la
@@ -299,20 +305,52 @@
       {{!-- Les grooves qui étaient sur la table. Quatre des onze grooves de
       chasseur ne se déclenchent qu'ici — « juste après le lancer », « s'il
       obtient un double » — donc les rappeler sur la carte est la seule façon
-      qu'ils servent. Rien à cliquer : ce que le moteur en joue s'est appliqué
-      avant, le reste s'applique à la table. --}}
+      qu'ils servent. Le plus souvent rien à cliquer : ce que le moteur en joue
+      s'est appliqué avant, le reste s'applique à la table.
+
+      Quand il reste un geste à faire, son bouton se range sous le badge du
+      groove qui l'ouvre : c'est là qu'on lit ce qu'il fait, et le dé se choisit
+      ensuite dans une boîte plutôt que sur la carte. --}}
       {{#if grooves.length}}
       <div class="cowboy-roll-grooves">
         {{#each grooves as |groove|}}
-        <span class="cowboy-roll-groove {{#if groove.lentBy}}is-lent{{/if}}"
-          data-tooltip="{{ groove.description }}"
-          data-tooltip-class="cowboy-riff-tooltip">
-          <i class="fa-solid fa-wave-square"></i>
-          {{ groove.name }}
-          {{#if groove.lentBy}}
-          <em class="cowboy-roll-groove-lent">{{ groove.lentBy }}</em>
+        <div class="cowboy-roll-groove-entry">
+          <span class="cowboy-roll-groove {{#if groove.lentBy}}is-lent{{/if}}"
+            data-tooltip="{{ groove.description }}"
+            data-tooltip-class="cowboy-riff-tooltip">
+            <i class="fa-solid fa-wave-square"></i>
+            {{ groove.name }}
+            {{#if groove.lentBy}}
+            <em class="cowboy-roll-groove-lent">{{ groove.lentBy }}</em>
+            {{/if}}
+          </span>
+          {{#if groove.actions.length}}
+          <div class="cowboy-roll-groove-actions">
+            {{#each groove.actions as |offer|}}
+            <button type="button" class="cowboy-roll-action" data-action="{{ offer.action }}"
+              data-actor-id="{{ ../../actor.id }}"
+              {{#if offer.blocked}}disabled data-tooltip="{{ offer.blocked }}"{{/if}}>
+              <i class="{{ offer.icon }}"></i> {{ offer.label }}
+            </button>
+            {{/each}}
+          </div>
           {{/if}}
-        </span>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- Les mêmes gestes quand aucun badge ne les revendique : ouverts par
+      un riff — Jam ! prête la réserve de dé — ou posés sur une carte d'avant
+      que les badges portent une identité. --}}
+      {{#if looseActions.length}}
+      <div class="cowboy-roll-groove-actions">
+        {{#each looseActions as |offer|}}
+        <button type="button" class="cowboy-roll-action" data-action="{{ offer.action }}"
+          data-actor-id="{{ ../actor.id }}"
+          {{#if offer.blocked}}disabled data-tooltip="{{ offer.blocked }}"{{/if}}>
+          <i class="{{ offer.icon }}"></i> {{ offer.label }}
+        </button>
         {{/each}}
       </div>
       {{/if}}
@@ -352,16 +390,16 @@
       {{#if (or (gt notes 0) (gt carton 0))}}
       {{!-- Collecter écrit sur la prime, ce qu'aucun joueur ne peut faire. La
       carte est rendue une fois et stockée telle quelle, donc ça ne se filtre pas
-      ici : le hook de rendu le retire selon qui lit. --}}
+      ici : le hook de rendu le retire selon qui lit.
+
+      Le bouton n'emporte plus le compte des jetons : c'est la boîte de collecte
+      qui les répartit, et elle les relit sur l'état du test au moment où elle
+      s'ouvre - une carte peut avoir bougé depuis qu'elle a été rendue. --}}
       <button
         class="cowboy-roll-action cowboy-roll-action-gm"
         type="button"
         data-action="collect"
         data-actor-id="{{ actor.id }}"
-        data-notes="{{ notes }}"
-        data-cartons="{{ carton }}"
-        data-genre="{{ genre }}"
-        data-category="{{ category }}"
       >
         <i class="fa-solid fa-circle-plus"></i>
         {{ localize "COWBOY.roll.actions.collect" }}
