@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Le JS que `npm run test:pure` compile pour le runner node
+test/.out
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

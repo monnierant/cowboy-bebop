@@ -8,6 +8,10 @@
   "scripts": {
     "build": "tsc && vite build",
     "watch": "tsc && vite build --watch",
+    "test": "npm run test:pure && npm run test:chat-card && npm run test:packs",
+    "test:pure": "tsc src/ts/rolls/score.ts src/ts/rolls/testState.ts src/ts/rolls/activationTerms.ts src/ts/rolls/grooveTerms.ts src/ts/rolls/bespokeGrooves.ts src/ts/handlebarsHelpers/range.ts --outDir test/.out --rootDir src/ts --module esnext --moduleResolution node --target es2020 --strict --skipLibCheck && node test/pure.mjs && node test/state.mjs && node test/riffs.mjs && node test/grooves.mjs && node test/activations.mjs && node test/bespoke-grooves.mjs",
+    "test:chat-card": "node test/chat-card.mjs && node test/chat-hook.mjs && node test/riff-editor.mjs && node test/groove-sheet.mjs",
+    "test:packs": "node test/groove-pack.mjs && node test/session-pack.mjs && node test/pack-copy.mjs",
     "publish": "node publish.cjs"
   },
   "devDependencies": {
