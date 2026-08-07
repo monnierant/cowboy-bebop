@@ -33,4 +33,15 @@ assert.deepEqual(
 assert.equal(correctionLimit({ dangerousGoods: true }), 3);
 assert.equal(correctionLimit({}), 2);
 
+// Un slot de Vengeance vide ne lie personne. Sans cette garde, la chaîne vide
+// s'égalisait avec un acteur non résolu et ouvrait la fongibilité à tort.
+assert.deepEqual(
+  hunterPaymentOptions([[pay("rythme")]], "", { vengeanceHunterId: "" }),
+  [[pay("rythme")]]
+);
+assert.deepEqual(
+  hunterPaymentOptions([[pay("rythme")]], "", { shadowsHunterIds: [""] }),
+  [[pay("rythme")]]
+);
+
 console.log("✓ exceptions de grooves : paiements, otages et plafond de correction");

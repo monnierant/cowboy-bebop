@@ -3,12 +3,17 @@ import { score, type MouvementRules, type Score } from "./score.js";
 
 export const BESPOKE_GROOVES = {
   orbital: "groovePrime003",
+  masterKey: "groovePrime005",
   dangerousGoods: "groovePrime008",
   shadows: "groovePrime022",
   vengeance: "groovePrime015",
   smallerBites: "groovePrime018",
   longTermPlan: "grooveHunter09",
 } as const;
+
+/** Ce que cocher Passe-partout ajoute : au seuil de la session, et au groupement. */
+export const MASTER_KEY_DIFFICULTY = 3;
+export const MASTER_KEY_DICE = 1;
 
 const currency = (payment: Payment): boolean =>
   payment.resource === "cartridge" || payment.resource === "rythme";
@@ -40,8 +45,11 @@ export function hunterPaymentOptions(
   actorId: string,
   rules: BespokeGrooveRules = {}
 ): Payment[][] {
-  const vengeance = rules.vengeanceHunterId === actorId;
-  const shadowed = (rules.shadowsHunterIds ?? []).includes(actorId);
+  // Un identifiant vide n'est pas un chasseur : sans cette garde, le slot non
+  // rempli de Vengeance s'égalise avec un acteur non résolu et ouvre la
+  // fongibilité à quelqu'un que Big Shot n'a pas lié.
+  const vengeance = Boolean(actorId) && rules.vengeanceHunterId === actorId;
+  const shadowed = Boolean(actorId) && (rules.shadowsHunterIds ?? []).includes(actorId);
 
   const expanded = options.flatMap((option) => {
     if (!vengeance) return [option.map((payment) => ({ ...payment }))];

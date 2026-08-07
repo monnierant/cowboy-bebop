@@ -205,7 +205,14 @@ export async function pay(
   return true;
 }
 
-/** Débite une option composée après avoir validé tous ses compteurs. */
+/**
+ * Débite une option composée après avoir validé tous ses compteurs.
+ *
+ * Une écriture par détenteur, pas une par ressource : cartouche et rythme vivent
+ * sur la même fiche, et deux `update` successifs laisseraient la fiche à moitié
+ * débitée si le second échouait. Regrouper évite en outre que deux lignes visant
+ * le même compteur se lisent toutes deux sur l'ancienne valeur.
+ */
 export async function payOption(
   option: Payment[],
   actor: any,
@@ -214,16 +221,44 @@ export async function payOption(
   if (owed) return true;
   if (paymentOptionBlocked(option, actor)) return false;
 
-  // Regrouper évite que deux lignes visant le même compteur se lisent toutes
-  // deux sur l'ancienne valeur.
   const totals = new Map<PaymentResource, number>();
   option.filter((payment) => isCounter(payment.resource)).forEach((payment) =>
     totals.set(payment.resource, (totals.get(payment.resource) ?? 0) + payment.amount)
   );
+
+  // Un `update` par fiche, préparé en entier avant la moindre écriture.
+  const writes = new Map<any, Record<string, number>>();
   for (const [resource, amount] of totals) {
-    if (!(await pay({ resource, amount }, actor))) return false;
+    const counter = COUNTER_OF[resource];
+    if (!counter) continue;
+
+    const owner = holderOf(resource, actor);
+    const current = Number(owner?.system?.[counter] ?? 0);
+    if (!owner || current < amount) return false;
+
+    writes.set(owner, { ...(writes.get(owner) ?? {}), [`system.${counter}`]: current - amount });
   }
+
+  for (const [owner, update] of writes) await owner.update(update);
   return true;
+}
+
+/**
+ * Débite d'un seul coup ce que plusieurs riffs plaqués coûtent ensemble.
+ *
+ * Payer riff par riff n'est atomique que pour chacun : le troisième pouvait
+ * échouer alors que les deux premiers étaient déjà écrits sur la fiche, et le
+ * chasseur perdait ses jetons sans lancer. Les prix dus par quelqu'un d'autre
+ * sont écartés du total, jamais débités (ADR 0009).
+ */
+export async function payTogether(
+  options: Array<{ payments: Payment[]; owed?: boolean }>,
+  actor: any
+): Promise<boolean> {
+  return payOption(
+    options.filter((entry) => !entry.owed).flatMap((entry) => entry.payments),
+    actor
+  );
 }
 
 /**
