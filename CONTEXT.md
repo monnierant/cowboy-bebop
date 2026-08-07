@@ -180,9 +180,10 @@ réutilisable ; ce qui est joué en copie le contenu plutôt que d'y rester lié
 _Avoid_: jeu de riffs, répertoire, setlist, preset, modèle
 
 **Mouvement** :
-L'un des trois actes nommés — OK, 3-2-1…, Let's jam ! — qui fixe la difficulté,
-le nombre de dés et de fausses notes d'un test. Une identité, pas un rang : un
-type de session en joue un, trois, ou trois à l'envers.
+L'un des trois actes nommés — OK, 3-2-1…, Let's jam ! — qui fixe le nombre de
+dés, les fausses notes et la difficulté **de base** d'un test ; l'Offset de
+difficulté s'y ajoute. Une identité, pas un rang : un type de session en joue un,
+trois, ou trois à l'envers.
 _Avoid_: rang, acte, phase
 
 **Structure** :
@@ -194,14 +195,31 @@ mouvement, du début à la fin.
 
 **Carton** :
 Un succès marqué, d'un genre donné. Reste chez le chasseur qui l'a gagné
-jusqu'à sa dépense (voir ADR 0002).
+jusqu'à sa dépense (voir ADR 0002). Deux destinations, arbitrées dans la boîte de
+collecte : une tranche de cadran, ou l'Offset de difficulté.
 
 **Fausse note** :
-Un revers, d'un genre donné. S'accumule sur la prime active. Big Shot peut en
-rayer une sur la carte, gratuitement et sans limite : ce n'est ni une
-correction — le plafond de deux borne ce qu'un chasseur rachète — ni un riff,
-donc aucun type de session ne l'ouvre ni ne la ferme.
+Un revers, d'un genre donné. S'accumule sur la prime active. Big Shot peut aussi
+la dépenser contre l'Offset de difficulté, dans la boîte de collecte, plutôt que
+de l'encaisser ; ou en rayer une sur la carte, gratuitement et sans limite — ce
+qui n'est ni une correction — le plafond de deux borne ce qu'un chasseur rachète —
+ni un riff, donc aucun type de session ne l'ouvre ni ne la ferme.
+
+**Boîte de collecte** :
+Le dialogue qui répartit ce qu'un test a produit, au moment de solder la carte :
+un bouton par geste qui entame la collecte — dépenser un carton, dépenser une
+fausse note, racheter le seuil — et rien d'écrit tant qu'elle n'est pas validée
+(voir ADR 0015).
+_Avoid_: fenêtre de dépense, popup de jetons
 _Avoid_: échec, malus
+
+**Offset de difficulté** :
+L'écart, porté par la prime, entre la difficulté de base du mouvement et celle
+qu'un test affronte réellement. Un seul, signé, valable pour toute la session ;
+un chasseur le baisse d'un carton, Big Shot le monte d'une fausse note, un Groove
+de prime peut le déplacer. La difficulté lue ne descend jamais sous 1, mais
+l'offset lui-même n'est pas borné (voir ADR 0015).
+_Avoid_: modificateur, malus de seuil, difficulté courante
 
 **Rythme** :
 La réserve d'un chasseur qui paie les riffs les plus chers.

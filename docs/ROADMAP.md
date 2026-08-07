@@ -314,6 +314,43 @@ Cette section supersède, pour ces six entrées, les exclusions historiques just
 au-dessus sans réécrire la trace de ce que le lot initial avait volontairement
 laissé de côté.
 
+### ADR 0015 — Offset de difficulté *(implémenté)*
+
+La seconde destination des cartons du livre — « réduire de 1 la difficulté du
+mouvement pour les prochains tests de la session » — n'existait pas. La prime
+porte désormais un offset signé, et la difficulté d'un test vaut
+`max(1, mouvement.difficulty + offset)`.
+
+- Un carton dépensé sur la Carte le baisse de 1, une fausse note de Big Shot le
+  monte de 1.
+- Passe-partout le monte de 3 et ajoute un dé, à chaque test, cumulativement ;
+  deux cartons du test le remettent à zéro. **Le rachat a donc une forme** —
+  ceci supersède l'exclusion « Le rachat de Passe-partout » ci-dessus.
+- Vue du dernier étage éteint le bouton carton ; jouer son Solo ! crédite un
+  droit unique de réduction. `cartonAgainstDifficulty`, déclaré par l'ADR 0012 et
+  jamais lu, cesse d'être une déclaration morte.
+- La Carte doit figer la difficulté effective à son instantané : elle n'est plus
+  une fonction pure du mouvement (ADR 0007).
+
+### Corrections de moteur accompagnant ce lot *(implémenté)*
+
+- Le paiement de plusieurs riffs au lancer est agrégé en une option unique,
+  validée et débitée en un seul passage. Aujourd'hui la boucle sort en `return`
+  à la première option impayable sans rembourser les précédentes.
+- Le moteur honore `paymentOptions` sur les activations instantanées ; le prix en
+  dur de Hors des sentiers battus disparaît, et `groovePlayOffer` facture la
+  somme des activations payantes au lieu de la première.
+- Assister cesse de prêter le groove de l'assistant : c'est propre à Jam !.
+- `state.running` est calculé avec l'avantage, sans quoi les activations
+  conditionnées `underDisadvantage` manquent à l'affichage et aux effets de carte.
+- Maître de la bidouille devient une relance unique par test, acceptée ou refusée
+  après affichage. Transformer un dé ne remet plus `corrected` à zéro : le
+  plafond de deux corrections reste global au test.
+- Le statut « joué / rappel » cesse d'être saisi dans les descriptions et se
+  dérive des Activations, des Rappels et de l'appartenance à `BESPOKE_GROOVES` —
+  sans quoi les six exceptions nommées, qui ont `activations: []`, dériveraient à
+  tort en « Rappel uniquement ».
+
 ### Vérifier les grooves à une table
 
 - Déposer un groove sur un chasseur, puis un second : la confirmation apparaît, et
