@@ -1,5 +1,6 @@
 import { genres } from "./constants";
 import { primeOfDial } from "./prime";
+import { expireActivations } from "./grooves";
 
 // Who holds what, and who may spend it.
 //
@@ -133,8 +134,14 @@ export async function resetSession(prime: any): Promise<number> {
     "system.mouvement": 0,
     "system.cartons": emptyPool(),
     "system.notes": emptyPool(),
-    "system.activations": [],
+    "system.difficultyOffset": 0,
   });
+
+  // Passer par l'expiration plutôt qu'écraser : `survives` rend toujours faux
+  // pour l'événement `session`, donc rien ne court après, et les activations
+  // invalides restent conservées pour réparation au lieu d'être perdues par ce
+  // seul chemin.
+  await expireActivations(prime, "session");
 
   const hunters = ((game as any).actors ?? []).filter(
     (actor: any) => actor.type === "chasseur"
@@ -148,6 +155,7 @@ export async function resetSession(prime: any): Promise<number> {
       "system.cartons": emptyPool(),
       "system.solo": false,
       "system.plannedDie": 0,
+      "system.difficultyRelief": false,
     });
   }
 

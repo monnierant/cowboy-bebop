@@ -139,8 +139,10 @@ check("l'écart voyage avec le mouvement", withDifficulty(OK, -2).modifier, -2);
 check("le rang ne bouge pas", withDifficulty(LETS_JAM, 3).dices, 3);
 check("le plancher de fausses notes ne bouge pas", withDifficulty(LETS_JAM, 3).notes, 2);
 
-// Un seuil négatif n'est pas un seuil, et un écart illisible ne corrige rien.
-check("le seuil ne passe pas sous zéro", withDifficulty(OK, -12).difficulty, 0);
+// Le plancher est à 1 et porte sur la lecture, jamais sur l'Offset (ADR 0015) :
+// un seuil de zéro serait acquis d'office. Un écart illisible ne corrige rien.
+check("le seuil ne passe pas sous un", withDifficulty(OK, -12).difficulty, 1);
+check("le seuil plancher reste franchissable", score([1], withDifficulty(OK, -12)).cartons, 1);
 check("un écart illisible ne corrige rien", withDifficulty(OK, "bonjour").difficulty, 5);
 check("un écart absent ne corrige rien", withDifficulty(OK, undefined).difficulty, 5);
 

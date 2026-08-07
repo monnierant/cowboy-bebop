@@ -126,8 +126,11 @@ export function dicePool(request: PoolRequest): Pool {
  * « Modifier de 1 la difficulté du mouvement pour les prochains tests. Chaque
  * carton la réduit, chaque fausse note l'augmente. » L'écart voyage donc dans le
  * mouvement lui-même : tout ce qui suit lit `difficulty` sans avoir à connaître
- * l'existence de ce réglage. Un seuil négatif n'est pas un seuil, d'où le
- * plancher ; un écart illisible ne corrige rien.
+ * l'existence de ce réglage, et la Carte le fige avec le reste du Test.
+ *
+ * Le plancher est à 1 et porte sur la lecture, jamais sur l'Offset lui-même
+ * (ADR 0015) : un seuil de zéro serait acquis d'office, et un offset très bas
+ * doit continuer d'absorber les hausses au lieu de les subir aussitôt.
  */
 export function withDifficulty<T extends MouvementRules>(
   mouvement: T,
@@ -138,7 +141,7 @@ export function withDifficulty<T extends MouvementRules>(
 
   return {
     ...mouvement,
-    difficulty: Math.max(0, mouvement.difficulty + delta),
+    difficulty: Math.max(1, mouvement.difficulty + delta),
     modifier: delta,
   };
 }

@@ -95,6 +95,8 @@ export interface BespokeGrooveRules {
   orbitalSafe?: boolean;
   dangerousGoods?: boolean;
   smallerBites?: boolean;
+  /** Passe-partout : la boîte de jet offre son marché, +3 au seuil contre un dé. */
+  masterKey?: boolean;
   vengeanceHunterId?: string;
   shadowsHunterIds?: string[];
   shadowsAccepted?: boolean;
@@ -248,6 +250,17 @@ export interface Substitution {
 }
 
 /**
+ * Une Activation instantanée, accompagnée du nom du Groove qui la porte.
+ *
+ * Le nom ne fait pas partie du vocabulaire fermé : il ne sert qu'à attribuer une
+ * transformation sur la Carte. Sans lui, la carte devait coder en dur le nom du
+ * Groove qu'elle appliquait.
+ */
+export interface SourcedActivation extends Activation {
+  source?: string;
+}
+
+/**
  * Une Activation en cours : persistante, posée sur la prime, gelée avec le
  * Groove qui l'a produite.
  *
@@ -345,6 +358,14 @@ export interface Settlement {
   hunterName: string;
   /** Empty when the roll produced no false note, so no prime was involved. */
   primeName: string;
+  /**
+   * L'écart de difficulté déplacé par la collecte, absent s'il n'a pas bougé.
+   *
+   * Les jetons partis contre le seuil ne se lisent nulle part ailleurs : sans
+   * cette ligne, le bandeau annoncerait un carton de moins sans dire où il est
+   * allé, et le geste cesserait d'être public (ADR 0007, ADR 0015).
+   */
+  difficulty?: { from: string; to: string };
 }
 
 export interface Colors {

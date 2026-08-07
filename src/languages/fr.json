@@ -199,6 +199,11 @@
         "chasseur": "Un chasseur",
         "prime": "Une prime"
       },
+      "status": {
+        "played": "Joué par le système.",
+        "partial": "Partiellement joué par le système ; le reste est rappelé.",
+        "reminder": "Rappel uniquement : à la charge de la table."
+      },
       "description": "Ce qu'il enfreint",
       "descriptionHint": "Le texte du livre. C'est lui que la boîte de jet et la carte rappellent au moment où le groove peut se déclencher — y compris pour les grooves que le système ne joue pas.",
       "descriptionPlaceholder": "La règle de base que ce groove enfreint, dans les mots du livre.",
@@ -294,11 +299,25 @@
         "voidNoteHint": "Retirer une fausse note de ce test, sans rien faire payer à personne. Réservé à Big Shot, quand les conditions ne la justifiaient pas : ça ne compte pas dans les deux corrections du chasseur.",
         "notYours": "Ce test n'est pas le vôtre."
       },
+      "collect": {
+        "nothingLeft": "Plus rien à créditer.",
+        "nothingCredited": "Tout est parti contre le seuil du mouvement.",
+        "prime": "la prime"
+      },
       "bonusDice": "Dés en plus",
       "bonusDiceHint": "Les dés ajoutés à la main, pour ce que le livre laisse à la table : S'impliquer en donne deux, Big Shot en accorde ou en retire au jugé. Ils font partie du groupement, donc un quitte ou double les garde.",
       "bonusDiceUp": "Un dé de plus",
       "bonusDiceDown": "Un dé de moins",
-      "history": "Historique du Test"
+      "history": "Historique du Test",
+      "dice": {
+        "cancel": "Ne rien choisir",
+        "pickRewrite": "Choisissez le résultat à transformer en 6.",
+        "notRewritable": "Seuls les résultats de 2 à 5 se transforment.",
+        "pickReserve": "Choisissez le résultat à réserver pour un Test ultérieur.",
+        "notReservable": "Ce résultat n’a pas été lancé : il venait déjà de la réserve.",
+        "noneRewritable": "Aucun résultat de 2 à 5 à transformer.",
+        "noneReservable": "Aucun résultat lancé à réserver."
+      }
     },
     "dials": {
       "title": "Cadrans associés",
@@ -430,8 +449,27 @@
       "secretHint": "Seul Big Shot voit le détail de cette activation ; la table sait qu'elle court, sans savoir ce qu'elle fait.",
       "raw": "Modifier le texte brut",
       "rerollRemovedDie": "Relancer le dé écarté",
+      "rewriteDie": "Transformer un résultat en 6",
+      "alreadyPlayed": "Déjà joué sur ce Test.",
       "damageRemovalForbidden": "Ce Groove interdit d’éliminer des dommages.",
       "keepRerolledDie": "Conserver le nouveau résultat"
+    },
+    "difficulty": {
+      "offset": "Seuil du mouvement",
+      "spendCarton": "Dépenser un carton",
+      "spendCartonHint": "Un carton de moins à collecter, et la difficulté du mouvement baisse de 1 pour les prochains tests de la session.",
+      "spendNote": "Dépenser une fausse note",
+      "spendNoteHint": "Une fausse note de moins à collecter, et la difficulté du mouvement monte de 1 pour les prochains tests de la session.",
+      "buyBack": "Racheter le seuil",
+      "buyBackHint": "Passe-partout : deux cartons de ce test annulent la hausse qu’il a fait payer et remettent le seuil du mouvement à son niveau de base.",
+      "forbidden": "Un Groove de la prime interdit de dépenser un carton contre la difficulté.",
+      "noCarton": "Ce test n’a plus de carton à dépenser.",
+      "noNote": "Ce test n’a plus de fausse note à dépenser.",
+      "noOffset": "Le seuil du mouvement est déjà à son niveau de base.",
+      "noMasterKey": "Seul Passe-partout ouvre le rachat du seuil.",
+      "needTwoCartons": "Il faut les deux cartons de ce test pour racheter le seuil.",
+      "masterKey": "Passe-partout : +1 dé, +3 au seuil",
+      "masterKeyHint": "Ajoute un dé à ce groupement. En échange, le seuil du mouvement monte de 3 pour toute la session, ce test compris. L’écart s’empile à chaque fois qu’on accepte."
     }
   },
   "MYMODULE.dog-browser": "Chien browser",

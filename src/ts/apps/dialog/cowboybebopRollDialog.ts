@@ -5,8 +5,9 @@ import { dicePool, readAdvantage, withDifficulty } from "../../rolls/score";
 import { rollEffects } from "../../rolls/activationTerms";
 import { activeEffects, applyAdvantageEffects, conditionsMatch, isForbidden, permitsDentedTraits } from "../../rolls/activationTerms";
 import { getActivePrime } from "../../prime";
+import { difficultyOffsetOf, raiseDifficultyOffset } from "../../difficulty";
 import { riffsForPhase } from "../../riffs";
-import { payOption, paymentLabel, paymentOptionLabel, playable, pledge } from "../../riffPlay";
+import { payTogether, paymentLabel, paymentOptionLabel, playable, pledge } from "../../riffPlay";
 import { Assist, PlayedRiff, TestGroove } from "../../rolls/testState";
 import {
   grooveCard,
@@ -18,7 +19,11 @@ import {
   hasLongTermPlan,
 } from "../../grooves";
 import type { Substitution } from "../../types";
-import { hunterPaymentOptions } from "../../rolls/bespokeGrooves";
+import {
+  hunterPaymentOptions,
+  MASTER_KEY_DICE,
+  MASTER_KEY_DIFFICULTY,
+} from "../../rolls/bespokeGrooves";
 
 /** Un riff plaqué dans cette boîte, et ce qu'il lui reste à préciser. */
 interface PlayedEntry {
@@ -126,6 +131,7 @@ export default class CowboyBebopRollDialog extends Dialog {
     data.mouvements = mouvements;
     const plannedDie = Math.trunc(Number((this.actor as any).system?.plannedDie ?? 0));
     data.plannedDie = plannedDie >= 1 && plannedDie <= 6 ? plannedDie : 0;
+    data.masterKey = bespokeRulesOf(getActivePrime()).masterKey === true;
     return data;
   }
 
@@ -145,14 +151,25 @@ export default class CowboyBebopRollDialog extends Dialog {
     ]);
   }
 
+  /**
+   * L'assistant dont le groove est prêté à ce test, s'il y en a un.
+   *
+   * Seul Jam ! prête le groove : « vous conférez **aussi** votre groove au
+   * test » en est la clause propre. Assister aide sans rien conférer.
+   */
+  private jamAssistant(): any {
+    const assist = this.assistOf();
+    if (assist?.riffId !== "jam") return undefined;
+
+    return (game as any).actors?.get(assist.actorId);
+  }
+
   /** Même mécanique, quelle que soit son enveloppe Riff ou Groove. */
   private mechanicalActivations(advantage: -1 | 0 | 1 = 0): Activation[] {
     const prime = getActivePrime();
-    const assist = this.assistOf();
-    const assistant = assist ? (game as any).actors?.get(assist.actorId) : undefined;
     return [
       ...grooveActivationsOf(this.actor),
-      ...grooveActivationsOf(assistant),
+      ...grooveActivationsOf(this.jamAssistant()),
       ...grooveActivationsOf(prime),
       ...activationsFor(prime, this.category, this.genre, advantage),
     ];
@@ -172,9 +189,15 @@ export default class CowboyBebopRollDialog extends Dialog {
     );
   }
 
-  /** Les Activations en cours qui visent ce test, gelées au lancer. */
-  private runningActivations() {
-    return activationsFor(getActivePrime(), this.category, this.genre);
+  /**
+   * Les Activations en cours qui visent ce test, gelées au lancer.
+   *
+   * L'avantage en fait partie : sans lui, une Activation conditionnée
+   * `underDisadvantage` manquerait à l'affichage de la carte et à ses effets de
+   * résultat, tout en figurant dans les Activations applicables.
+   */
+  private runningActivations(advantage: -1 | 0 | 1 = 0) {
+    return activationsFor(getActivePrime(), this.category, this.genre, advantage);
   }
 
   private effectiveAdvantage(html: JQuery) {
@@ -229,10 +252,7 @@ export default class CowboyBebopRollDialog extends Dialog {
    * ouverte, changer d'assistant change le groove prêté.
    */
   private lentSubstitution(): Substitution | undefined {
-    const assist = this.assistOf();
-    if (!assist) return undefined;
-
-    return grooveOf((game as any).actors?.get(assist.actorId))?.substitution;
+    return grooveOf(this.jamAssistant())?.substitution;
   }
 
   /**
@@ -248,7 +268,7 @@ export default class CowboyBebopRollDialog extends Dialog {
 
     const mine = grooveCard(this.actor);
     if (mine) {
-      cards.push({ name: mine.name, description: mine.description, lentBy: "" });
+      cards.push({ id: mine.id, name: mine.name, description: mine.description, lentBy: "" });
     }
 
     const assist = this.assistOf();
@@ -257,6 +277,7 @@ export default class CowboyBebopRollDialog extends Dialog {
       : undefined;
     if (assist && lent) {
       cards.push({
+        id: lent.id,
         name: lent.name,
         description: lent.description,
         lentBy: (game as any).i18n.format("COWBOY.groove.lent", {
@@ -685,7 +706,11 @@ export default class CowboyBebopRollDialog extends Dialog {
     const mouvement: Mouvement & { modifier: number } = withDifficulty(
       mouvements[index],
       (Number.isFinite(manualDifficulty) ? manualDifficulty : 0) +
-        played.difficulty
+        played.difficulty +
+        // L'Offset que la prime porte pour toute la session (ADR 0015) : les
+        // cartons et les fausses notes déjà dépensés contre le seuil, plus ce
+        // que Passe-partout y a mis.
+        difficultyOffsetOf(getActivePrime())
     );
 
     const parsedBonus = Number.parseInt(
@@ -730,24 +755,38 @@ export default class CowboyBebopRollDialog extends Dialog {
    * pourquoi le coût total est affiché juste au-dessus de lui.
    */
   private async _onRoll(html: JQuery) {
+    // Passe-partout se règle avant la lecture du formulaire : son +3 va sur
+    // l'Offset de la prime, et `readForm` le relira dans la foulée, si bien que
+    // le test en cours le subit comme les suivants (ADR 0015).
+    const masterKey =
+      bespokeRulesOf(getActivePrime()).masterKey === true &&
+      html.find(".cowboy-dialog-master-key-check").is(":checked");
+    if (masterKey) await raiseDifficultyOffset(getActivePrime(), MASTER_KEY_DIFFICULTY);
+
     const { index, mouvement, advantage, bonusDice, traits } =
       this.readForm(html);
 
-    const paid: PlayedRiff[] = [];
-
-    for (const entry of this.played) {
-      if (entry.payments.length > 0 && !(await payOption(entry.payments, this.actor, entry.owed))) {
-        ui.notifications?.warn(
-          (game as any).i18n.format("COWBOY.riffs.cannotAfford", {
-            cost: paymentOptionLabel(entry.payments),
-            held: 0,
-          })
-        );
-        return;
-      }
-
-      paid.push({ id: entry.id, name: entry.name, payment: entry.payment, payments: entry.payments });
+    // Tout ou rien : le coût de tous les riffs plaqués part en une seule
+    // écriture par fiche. Débiter riff par riff laissait les premiers payés
+    // quand un suivant s'avérait impayable, et le test ne partait pas.
+    if (!(await payTogether(this.played, this.actor))) {
+      ui.notifications?.warn(
+        (game as any).i18n.format("COWBOY.riffs.cannotAfford", {
+          cost: paymentOptionLabel(
+            this.played.filter((entry) => !entry.owed).flatMap((entry) => entry.payments)
+          ),
+          held: 0,
+        })
+      );
+      return;
     }
+
+    const paid: PlayedRiff[] = this.played.map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      payment: entry.payment,
+      payments: entry.payments,
+    }));
 
     // « Après avoir résolu le test, le CP efface les dommages des traits
     // décrits. » On les efface au lancer : un trait entamé ne donne pas de dé et
@@ -767,9 +806,8 @@ export default class CowboyBebopRollDialog extends Dialog {
     if (usePlan) await this.actor.update({ "system.plannedDie": 0 });
 
     const assist = this.assistOf();
-    const assistant = assist ? (game as any).actors?.get(assist.actorId) : undefined;
-    const canReservePlan = hasLongTermPlan(this.actor) ||
-      (assist?.riffId === "jam" && hasLongTermPlan(assistant));
+    const canReservePlan =
+      hasLongTermPlan(this.actor) || hasLongTermPlan(this.jamAssistant());
 
     await this.actor.roll(
       this.genre,
@@ -777,14 +815,14 @@ export default class CowboyBebopRollDialog extends Dialog {
       index,
       mouvement,
       advantage,
-      bonusDice,
+      bonusDice + (masterKey ? MASTER_KEY_DICE : 0),
       traits,
       paid,
       assist,
       // Gelés sur la carte : l'assistant peut changer de groove après coup, et
       // la carte ne doit pas se mettre à raconter un autre test.
       this.grooveCards(),
-      this.runningActivations(),
+      this.runningActivations(advantage),
       this.applicableActivations(advantage),
       bespokeRulesOf(getActivePrime()),
       canReservePlan,

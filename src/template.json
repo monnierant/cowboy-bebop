@@ -107,6 +107,7 @@
       "rythme": 0,
       "solo": false,
       "plannedDie": 0,
+      "difficultyRelief": false,
       "cartons": {
         "rock": 0,
         "blues": 0,
@@ -152,6 +153,7 @@
         "tango": 0
       },
       "mouvement": 0,
+      "difficultyOffset": 0,
       "risque": 0,
       "activations": [],
       "riffs": [],

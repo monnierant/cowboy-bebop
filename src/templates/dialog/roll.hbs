@@ -107,6 +107,17 @@
   </label>
   {{/if}}
 
+  {{!-- Le marché de Passe-partout : un dé de plus tout de suite, contre trois
+  points de seuil qui restent sur la session. Cochable à chaque test, et son
+  écart s'empile - c'est ce qui rend le rachat à deux cartons intéressant. --}}
+  {{#if masterKey}}
+  <label class="cowboy-dialog-master-key" data-tooltip="{{localize 'COWBOY.difficulty.masterKeyHint'}}">
+    <input type="checkbox" class="cowboy-dialog-master-key-check" />
+    <i class="fa-solid fa-key" aria-hidden="true"></i>
+    {{localize 'COWBOY.difficulty.masterKey'}}
+  </label>
+  {{/if}}
+
   {{!-- Les traits du chasseur, puis ceux de son MONO - qui n'ont pas de genre
   et se proposent donc à tous les jets. Cocher l'un d'eux, c'est déclarer qu'on
   se sert de son appareil.

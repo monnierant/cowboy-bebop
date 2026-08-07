@@ -169,6 +169,12 @@ export default class CowboyBebopActor extends Actor {
 
     await adjust(this, "cartons", genre, 1);
 
+    // Le droit qu'ouvre le Solo ! sous Vue du dernier étage : une réduction de
+    // seuil malgré l'interdiction. Solo ! vivant hors de tout test, l'exception
+    // ne peut pas désigner un test - c'est un droit, consommé une fois, perdu
+    // au solde de session (ADR 0015).
+    await this.update({ "system.difficultyRelief": true });
+
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: this as any }),
       content: `<p>${i18n.format("COWBOY.riffs.soloDone", {

@@ -199,6 +199,11 @@
         "chasseur": "A hunter",
         "prime": "A prime"
       },
+      "status": {
+        "played": "Played by the system.",
+        "partial": "Partly played by the system; the rest is a reminder.",
+        "reminder": "Reminder only: the table handles it."
+      },
       "description": "What it breaks",
       "descriptionHint": "The book's text. It is what the roll dialog and the card recall at the moment the groove can fire — including for grooves the system does not play.",
       "descriptionPlaceholder": "The base rule this groove breaks, in the book's words.",
@@ -294,11 +299,25 @@
         "voidNoteHint": "Remove one false note from this test, charged to nobody. Big Shot only, for when the fiction did not warrant it: it does not count against the hunter's two corrections.",
         "notYours": "This test is not yours."
       },
+      "collect": {
+        "nothingLeft": "Nothing left to credit.",
+        "nothingCredited": "Everything went against the movement's difficulty.",
+        "prime": "the prime"
+      },
       "bonusDice": "Extra dice",
       "bonusDiceHint": "Dice added by hand, for whatever the book leaves to the table: Get Involved grants two, Big Shot gives or takes at will. They belong to the pool, so a double or nothing keeps them.",
       "bonusDiceUp": "One die more",
       "bonusDiceDown": "One die fewer",
-      "history": "Test history"
+      "history": "Test history",
+      "dice": {
+        "cancel": "Pick nothing",
+        "pickRewrite": "Choose the result to turn into a 6.",
+        "notRewritable": "Only results from 2 to 5 can be turned.",
+        "pickReserve": "Choose the result to save for a later Test.",
+        "notReservable": "This result was not rolled: it already came from the reserve.",
+        "noneRewritable": "No result from 2 to 5 left to turn.",
+        "noneReservable": "No rolled result to save."
+      }
     },
     "dials": {
       "title": "Linked dials",
@@ -430,8 +449,27 @@
       "secretHint": "Only Big Shot sees the detail of this activation; the table knows it is running, not what it does.",
       "raw": "Edit the raw text",
       "rerollRemovedDie": "Reroll the discarded die",
+      "rewriteDie": "Turn a result into a 6",
+      "alreadyPlayed": "Already played on this Test.",
       "damageRemovalForbidden": "This Groove forbids removing damage.",
       "keepRerolledDie": "Keep the new result"
+    },
+    "difficulty": {
+      "offset": "Movement difficulty",
+      "spendCarton": "Spend a carton",
+      "spendCartonHint": "One carton less to collect, and the movement's difficulty drops by 1 for the session's next tests.",
+      "spendNote": "Spend a false note",
+      "spendNoteHint": "One false note less to collect, and the movement's difficulty rises by 1 for the session's next tests.",
+      "buyBack": "Buy the difficulty back",
+      "buyBackHint": "Master Key: two cartons from this test cancel the rise it charged and return the movement's difficulty to its base value.",
+      "forbidden": "A groove on the prime forbids spending cartons against the difficulty.",
+      "noCarton": "This test has no carton left to spend.",
+      "noNote": "This test has no false note left to spend.",
+      "noOffset": "The movement's difficulty is already at its base value.",
+      "noMasterKey": "Only Master Key opens the difficulty buy-back.",
+      "needTwoCartons": "Buying the difficulty back takes both of this test's cartons.",
+      "masterKey": "Master Key: +1 die, +3 difficulty",
+      "masterKeyHint": "Adds a die to this pool. In exchange the movement's difficulty rises by 3 for the whole session, this test included. The shift stacks every time the offer is taken."
     }
   },
   "MYMODULE.dog-browser": "Dog browser",
