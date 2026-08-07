@@ -167,10 +167,10 @@ function renderHunterSheets(): void {
 
 /**
  * Ce qui, sur une prime, se lit ailleurs que sur sa propre fiche. Un changement
- * de nom ou de portrait ne concerne qu'elle ; ces trois champs-là concernent
+ * de nom ou de portrait ne concerne qu'elle ; ces quatre champs-là concernent
  * toute la table.
  */
-const sharedPrimeFields = ["mouvement", "riffs", "sessionType"];
+const sharedPrimeFields = ["mouvement", "riffs", "sessionType", "activations", "grooveState"];
 
 export function registerPrimeHooks(): void {
   Hooks.on("updateActor", (actor: any, change: any) => {

@@ -2,14 +2,15 @@
   "TYPES": {
     "Actor": {
       "chasseur": "Chasseur",
-      "prime": "Prime"
+      "prime": "Prime",
+      "mono": "MONO",
+      "vaisseauMere": "Vaisseau mère"
     },
     "Item": {
-      "mono": "Mono",
-      "sessionType": "Type de session"
+      "sessionType": "Type de session",
+      "groove": "Groove"
     }
   },
-
   "COWBOY": {
     "actor": {
       "goal": "Objectif",
@@ -22,12 +23,19 @@
       "mouvement": "MOUVEMENT",
       "concept": "CONCEPT",
       "memory": "SOUVENIR",
-      "groove": "GROOVE",
       "burden": "FARDEAU",
       "healTrait": "Réparer ce trait",
+      "cycleTrait": "Changer l'état à la main : intact, entamé, brisé. Pour rattraper une fausse manipulation.",
       "rythme": "Rythme",
       "rythmeUp": "Gagner un rythme",
       "rythmeDown": "Perdre un rythme",
+      "risque": "Risque",
+      "risqueHint": "La réserve de Big Shot, gagnée à la mise en place et dépensée pour durcir les tests.",
+      "risqueUp": "Gagner un risque",
+      "risqueDown": "Dépenser un risque",
+      "resetSession": "Solder",
+      "resetSessionHint": "Remet le mouvement au premier, et vide les cartons et les fausses notes de toute la table.",
+      "resetSessionConfirm": "Remettre le mouvement à OK, et vider les fausses notes de cette prime ainsi que les cartons de ses {hunters} chasseurs ? Rien de tout cela ne se récupère.",
       "currentTarget": "Cible actuelle",
       "setCurrentTarget": "Choisir cette Cible",
       "activePrime": "Prime active",
@@ -73,6 +81,68 @@
       "removeCustom": "Supprimer ce riff",
       "customNamePlaceholder": "Nom du riff…",
       "customDescriptionPlaceholder": "Ce qu'il permet, et ce qu'il coûte…",
+      "payments": {
+        "cartridge": "cartouche",
+        "rythme": "rythme",
+        "risque": "risque",
+        "dentTrait": "trait entamé",
+        "stakeTrait": "trait misé",
+        "note": "fausse note"
+      },
+      "effects": {
+        "dice": "dés",
+        "advantage": "avantage",
+        "difficulty": "seuil",
+        "cartons": "cartons",
+        "notes": "fausses notes",
+        "heal": "dommages effacés",
+        "approach": "approches en plus",
+        "minimumNotes": "fausses notes au minimum",
+        "notesPerMissingCarton": "fausses notes par carton manquant",
+        "disadvantageDoubleCarton": "un double hors 6 donne un carton",
+        "dentedTraitsOnDisadvantage": "les traits entamés servent quand même",
+        "forbid": "interdire",
+        "transformResult": "transformer le résultat"
+      },
+      "cost": "Coût",
+      "effectsLabel": "Effets",
+      "addPayment": "Ajouter un paiement",
+      "removePayment": "Retirer ce paiement",
+      "addEffect": "Ajouter un effet",
+      "removeEffect": "Retirer cet effet",
+      "resetTerms": "Rendre le prix du livre",
+      "correction": "Corriger une fausse note",
+      "correctionHint": "Ce n'est pas un riff mais une règle de base, et c'est la première chose qu'une session filler déplace vers le rythme. Le joueur choisit l'un des paiements listés.",
+      "free": "gratuit",
+      "orPay": "ou",
+      "bespokeEffects": "Ce riff est câblé : son prix se règle, ses effets non.",
+      "owedHint": "Payé par un autre chasseur, qui retire lui-même sa réserve. Le système l'enregistre et le rappelle.",
+      "notCounted": "Pris sur le test, pas sur une fiche : ne peut pas être vérifié d'avance.",
+      "cannotAfford": "Il faut {cost} ; il en reste {held}.",
+      "noPrime": "Aucune prime en jeu.",
+      "noEffect": "Ce riff ne changerait rien à ce résultat.",
+      "confirmPlay": "Jouer {name} pour {cost} ?",
+      "played": "Riffs joués",
+      "playedNone": "Aucun riff joué.",
+      "undoPlayed": "Reprendre ce riff",
+      "totalCost": "Coût du test",
+      "totalCostNone": "Aucun riff joué : ce test ne coûte rien.",
+      "openNone": "Aucun riff ouvert à ce mouvement.",
+      "openTitle": "Riffs ouverts",
+      "assist": "Assisté par",
+      "assistNone": "Personne",
+      "assistOwed": "{name} doit {cost}, à retirer sur sa propre fiche.",
+      "assistRythme": "{name} ({rythme} rythme)",
+      "assistPayment": "Paiement dû",
+      "choosePayment": "Choisissez le paiement",
+      "healTitle": "Effacer les dommages",
+      "healHint": "Jusqu'à {count} dommage(s) sur vos propres traits. Les dommages sévères ne s'effacent pas ainsi, et ceux d'un MONO se réparent sur sa fiche.",
+      "healNone": "Aucun trait entamé à effacer.",
+      "approachTitle": "Seconde approche",
+      "approachHint": "Ses traits rejoignent la réserve. Le bonus de genre reste attaché à l'approche du test.",
+      "soloUsed": "Solo ! a déjà été joué cette session.",
+      "soloDone": "{name} joue un solo : un carton {genre}.",
+      "noCarton": "Cette prime n'a pas de genre : le carton n'a pas pu être crédité.",
       "catalog": {
         "involve": {
           "name": "S'impliquer",
@@ -120,6 +190,67 @@
         }
       }
     },
+    "groove": {
+      "title": "Groove",
+      "namePlaceholder": "Nom du groove",
+      "audience": "Porté par",
+      "audienceHint": "Un groove de prime posé sur un chasseur n'a aucun sens : la fiche refuse le dépôt plutôt que de l'accepter en silence.",
+      "audiences": {
+        "chasseur": "Un chasseur",
+        "prime": "Une prime"
+      },
+      "description": "Ce qu'il enfreint",
+      "descriptionHint": "Le texte du livre. C'est lui que la boîte de jet et la carte rappellent au moment où le groove peut se déclencher — y compris pour les grooves que le système ne joue pas.",
+      "descriptionPlaceholder": "La règle de base que ce groove enfreint, dans les mots du livre.",
+      "substitution": "Substitution",
+      "substitutionHint": "« Utiliser systématiquement les traits de X pour les tests de Y ou Z. » Les traits ainsi ouverts sont ceux du lanceur, et ne donnent jamais le dé de genre : ce sont les traits qui changent d'approche, pas le test.",
+      "from": "Traits de",
+      "to": "pour les tests de",
+      "noSubstitution": "aucune",
+      "reminders": "Rappels",
+      "remindersHint": "Ce que le système dit sans jamais l'appliquer : un groove qui pilote un cadran ou dépend d'un fait hors de portée est rappelé au bon moment, et rien de plus. Quinze grooves du livre n'ont que ça.",
+      "addReminder": "Ajouter un rappel",
+      "removeReminder": "Retirer ce rappel",
+      "noReminder": "Aucun rappel : tout ce que ce groove fait, le système l'applique.",
+      "reminderPlaceholder": "Ce qu'il faut rappeler à ce moment-là, dans les mots du livre.",
+      "reminderAudience": "Lu par",
+      "reminderAudiences": {
+        "bigshot": "Big Shot seul",
+        "table": "Toute la table"
+      },
+      "untilSecret": "cesse au secret",
+      "untilSecretHint": "L'activation s'éteint aussi à la révélation du secret, quelle que soit sa portée. C'est une seconde horloge : « avant la fin du mouvement OU la révélation du secret ».",
+      "open": "Ouvrir la fiche de ce groove",
+      "remove": "Retirer ce groove",
+      "dropHint": "Déposez un groove ici",
+      "dropped": "{name} est désormais le groove de ce personnage.",
+      "replaceTitle": "Remplacer le groove",
+      "replace": "Ce personnage joue déjà {current}. Le remplacer par {next} ?",
+      "wrongAudience": "{name} est un groove destiné à {audience} : il ne peut pas être posé sur cette fiche.",
+      "lent": "Groove prêté par {name}",
+      "play": "Jouer ce groove",
+      "correctionUnavailable": "Cette correction par trait n’est pas disponible : il faut respecter le plafond et pouvoir entamer tous les traits exigés.",
+      "orbital": { "safe": "Otages en sécurité" },
+      "vengeance": { "linked": "Souvenir lié à" },
+      "shadows": {
+        "hunters": "Chasseurs désignés",
+        "accepted": "Secret accepté"
+      },
+      "smaller": {
+        "title": "Plus c’est petit, plus ça mord fort",
+        "second": "Second trait à entamer"
+      },
+      "plan": {
+        "title": "Plan sur le long terme",
+        "use": "Ajouter le résultat réservé",
+        "useHint": "Ajoute cette valeur au résultat du Test et la retire de la fiche au lancement.",
+        "planned": "Résultat réservé ajouté à ce Test",
+        "reserve": "Réserver un résultat",
+        "replace": "Remplacer le résultat réservé {previous} par {face} ?",
+        "saved": "Résultat réservé",
+        "savedHint": "Ce résultat peut être ajouté volontairement à un prochain Test de cette session."
+      }
+    },
     "sessionType": {
       "name": "NOM",
       "label": "Type de session",
@@ -135,14 +266,39 @@
       "setupPlaceholder": "Le rythme de départ, les risques de Big Shot, ce qui change…"
     },
     "roll": {
+      "title": "Groupement de dés",
+      "roll": "Lancer",
+      "cancel": "Annuler",
+      "difficulty": "Difficulté",
+      "difficultyHint": "Le seuil du mouvement choisi, durci ou adouci à la main. C'est ce que Big Shot achète avec ses risques.",
+      "difficultyUp": "Durcir la difficulté",
+      "difficultyDown": "Adoucir la difficulté",
+      "diceCountHint": "Les dés qui partent : le rang du mouvement, plus un par trait coché, plus le bonus de genre, plus celui qu'un avantage ajoute avant de le reprendre.",
+      "advantage": "Avantage",
+      "advantageNone": "Aucun",
+      "advantageUp": "Avantage",
+      "advantageDown": "Désavantage",
+      "genreBonus": "Bonus de genre",
+      "genreBonusHint": "Un dé de plus quand l'approche du chasseur est celle de la prime. Constaté, pas choisi.",
+      "traits": "Traits",
       "actions": {
         "collect": "Collecter",
         "collected": "Collecté",
         "cartridge": "Cartouche",
         "show": "Montrer",
         "damageTrait": "Entamer ce trait : il annule une fausse note, et reste entamé.",
-        "hyperDamageTrait": "Briser ce trait : le jet est relancé sans lui, et il reste brisé."
-      }
+        "stakeTrait": "Mettre ce trait en jeu : le groupement est relancé avec un dé de plus. Sans les deux cartons, le trait est rayé jusqu'à la fin de la session.",
+        "dented": "Entamé pour corriger une fausse note.",
+        "broken": "Rayé jusqu'à la fin de la session : un quitte ou double perdu.",
+        "voidNote": "Annuler une fausse note",
+        "voidNoteHint": "Retirer une fausse note de ce test, sans rien faire payer à personne. Réservé à Big Shot, quand les conditions ne la justifiaient pas : ça ne compte pas dans les deux corrections du chasseur.",
+        "notYours": "Ce test n'est pas le vôtre."
+      },
+      "bonusDice": "Dés en plus",
+      "bonusDiceHint": "Les dés ajoutés à la main, pour ce que le livre laisse à la table : S'impliquer en donne deux, Big Shot en accorde ou en retire au jugé. Ils font partie du groupement, donc un quitte ou double les garde.",
+      "bonusDiceUp": "Un dé de plus",
+      "bonusDiceDown": "Un dé de moins",
+      "history": "Historique du Test"
     },
     "dials": {
       "title": "Cadrans associés",
@@ -173,7 +329,6 @@
       "showName": "Nom",
       "inactiveNote": "Visible seulement quand cette prime est active."
     },
-
     "settings": {
       "activePrime": "Prime active",
       "posterPosition": "Position de l’avis de recherche",
@@ -190,11 +345,95 @@
         "hidden": "Caché"
       }
     },
-
-    "weapon-trait": "Traits d'armes",
-    "equipment-trait": "Traits d'équipement"
+    "prime": {
+      "tabs": {
+        "main": "Prime",
+        "riffs": "Riffs"
+      }
+    },
+    "mono": {
+      "title": "MONO",
+      "traits": "Traits",
+      "traitsHint": "Trois hexagones : le nom de l'appareil, puis deux traits libres. Ils n'ont pas de genre et servent donc à tous les jets, tant qu'ils ne sont pas entamés.",
+      "namePlaceholder": "Le nom de l'appareil…",
+      "conceptPlaceholder": "MONO de course, de transport, aquatique…",
+      "traitPlaceholder": "Moteur turbo, coque en titanium composite…",
+      "none": "Aucun MONO. Déposez-en un sur cette fiche.",
+      "dropHint": "Déposez ici le MONO de ce chasseur.",
+      "open": "Ouvrir la fiche du MONO",
+      "unlink": "Détacher ce MONO",
+      "linked": "{name} est maintenant le MONO de cette fiche.",
+      "traitBadge": "Trait de MONO",
+      "monoFirst": "Les traits du MONO encaissent avant ceux du chasseur.",
+      "outOfChase": "Hors course : tous les traits du MONO sont entamés.",
+      "outOfChaseHint": "Le pilote doit abandonner la poursuite. À la joueuse de raconter ce qu'il se passe : épave, panne sèche, éjection dans le vide ?",
+      "primeHint": "Le vaisseau de cette prime. Purement narratif — rien ne l'endommage — mais il peut se poser sur une scène."
+    },
+    "vaisseauMere": {
+      "descriptors": "Descripteurs",
+      "descriptorsHint": "Ce que le vaisseau dit de la campagne. Aucun dé, aucun dégât : deux thèmes et un ton qui servent de boussole.",
+      "noApproach": "Aucune approche",
+      "roles": {
+        "style": "Style",
+        "exterior": "Caractéristique externe",
+        "interior": "Caractéristique interne"
+      },
+      "placeholders": {
+        "style": "Vieille navette, musée-caravelle, croiseur de l'ISSP…",
+        "exterior": "Coque décorée, cloisons caméléons, réservoir d'eau…",
+        "interior": "Bar, gravité zéro, magasin itinérant…"
+      },
+      "meanings": {
+        "style": "Thème : nostalgie, subterfuge, justice…",
+        "exterior": "Thème : le double, préservation, fluidité…",
+        "interior": "Ton : rituel, oubli, incompréhension…"
+      }
+    },
+    "activation": {
+      "title": "Activations",
+      "one": "Activation",
+      "hint": "Ce que ce groove fait, et ce qu'il faut pour le faire : des conditions toutes vraies en même temps, un prix à choisir parmi les options, des effets appliqués ensemble, et la durée éventuelle. Tout s'applique, ou rien.",
+      "add": "Ajouter une activation",
+      "remove": "Retirer cette activation",
+      "none": "Aucune activation mécanique.",
+      "invalid": "Activation invalide : elle est conservée mais entièrement bloquée",
+      "conditionsLabel": "Conditions",
+      "always": "toujours",
+      "conditions": {
+        "underDisadvantage": "sous désavantage",
+        "sessionGenre": "genre de la session",
+        "offSessionGenre": "hors genre de session"
+      },
+      "addOption": "ou…",
+      "addOptionHint": "Ajouter un prix au choix",
+      "removeOption": "Retirer ce prix",
+      "noEffect": "aucun effet",
+      "prohibitions": {
+        "disadvantage": "le désavantage",
+        "damageRemoval": "d'éliminer un dommage",
+        "cartonAgainstDifficulty": "de dépenser un carton contre le seuil"
+      },
+      "transformations": {
+        "rerollPool": "relancer le groupement",
+        "rerollRemovedDie": "relancer le dé écarté",
+        "rewriteDie": "réécrire une face"
+      },
+      "durationLabel": "Durée",
+      "instant": "Instantanée",
+      "running": "Activations en cours",
+      "scopes": {
+        "test": "Ce test",
+        "mouvement": "Ce mouvement",
+        "session": "Cette session"
+      },
+      "secret": "secrète",
+      "secretHint": "Seul Big Shot voit le détail de cette activation ; la table sait qu'elle court, sans savoir ce qu'elle fait.",
+      "raw": "Modifier le texte brut",
+      "rerollRemovedDie": "Relancer le dé écarté",
+      "damageRemovalForbidden": "Ce Groove interdit d’éliminer des dommages.",
+      "keepRerolledDie": "Conserver le nouveau résultat"
+    }
   },
-
   "MYMODULE.dog-browser": "Chien browser",
   "MYMODULE.dogs": "Chiens",
   "MYMODULE.fetch-random-dog": "Fetch random Chien photo",

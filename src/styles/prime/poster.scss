@@ -30,12 +30,36 @@ $players-clearance: 110px;
     box-shadow: 0 2px 8px #000a;
   }
 
+  // « WANTED » et, dessous, le genre de la chasse. Groupés en colonne pour que
+  // l'un reste sous l'autre, que la carte soit une rangée ou une colonne.
+  .cowboy-poster-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15em;
+    flex: 0 0 auto;
+  }
+
   .cowboy-poster-banner {
     font-family: "Signika", sans-serif;
     font-weight: bold;
     font-size: 0.7em;
     letter-spacing: 0.18em;
     color: #c8a86b;
+    white-space: nowrap;
+  }
+
+  // Le genre porte sa propre couleur, posée en ligne : c'est la seule teinte de
+  // cette carte qui change d'une prime à l'autre.
+  .cowboy-poster-genre {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: 0.7em;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px #000;
     white-space: nowrap;
   }
 

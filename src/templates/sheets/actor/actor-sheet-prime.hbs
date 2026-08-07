@@ -3,12 +3,14 @@
     {{!-- Upright, and as tall as the three fields beside it: the header's
     height is what says how big the portrait gets, so it never has to be a
     number kept in step with the number of rows by hand. --}}
-    <img
-      class="cowboy-prime-portrait"
-      src="{{ actor.img }}"
-      data-edit="img"
-      title="{{ actor.name }}"
-    />
+    <div class="cowboy-prime-portrait-frame">
+      <img
+        class="cowboy-prime-portrait"
+        src="{{ actor.img }}"
+        data-edit="img"
+        title="{{ actor.name }}"
+      />
+    </div>
     <div class="cowboy-prime-header-fields">
       <label>{{localize 'COWBOY.actor.name'}}</label>
       <input name="name" type="text" value="{{ actor.name }}" />
@@ -18,12 +20,20 @@
         type="text"
         value="{{ actor.system.concept }}"
       />
-      <label>{{localize 'COWBOY.actor.groove'}}</label>
-      <input
-        name="system.groove"
-        type="text"
-        value="{{ actor.system.groove }}"
-      />
+      {{!-- Le type de session et le nombre de riffs restent associés : ce
+      rappel compact se lit désormais juste sous le concept de la prime. --}}
+      <span class="cowboy-prime-riff-recall" data-tooltip="{{ riffTooltip }}"
+        data-tooltip-direction="LEFT" data-tooltip-class="cowboy-riff-tooltip">
+        <i class="fa-solid fa-guitar"></i>
+        <strong>{{ riffCount }}</strong>
+        {{#if sessionType}}
+        <span class="cowboy-riff-session-type">{{ sessionType }}</span>
+        {{/if}}
+      </span>
+      {{!-- Le groove n'est plus un champ texte : c'est un item qu'on dépose,
+      avec ses règles (ADR 0010). Il vit donc dans sa propre rangée, sous les
+      champs libres. --}}
+      {{> "systems/cowboy-bebop/templates/partials/groove-slot.hbs"}}
     </div>
     <div class="cowboy-prime-header-selects">
       <label>{{localize 'COWBOY.actor.genre'}}</label>
@@ -59,7 +69,23 @@
     while it is. The second only ever matters because of the first, so it hangs
     directly under it rather than as a section of its own. --}}
     <div class="cowboy-prime-header-status">
-      <section class="cowboy-prime-status {{#if isActivePrime}}is-active{{else}}is-inactive{{/if}}"
+      {{#if isGM}}
+      {{!-- Pour Big Shot, l'état entier est le contrôle : un clic active la
+      prime grise ou retire la prime bleue, sans petit bouton imbriqué. --}}
+      <button type="button"
+        class="cowboy-prime-status cowboy-prime-status-toggle {{#if isActivePrime}}is-active cowboy-prime-clear-target-button{{else}}is-inactive cowboy-prime-current-target-button{{/if}}"
+        title="{{#if isActivePrime}}{{localize 'COWBOY.actor.clearActivePrime'}}{{else}}{{localize 'COWBOY.actor.setActivePrime'}}{{/if}}">
+        <i class="fa-solid {{#if isActivePrime}}fa-crosshairs{{else}}fa-circle-pause{{/if}}"></i>
+        <strong>
+          {{#if isActivePrime}}
+          {{localize 'COWBOY.actor.activePrime'}}
+          {{else}}
+          {{localize 'COWBOY.actor.inactivePrime'}}
+          {{/if}}
+        </strong>
+      </button>
+      {{else}}
+      <span class="cowboy-prime-status {{#if isActivePrime}}is-active{{else}}is-inactive{{/if}}"
         title="{{#if isActivePrime}}{{localize 'COWBOY.actor.activePrimeHint'}}{{else}}{{localize 'COWBOY.actor.inactivePrimeHint'}}{{/if}}">
         <i class="fa-solid {{#if isActivePrime}}fa-crosshairs{{else}}fa-circle-pause{{/if}}"></i>
         <strong>
@@ -69,18 +95,8 @@
           {{localize 'COWBOY.actor.inactivePrime'}}
           {{/if}}
         </strong>
-        {{#if isGM}}
-        {{#if isActivePrime}}
-        <button type="button" class="cowboy-prime-clear-target-button" title="{{localize 'COWBOY.actor.clearActivePrime'}}">
-          <i class="fa-solid fa-ban"></i>
-        </button>
-        {{else}}
-        <button type="button" class="cowboy-prime-current-target-button" title="{{localize 'COWBOY.actor.setActivePrime'}}">
-          <i class="fa-solid fa-crosshairs"></i>
-        </button>
-        {{/if}}
-        {{/if}}
-      </section>
+      </span>
+      {{/if}}
 
       {{#if isGM}}
       <section class="cowboy-prime-poster-options">
@@ -102,7 +118,118 @@
       </section>
       {{/if}}
     </div>
+
+    {{!-- La dernière colonne du header : ce qu'on manipule en jouant, empilé à
+    part du cadre d'activation, qui ne dit qu'une chose - si cette prime est
+    celle qu'on chasse. --}}
+    <div class="cowboy-prime-header-tools">
+      {{!-- La réserve de Big Shot, gagnée à la mise en place et dépensée pour
+      durcir un test. Un vrai compteur, écrit sur la prime : les trois riffs de
+      Big Shot la dépensent, et rien ne la suivait jusqu'ici. --}}
+      <span class="cowboy-prime-risque" title="{{localize 'COWBOY.actor.risqueHint'}}">
+        <i class="fa-solid fa-skull"></i>
+        {{#if isGM}}
+        <button type="button" class="cowboy-prime-risque-add" data-value="-1"
+          title="{{localize 'COWBOY.actor.risqueDown'}}"
+          aria-label="{{localize 'COWBOY.actor.risqueDown'}}"
+          {{#unless risque}}disabled{{/unless}}>−</button>
+        {{/if}}
+        <strong class="cowboy-prime-risque-value">{{ risque }}</strong>
+        {{#if isGM}}
+        <button type="button" class="cowboy-prime-risque-add" data-value="1"
+          title="{{localize 'COWBOY.actor.risqueUp'}}"
+          aria-label="{{localize 'COWBOY.actor.risqueUp'}}">+</button>
+        {{/if}}
+      </span>
+
+      {{#if groovePlay}}
+      <span class="cowboy-groove-play-offer" data-tooltip="{{ groovePlay.description }}">
+        <strong>{{ groovePlay.name }}</strong>
+        {{#each groovePlay.choices as |choice|}}
+        <button type="button" class="cowboy-groove-play" data-choice="{{ choice.index }}"
+          data-tooltip="{{#if choice.blocked}}{{ choice.blocked }}{{else}}{{localize 'COWBOY.groove.play'}} · {{ choice.label }}{{/if}}"
+          {{#if choice.blocked}}disabled{{/if}}>
+          <i class="fa-solid fa-play" aria-hidden="true"></i> {{ choice.label }}
+        </button>
+        {{/each}}
+      </span>
+      {{/if}}
+
+      {{#if bespokeGroove.orbital}}
+      <button type="button" class="cowboy-groove-state-toggle {{#if bespokeGroove.orbitalSafe}}is-active{{/if}}"
+        data-field="orbitalSafe" {{#unless bespokeGroove.editable}}disabled{{/unless}}>
+        <i class="fa-solid fa-shield-heart"></i>
+        {{localize 'COWBOY.groove.orbital.safe'}}
+      </button>
+      {{/if}}
+
+      {{#if bespokeGroove.vengeance}}
+      <label class="cowboy-groove-state-field">
+        {{localize 'COWBOY.groove.vengeance.linked'}}
+        <select class="cowboy-groove-hunter-select" data-kind="vengeance"
+          {{#unless bespokeGroove.editable}}disabled{{/unless}}>
+          <option value="">—</option>
+          {{#each bespokeGroove.vengeanceHunters as |hunter|}}
+          <option value="{{hunter.id}}" {{#if hunter.selected}}selected{{/if}}>
+            {{hunter.name}}{{#if hunter.minimum}} ★{{/if}} ({{hunter.cartridge}})
+          </option>
+          {{/each}}
+        </select>
+      </label>
+      {{/if}}
+
+      {{#if bespokeGroove.shadows}}
+      <div class="cowboy-groove-state-field is-column">
+        <span>{{localize 'COWBOY.groove.shadows.hunters'}}</span>
+        {{#each bespokeGroove.shadowsSlots as |slot|}}
+        <select class="cowboy-groove-hunter-select" data-kind="shadows" data-index="{{slot.index}}"
+          {{#unless ../bespokeGroove.editable}}disabled{{/unless}}>
+          <option value="">—</option>
+          {{#each slot.options as |hunter|}}
+          <option value="{{hunter.id}}" {{#if hunter.selected}}selected{{/if}}>{{hunter.name}}</option>
+          {{/each}}
+        </select>
+        {{/each}}
+        {{#if bespokeGroove.shadowsShowAcceptance}}
+          <button type="button" class="cowboy-groove-state-toggle {{#if bespokeGroove.shadowsAccepted}}is-active{{/if}}"
+            data-field="shadowsAccepted" {{#unless bespokeGroove.shadowsCanToggle}}disabled{{/unless}}>
+            <i class="fa-solid fa-mask"></i> {{localize 'COWBOY.groove.shadows.accepted'}}
+          </button>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{> "systems/cowboy-bebop/templates/partials/activation-list.hbs"}}
+
+      {{!-- Solder la session d'un clic : mouvement au premier, plus un carton
+      ni une fausse note nulle part. Réservé à Big Shot, et confirmé, parce que
+      ça écrit aussi sur les fiches des chasseurs. --}}
+      {{#if isGM}}
+      <button type="button" class="cowboy-prime-reset"
+        data-tooltip="{{localize 'COWBOY.actor.resetSessionHint'}}"
+        aria-label="{{localize 'COWBOY.actor.resetSession'}}">
+        <i class="fa-solid fa-rotate-left"></i>
+        {{localize 'COWBOY.actor.resetSession'}}
+      </button>
+      {{/if}}
+
+      <nav class="cowboy-sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="main" data-group="primary"
+          title="{{localize 'COWBOY.prime.tabs.main'}}">
+          <i class="fa-solid fa-crosshairs"></i>
+          {{localize 'COWBOY.prime.tabs.main'}}
+        </a>
+        <a class="item" data-tab="riffs" data-group="primary"
+          title="{{localize 'COWBOY.prime.tabs.riffs'}}">
+          <i class="fa-solid fa-guitar"></i>
+          {{localize 'COWBOY.prime.tabs.riffs'}}
+        </a>
+      </nav>
+    </div>
   </header>
+
+  <section class="cowboy-sheet-body sheet-body">
+  <div class="tab" data-tab="main" data-group="primary">
 
   {{!-- Written before play, turned over during it. The GM sees the three lines
   and the secret whatever their state; everyone else sees only what has been
@@ -178,40 +305,6 @@
     </div>
   </section>
 
-  {{!-- Les actions de gameplay que cette session met sur la table. Big Shot
-  règle les trois mouvements ici ; les autres lisent celui qu'on joue, la même
-  aide que porte leur propre fiche. --}}
-  <section class="cowboy-prime-section cowboy-prime-riffs">
-    <header class="cowboy-prime-section-header">
-      <div>
-        <h2><i class="fa-solid fa-guitar"></i> {{localize 'COWBOY.riffs.title'}}
-          <i class="fa-solid fa-circle-info cowboy-prime-section-help"
-            title="{{#if isGM}}{{localize 'COWBOY.riffs.editorHint'}}{{else}}{{localize 'COWBOY.riffs.hint'}}{{/if}}"></i>
-        </h2>
-        {{#if sessionType}}
-        <span class="cowboy-riff-session-type">{{ sessionType }}</span>
-        {{/if}}
-      </div>
-      <span class="cowboy-prime-count">{{ riffCount }}</span>
-    </header>
-
-    {{#if isGM}}
-    {{!-- La zone de dépôt entoure l'éditeur : on lâche un type de session
-    n'importe où dessus. --}}
-    <div class="cowboy-riff-apply">
-      <button type="button" class="cowboy-riff-apply-button">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        {{localize 'COWBOY.sessionType.apply'}}
-      </button>
-      <span class="cowboy-riff-apply-hint">{{localize 'COWBOY.sessionType.dropHint'}}</span>
-    </div>
-    {{> "systems/cowboy-bebop/templates/partials/riff-editor.hbs"}}
-    {{else}}
-    <p class="cowboy-riff-mouvement">{{localize 'COWBOY.actor.mouvement'}} : <strong>{{ riffMouvementName }}</strong></p>
-    {{> "systems/cowboy-bebop/templates/partials/riff-list.hbs" riffs=riffs}}
-    {{/if}}
-  </section>
-
   <section class="cowboy-prime-section cowboy-prime-cadrans">
     <header class="cowboy-prime-section-header">
       <div>
@@ -274,5 +367,86 @@
     {{#each cartonHolders as |holder|}}
     {{> "systems/cowboy-bebop/templates/partials/token-counter.hbs" tokens=holder.cartons on=false type="cartons" label=holder.name isGM=../isGM actorId=holder.actorId}}
     {{/each}}
+  </section>
+
+  {{!-- « À quoi ressemble le vaisseau spatial de votre prime ? » Rien de plus
+  qu'un lien : Big Shot ne jette pas, donc aucun trait de ce vaisseau n'est
+  jamais entamé. Ce qu'on gagne, c'est un second pion à poser en face du MONO
+  d'un chasseur. Rien ne s'y joue, donc il ferme la fiche. --}}
+  {{#if isGM}}
+  <section class="cowboy-prime-section cowboy-prime-mono">
+    <header class="cowboy-prime-section-header">
+      <div>
+        <h2><i class="fa-solid fa-rocket"></i> {{localize 'COWBOY.mono.title'}}
+          <i class="fa-solid fa-circle-info cowboy-prime-section-help" title="{{localize 'COWBOY.mono.primeHint'}}"></i>
+        </h2>
+      </div>
+      {{#if mono}}
+      <span class="cowboy-mono-actions">
+        <button
+          type="button"
+          class="cowboy-mono-open unbutton"
+          title="{{localize 'COWBOY.mono.open'}}"
+          aria-label="{{localize 'COWBOY.mono.open'}}"
+        >
+          <i class="fa-solid fa-up-right-from-square"></i>
+        </button>
+        <button
+          type="button"
+          class="cowboy-mono-unlink unbutton"
+          title="{{localize 'COWBOY.mono.unlink'}}"
+          aria-label="{{localize 'COWBOY.mono.unlink'}}"
+        >
+          <i class="fa-solid fa-link-slash"></i>
+        </button>
+      </span>
+      {{/if}}
+    </header>
+    {{#if mono}}
+    <p class="cowboy-prime-mono-name">{{ mono.name }}</p>
+    {{else}}
+    <p class="cowboy-prime-empty">{{localize 'COWBOY.mono.none'}}</p>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  </div>
+
+  {{!-- Les actions de gameplay que cette session met sur la table. Big Shot
+  règle les trois mouvements ici ; les autres lisent celui qu'on joue, la même
+  aide que porte leur propre fiche. C'est de la préparation, pas de la partie :
+  d'où l'onglet, et le seul rappel gardé en tête de fiche. --}}
+  <div class="tab" data-tab="riffs" data-group="primary">
+    <section class="cowboy-prime-section cowboy-prime-riffs">
+      <header class="cowboy-prime-section-header">
+        <div>
+          <h2><i class="fa-solid fa-guitar"></i> {{localize 'COWBOY.riffs.title'}}
+            <i class="fa-solid fa-circle-info cowboy-prime-section-help"
+              title="{{#if isGM}}{{localize 'COWBOY.riffs.editorHint'}}{{else}}{{localize 'COWBOY.riffs.hint'}}{{/if}}"></i>
+          </h2>
+          {{#if sessionType}}
+          <span class="cowboy-riff-session-type">{{ sessionType }}</span>
+          {{/if}}
+        </div>
+        <span class="cowboy-prime-count">{{ riffCount }}</span>
+      </header>
+
+      {{#if isGM}}
+      {{!-- La zone de dépôt entoure l'éditeur : on lâche un type de session
+      n'importe où dessus. --}}
+      <div class="cowboy-riff-apply">
+        <button type="button" class="cowboy-riff-apply-button">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          {{localize 'COWBOY.sessionType.apply'}}
+        </button>
+        <span class="cowboy-riff-apply-hint">{{localize 'COWBOY.sessionType.dropHint'}}</span>
+      </div>
+      {{> "systems/cowboy-bebop/templates/partials/riff-editor.hbs"}}
+      {{else}}
+      <p class="cowboy-riff-mouvement">{{localize 'COWBOY.actor.mouvement'}} : <strong>{{ riffMouvementName }}</strong></p>
+      {{> "systems/cowboy-bebop/templates/partials/riff-list.hbs" riffs=riffs}}
+      {{/if}}
+    </section>
+  </div>
   </section>
 </form>

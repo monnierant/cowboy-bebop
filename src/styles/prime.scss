@@ -27,16 +27,43 @@
   height: auto;
 }
 
-// Upright: the width is fixed, the height comes from the row. `stretch` beats
-// the header's own align-items, and `contain` keeps a face from being cropped
-// by whatever height the fields happen to add up to.
+// Le cadre, et non l'image, est l'élément flex. Il prend toute la hauteur que
+// les champs donnent au header et en déduit sa largeur au rapport 3:4. Foundry
+// impose 64 px aux images directement placées dans un `header.sheet-header` :
+// ce niveau supplémentaire évite que cette règle raccourcisse aussi la bordure.
+.cowboy-prime-portrait-frame {
+  flex: 0 0 auto;
+  align-self: stretch;
+  aspect-ratio: 3 / 4;
+  max-width: 96px;
+  max-height: 128px;
+  margin-right: 6px;
+  overflow: hidden;
+  background: #0000000d;
+  border: 1px solid #000;
+  border-radius: 0.25em;
+}
+
+// `contain` loge l'image entière dans le cadre sans la rogner. Une photo carrée
+// ou paysage garde donc une marge, mais la bordure reste celle du cadre 3:4.
 .cowboy-prime-portrait {
   flex: 0 0 96px;
   width: 96px;
-  height: auto;
-  align-self: stretch;
+  aspect-ratio: 3 / 4;
+  align-self: center;
   object-fit: contain;
-  object-position: top center;
+  object-position: center;
+  background: #0000000d;
+  border-radius: 0.25em;
+}
+
+body.game .sheet.app .cowboy-prime-portrait-frame > .cowboy-prime-portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
 }
 
 // Three short lines. Left to itself the block grows to whatever the header has
@@ -82,6 +109,19 @@
   min-width: 0;
 }
 
+// La dernière colonne du header. Le cadre d'activation ne dit qu'une chose -
+// si c'est cette prime qu'on chasse - donc ce qu'on manipule en jouant s'empile
+// à part, à sa droite.
+.cowboy-prime-header-tools {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.35em;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
 .cowboy-prime-status {
   display: flex;
   align-items: center;
@@ -94,7 +134,19 @@
   > i { font-size: 1.1em; }
   &.is-active { color: #075e5e; background: #0dcaca24; border-color: #0a999966; }
   &.is-inactive { background: #0000000a; }
-  button { width: auto; min-width: 2em; padding: 0.2em 0.4em; }
+}
+
+// Pour le MJ, le badge est lui-même le bouton. On neutralise les dimensions
+// génériques de Foundry afin qu'il reste aussi compact que sa version témoin.
+button.cowboy-prime-status-toggle {
+  width: auto;
+  margin: 0;
+  line-height: normal;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible { box-shadow: 0 0 0 1px currentColor inset; }
 }
 
 // Two rows of short fields. A session trait is a handful of words, so the block
@@ -223,6 +275,79 @@
 
 .cowboy-prime-count { background: #0dcaca35; }
 
+// Les onglets. Le masquage est écrit ici plutôt que laissé au cœur de Foundry :
+// `Tabs` ne fait que poser la classe `active`, ce qui est visible ou non reste
+// une affaire de feuille de style.
+.cowboy-sheet-body {
+  flex: 1;
+  overflow-y: auto;
+
+  > .tab { display: none; }
+  > .tab.active { display: block; }
+}
+
+.cowboy-sheet-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  border: 0;
+  margin: 0;
+
+  .item { flex: 1; padding: 0.15em 0.4em; text-align: center; white-space: nowrap; }
+}
+
+// La réserve de Big Shot et le rappel des riffs : deux nombres qu'on lit d'un
+// coup d'œil, distingués par leur icône plutôt que par un libellé.
+.cowboy-prime-risque,
+.cowboy-prime-riff-recall {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 0.15em 0.5em;
+  border-radius: 3px;
+  background: #0000000d;
+  font-size: 0.9em;
+  white-space: nowrap;
+
+  button {
+    width: 1.4em;
+    height: 1.4em;
+    line-height: 1;
+    padding: 0;
+    flex: 0 0 auto;
+  }
+}
+
+// Le compte seul ne dit rien : c'est le survol qui donne la liste.
+.cowboy-prime-riff-recall { cursor: help; }
+
+// L'infobulle de Foundry est étroite et centrée par défaut, ce qui remet la
+// liste en bouillie. On lui rend de la largeur et un alignement à gauche.
+#tooltip.cowboy-riff-tooltip,
+.cowboy-riff-tooltip {
+  max-width: 22em;
+  text-align: left;
+
+  strong {
+    display: block;
+    margin-top: 0.4em;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    opacity: 0.75;
+
+    &:first-child { margin-top: 0; }
+  }
+
+  ul {
+    margin: 0.1em 0 0;
+    padding-left: 1.1em;
+    list-style: disc;
+  }
+
+  li { margin: 0.05em 0; }
+}
+
 .cowboy-prime-empty {
   margin: 0.5em 0;
   padding: 0.75em;
@@ -239,6 +364,23 @@
   border-top: 1px solid #0003;
 
   summary { cursor: pointer; font-weight: bold; }
+}
+
+.cowboy-groove-state-field {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid #0003;
+  border-radius: 0.3rem;
+
+  &.is-column { flex-direction: column; align-items: stretch; }
+  select { min-width: 10rem; }
+}
+
+.cowboy-groove-state-toggle.is-active {
+  color: #fff;
+  background: #25775f;
 }
 
 .cowboy-prime-dials {

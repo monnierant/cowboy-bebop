@@ -1,0 +1,31 @@
+{{!-- Le groove que porte cette fiche : une capacité nommée qui enfreint une
+règle de base, et qu'on ne change qu'au pivot de saison (ADR 0010).
+
+Ici il n'est qu'une identité, au même titre que le concept ou le souvenir : aucun
+groove ne se déclenche sur une fiche. C'est la boîte de jet et la carte qui le
+rappellent, aux deux moments où il peut servir. Déposer un autre groove le
+remplace, après confirmation. --}}
+<div class="cowboy-groove-slot {{#unless groove}}is-empty{{/unless}}">
+  <span class="cowboy-groove-slot-label">
+    <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
+  </span>
+
+  {{#if groove}}
+  <button type="button" class="cowboy-groove-open unbutton"
+    data-tooltip="{{ groove.description }}"
+    data-tooltip-class="cowboy-riff-tooltip"
+    aria-label="{{localize 'COWBOY.groove.open'}}">
+    <span class="cowboy-groove-slot-name">{{ groove.name }}</span>
+  </button>
+  <button type="button" class="cowboy-groove-remove unbutton"
+    data-tooltip="{{localize 'COWBOY.groove.remove'}}"
+    aria-label="{{localize 'COWBOY.groove.remove'}}">
+    <i class="fa-solid fa-link-slash"></i>
+  </button>
+  {{else}}
+  <span class="cowboy-groove-slot-empty"
+    data-tooltip="{{localize 'COWBOY.groove.dropHint'}}">
+    {{localize 'COWBOY.groove.title'}}
+  </span>
+  {{/if}}
+</div>

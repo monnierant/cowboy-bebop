@@ -2,14 +2,15 @@
   "TYPES": {
     "Actor": {
       "chasseur": "Hunter",
-      "prime": "Prime"
+      "prime": "Prime",
+      "mono": "MONO",
+      "vaisseauMere": "Mothership"
     },
     "Item": {
-      "mono": "Mono",
-      "sessionType": "Session type"
+      "sessionType": "Session type",
+      "groove": "Groove"
     }
   },
-
   "COWBOY": {
     "actor": {
       "goal": "Goal",
@@ -22,12 +23,19 @@
       "mouvement": "MOUVEMENT",
       "concept": "CONCEPT",
       "memory": "MEMORY",
-      "groove": "GROOVE",
       "burden": "BURDEN",
       "healTrait": "Heal this trait",
+      "cycleTrait": "Set the state by hand: intact, dented, broken. To undo a misclick.",
       "rythme": "Rhythm",
       "rythmeUp": "Gain a rhythm",
       "rythmeDown": "Lose a rhythm",
+      "risque": "Risk",
+      "risqueHint": "Big Shot's pool, earned at setup and spent to harden tests.",
+      "risqueUp": "Gain a risk",
+      "risqueDown": "Spend a risk",
+      "resetSession": "Settle",
+      "resetSessionHint": "Sets the movement back to the first, and empties the whole table's cartons and false notes.",
+      "resetSessionConfirm": "Set the movement back to OK, and empty this prime's false notes along with its {hunters} hunters' cartons? None of this can be recovered.",
       "currentTarget": "Is current target",
       "setCurrentTarget": "Set current target",
       "activePrime": "Active prime",
@@ -51,7 +59,6 @@
         "restore": "Restore"
       }
     },
-
     "session": {
       "title": "Session",
       "hint": "The GM writes these lines before play and turns them over as they come into play. Until a line is revealed, players do not see it on this sheet.",
@@ -62,7 +69,6 @@
       "reveal": "Reveal to players",
       "conceal": "Hide from players"
     },
-
     "riffs": {
       "title": "Riffs",
       "hint": "The gameplay actions the session type opens, for the mouvement being played. Big Shot decides which ones are on the table.",
@@ -75,6 +81,68 @@
       "removeCustom": "Remove this riff",
       "customNamePlaceholder": "Riff name…",
       "customDescriptionPlaceholder": "What it allows, and what it costs…",
+      "payments": {
+        "cartridge": "cartridge",
+        "rythme": "rhythm",
+        "risque": "risk",
+        "dentTrait": "dented trait",
+        "stakeTrait": "staked trait",
+        "note": "false note"
+      },
+      "effects": {
+        "dice": "dice",
+        "advantage": "advantage",
+        "difficulty": "difficulty",
+        "cartons": "cartons",
+        "notes": "false notes",
+        "heal": "damage cleared",
+        "approach": "extra approaches",
+        "minimumNotes": "false notes at the very least",
+        "notesPerMissingCarton": "false notes per missing carton",
+        "disadvantageDoubleCarton": "a double other than 6 grants a carton",
+        "dentedTraitsOnDisadvantage": "dented traits still count",
+        "forbid": "forbid",
+        "transformResult": "transform the result"
+      },
+      "cost": "Cost",
+      "effectsLabel": "Effects",
+      "addPayment": "Add a payment",
+      "removePayment": "Remove this payment",
+      "addEffect": "Add an effect",
+      "removeEffect": "Remove this effect",
+      "resetTerms": "Restore the book price",
+      "correction": "Correct a false note",
+      "correctionHint": "Not a riff but a base rule, and the first thing a filler session moves over to rhythm. The player picks one of the listed payments.",
+      "free": "free",
+      "orPay": "or",
+      "bespokeEffects": "This riff is hard-wired: its price is editable, its effects are not.",
+      "owedHint": "Paid by another hunter, who takes it off their own sheet. The system records it and reminds you.",
+      "notCounted": "Taken from the test, not from a sheet: cannot be checked in advance.",
+      "cannotAfford": "Costs {cost}; {held} left.",
+      "noPrime": "No prime in play.",
+      "noEffect": "This riff would change nothing about this result.",
+      "confirmPlay": "Play {name} for {cost}?",
+      "played": "Riffs played",
+      "playedNone": "No riff played.",
+      "undoPlayed": "Take this riff back",
+      "totalCost": "Test cost",
+      "totalCostNone": "No riff played: this test costs nothing.",
+      "openNone": "No riff open at this mouvement.",
+      "openTitle": "Open riffs",
+      "assist": "Assisted by",
+      "assistNone": "Nobody",
+      "assistOwed": "{name} owes {cost}, to be taken off their own sheet.",
+      "assistRythme": "{name} ({rythme} rhythm)",
+      "assistPayment": "Payment owed",
+      "choosePayment": "Choose the payment",
+      "healTitle": "Clear damage",
+      "healHint": "Up to {count} damage on your own traits. Severe damage cannot be cleared this way, and a MONO's traits are repaired on its own sheet.",
+      "healNone": "No dented trait to clear.",
+      "approachTitle": "Second approach",
+      "approachHint": "Its traits join the pool. The genre bonus stays with the test's own approach.",
+      "soloUsed": "Solo! has already been played this session.",
+      "soloDone": "{name} plays a solo: one {genre} carton.",
+      "noCarton": "This prime has no genre: the carton could not be credited.",
       "catalog": {
         "involve": {
           "name": "Get involved",
@@ -122,6 +190,67 @@
         }
       }
     },
+    "groove": {
+      "title": "Groove",
+      "namePlaceholder": "Groove name",
+      "audience": "Carried by",
+      "audienceHint": "A prime's groove dropped on a hunter means nothing: the sheet refuses the drop rather than accepting it silently.",
+      "audiences": {
+        "chasseur": "A hunter",
+        "prime": "A prime"
+      },
+      "description": "What it breaks",
+      "descriptionHint": "The book's text. It is what the roll dialog and the card recall at the moment the groove can fire — including for grooves the system does not play.",
+      "descriptionPlaceholder": "The base rule this groove breaks, in the book's words.",
+      "substitution": "Substitution",
+      "substitutionHint": "“Always use X traits for Y or Z tests.” The traits opened are the roller's own, and never grant the genre die: it is the traits that change approach, not the test.",
+      "from": "Traits of",
+      "to": "for tests of",
+      "noSubstitution": "none",
+      "reminders": "Reminders",
+      "remindersHint": "What the system says without ever applying it: a groove that drives a clock or depends on a fact out of reach is recalled at the right moment, and nothing more. Fifteen grooves of the book have only that.",
+      "addReminder": "Add a reminder",
+      "removeReminder": "Remove this reminder",
+      "noReminder": "No reminder: everything this groove does, the system applies.",
+      "reminderPlaceholder": "What must be recalled at that moment, in the book's words.",
+      "reminderAudience": "Read by",
+      "reminderAudiences": {
+        "bigshot": "Big Shot only",
+        "table": "The whole table"
+      },
+      "untilSecret": "ends on secret",
+      "untilSecretHint": "The activation also ends when the secret is revealed, whatever its scope. A second clock: “before the end of the mouvement OR the reveal of the secret”.",
+      "open": "Open this groove's sheet",
+      "remove": "Remove this groove",
+      "dropHint": "Drop a groove here",
+      "dropped": "{name} is now this character's groove.",
+      "replaceTitle": "Replace the groove",
+      "replace": "This character already plays {current}. Replace it with {next}?",
+      "wrongAudience": "{name} is a groove meant for {audience}: it cannot be placed on this sheet.",
+      "lent": "Groove lent by {name}",
+      "play": "Play this groove",
+      "correctionUnavailable": "This trait correction is unavailable: the correction limit must allow it and every required trait must be woundable.",
+      "orbital": { "safe": "Hostages are safe" },
+      "vengeance": { "linked": "Memory linked to" },
+      "shadows": {
+        "hunters": "Selected bounty hunters",
+        "accepted": "Secret accepted"
+      },
+      "smaller": {
+        "title": "A Smaller Fish Bites Harder",
+        "second": "Second trait to wound"
+      },
+      "plan": {
+        "title": "Long Term Plan",
+        "use": "Add the saved result",
+        "useHint": "Adds this value to the Test result and removes it from the sheet when rolling.",
+        "planned": "Saved result added to this Test",
+        "reserve": "Save a result",
+        "replace": "Replace the saved result {previous} with {face}?",
+        "saved": "Saved result",
+        "savedHint": "This result may be added voluntarily to a later Test in this Session."
+      }
+    },
     "sessionType": {
       "name": "NAME",
       "label": "Session type",
@@ -137,16 +266,40 @@
       "setupPlaceholder": "Starting rhythm, Big Shot's risks, what changes…"
     },
     "roll": {
+      "title": "Dice pool",
+      "roll": "Roll",
+      "cancel": "Cancel",
+      "difficulty": "Difficulty",
+      "difficultyHint": "The chosen movement's threshold, hardened or softened by hand. This is what Big Shot buys with risks.",
+      "difficultyUp": "Harden the difficulty",
+      "difficultyDown": "Soften the difficulty",
+      "diceCountHint": "The dice that go out: the movement's rank, plus one per checked trait, plus the genre bonus, plus the one an advantage adds before taking it back.",
+      "advantage": "Advantage",
+      "advantageNone": "None",
+      "advantageUp": "Advantage",
+      "advantageDown": "Disadvantage",
+      "genreBonus": "Genre bonus",
+      "genreBonusHint": "One extra die when the hunter's approach matches the prime's. Observed, not chosen.",
+      "traits": "Traits",
       "actions": {
         "collect": "Collect",
         "collected": "Collected",
         "cartridge": "Use Cartridge",
         "traits": "Use Traits",
         "damageTrait": "Damage this trait: it cancels one false note, and stays damaged.",
-        "hyperDamageTrait": "Break this trait: the roll is thrown again without it, and it stays broken."
-      }
+        "stakeTrait": "Stake this trait: the pool is rerolled with one more die. Without both cartons, the trait is struck out until the end of the session.",
+        "dented": "Dented to correct a false note.",
+        "broken": "Struck out until the end of the session: a lost double or nothing.",
+        "voidNote": "Void a false note",
+        "voidNoteHint": "Remove one false note from this test, charged to nobody. Big Shot only, for when the fiction did not warrant it: it does not count against the hunter's two corrections.",
+        "notYours": "This test is not yours."
+      },
+      "bonusDice": "Extra dice",
+      "bonusDiceHint": "Dice added by hand, for whatever the book leaves to the table: Get Involved grants two, Big Shot gives or takes at will. They belong to the pool, so a double or nothing keeps them.",
+      "bonusDiceUp": "One die more",
+      "bonusDiceDown": "One die fewer",
+      "history": "Test history"
     },
-
     "dials": {
       "title": "Linked dials",
       "hint": "Objectives and threats accept a hunter's positive cartons or this prime's negative false notes. The GM chooses what pays.",
@@ -168,7 +321,6 @@
       "noPayer": "Nobody can pay for a slice on this dial.",
       "close": "Close"
     },
-
     "poster": {
       "wanted": "WANTED",
       "options": "Wanted poster",
@@ -177,7 +329,6 @@
       "showName": "Name",
       "inactiveNote": "Only shown while this prime is in play."
     },
-
     "settings": {
       "activePrime": "Prime in play",
       "posterPosition": "Wanted poster position",
@@ -194,11 +345,95 @@
         "hidden": "Hidden"
       }
     },
-
-    "weapon-trait": "weapon trait",
-    "equipment-trait": "equipment trait"
+    "prime": {
+      "tabs": {
+        "main": "Prime",
+        "riffs": "Riffs"
+      }
+    },
+    "mono": {
+      "title": "MONO",
+      "traits": "Traits",
+      "traitsHint": "Three hexagons: the craft's name, then two free traits. They carry no genre, so they serve every roll for as long as they are not dented.",
+      "namePlaceholder": "The craft's name…",
+      "conceptPlaceholder": "Racing, transport, aquatic MONO…",
+      "traitPlaceholder": "Turbo engine, composite titanium hull…",
+      "none": "No MONO. Drop one onto this sheet.",
+      "dropHint": "Drop this hunter's MONO here.",
+      "open": "Open the MONO's sheet",
+      "unlink": "Unlink this MONO",
+      "linked": "{name} is now this sheet's MONO.",
+      "traitBadge": "MONO trait",
+      "monoFirst": "The MONO's traits take the hit before the hunter's.",
+      "outOfChase": "Out of the chase: every MONO trait is dented.",
+      "outOfChaseHint": "The pilot must break off. It is the player's turn to say what happens: wreck, dead engine, ejection into the void?",
+      "primeHint": "This prime's ship. Purely narrative — nothing damages it — but it can be placed on a scene."
+    },
+    "vaisseauMere": {
+      "descriptors": "Descriptors",
+      "descriptorsHint": "What the ship says about the campaign. No dice, no damage: two themes and a tone, as a compass.",
+      "noApproach": "No approach",
+      "roles": {
+        "style": "Style",
+        "exterior": "External feature",
+        "interior": "Internal feature"
+      },
+      "placeholders": {
+        "style": "Old shuttle, museum-caravel, ISSP cruiser…",
+        "exterior": "Painted hull, chameleon bulkheads, water tank…",
+        "interior": "Bar, zero gravity, travelling shop…"
+      },
+      "meanings": {
+        "style": "Theme: nostalgia, subterfuge, justice…",
+        "exterior": "Theme: the double, preservation, fluidity…",
+        "interior": "Tone: ritual, oblivion, misunderstanding…"
+      }
+    },
+    "activation": {
+      "title": "Activations",
+      "one": "Activation",
+      "hint": "What this groove does, and what it takes: conditions that must all hold at once, a price chosen among the options, effects applied together, and the duration if any. All of it applies, or none.",
+      "add": "Add an activation",
+      "remove": "Remove this activation",
+      "none": "No mechanical activation.",
+      "invalid": "Invalid activation: it is preserved but entirely blocked",
+      "conditionsLabel": "Conditions",
+      "always": "always",
+      "conditions": {
+        "underDisadvantage": "under disadvantage",
+        "sessionGenre": "the session's genre",
+        "offSessionGenre": "outside the session's genre"
+      },
+      "addOption": "or…",
+      "addOptionHint": "Add an alternative price",
+      "removeOption": "Remove this price",
+      "noEffect": "no effect",
+      "prohibitions": {
+        "disadvantage": "disadvantage",
+        "damageRemoval": "clearing damage",
+        "cartonAgainstDifficulty": "spending a carton against the difficulty"
+      },
+      "transformations": {
+        "rerollPool": "reroll the pool",
+        "rerollRemovedDie": "reroll the discarded die",
+        "rewriteDie": "rewrite a face"
+      },
+      "durationLabel": "Duration",
+      "instant": "Instant",
+      "running": "Running activations",
+      "scopes": {
+        "test": "This test",
+        "mouvement": "This mouvement",
+        "session": "This session"
+      },
+      "secret": "secret",
+      "secretHint": "Only Big Shot sees the detail of this activation; the table knows it is running, not what it does.",
+      "raw": "Edit the raw text",
+      "rerollRemovedDie": "Reroll the discarded die",
+      "damageRemovalForbidden": "This Groove forbids removing damage.",
+      "keepRerolledDie": "Keep the new result"
+    }
   },
-
   "MYMODULE.dog-browser": "Dog browser",
   "MYMODULE.dogs": "Dogs",
   "MYMODULE.fetch-random-dog": "Fetch random dog photo",

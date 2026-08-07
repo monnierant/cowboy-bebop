@@ -1,45 +1,140 @@
 <div class="cowboy-dialog-content">
-  <h2>{{ category }}</h2>
-  <section class="cowboy-dialog-mouvements">
-    <h3>Difficulty</h3>
-    <select class="cowboy-dialog-mouvement">
-      {{#each mouvements as |mouvement index|}}
-      {{#if (eq index ../mouvementIndex)}}
-      <option value="{{ index }}" selected>
-        {{ mouvement.name }} ({{ mouvement.difficulty }})
-      </option>
-      {{else}}
-      <option value="{{ index }}">
-        {{ mouvement.name }} ({{ mouvement.difficulty }})
-      </option>
-      {{/if}}
-      {{/each}}
-    </select>
-  </section>
-  <section class="cowboy-dialog-modifiers">
-    <h3>Modifiers</h3>
-    <div class="cowboy-dialog-modifier">
-      <label for="cowboy-dialog-modifier-advantage">Advantage</label>
-      <select class="cowboy-dialog-modifier-advantage">
-        <option value="0" selected>None</option>
-        <option value="1">Advantage</option>
-        <option value="-1">Disadvantage</option>
+  <h2 class="cowboy-dialog-category">
+    {{#with categoryColor}}
+    <i class="fa-solid {{ fa }}" style="color: {{ on }}" aria-hidden="true"></i>
+    {{/with}}
+    {{ category }}
+  </h2>
+  {{!-- Le mouvement et son écart de seuil sur la même rangée : on choisit l'un
+  puis on corrige l'autre, c'est un seul geste. --}}
+  <section class="cowboy-dialog-row">
+    <div class="cowboy-dialog-field">
+      <label>{{localize 'COWBOY.roll.difficulty'}}</label>
+      <select class="cowboy-dialog-mouvement">
+        {{#each mouvements as |mouvement index|}}
+        {{#if (eq index ../mouvementIndex)}}
+        <option value="{{ index }}" selected>
+          {{ mouvement.name }} ({{ mouvement.difficulty }})
+        </option>
+        {{else}}
+        <option value="{{ index }}">
+          {{ mouvement.name }} ({{ mouvement.difficulty }})
+        </option>
+        {{/if}}
+        {{/each}}
       </select>
     </div>
-    <div class="cowboy-dialog-modifier">
-      <label for="cowboy-dialog-modifier-bonus">Bonus Genre</label>
+
+    {{!-- Le seuil du mouvement se durcit ou s'adoucit à la main : c'est ce que
+    Big Shot achète avec ses risques, et le livre laisse ce réglage à la table
+    plutôt qu'à un barème. Le mouvement choisi reste la base, ce compteur n'est
+    qu'un écart. --}}
+    <div class="cowboy-dialog-difficulty"
+      data-tooltip="{{localize 'COWBOY.roll.difficultyHint'}}">
+      <button type="button" class="cowboy-dialog-difficulty-step" data-value="-1"
+        aria-label="{{localize 'COWBOY.roll.difficultyDown'}}">−</button>
+      <strong class="cowboy-dialog-difficulty-total">{{ mouvement.difficulty }}</strong>
+      <button type="button" class="cowboy-dialog-difficulty-step" data-value="1"
+        aria-label="{{localize 'COWBOY.roll.difficultyUp'}}">+</button>
+      <span class="cowboy-dialog-difficulty-delta">+0</span>
+      <input type="hidden" class="cowboy-dialog-difficulty-modifier" value="0" />
+    </div>
+
+    {{!-- Combien de dés partent réellement : le rang du mouvement, plus les
+    traits cochés, plus le bonus de genre, plus celui qu'un avantage ajoute
+    avant de le reprendre. Recalculé à chaque geste, pour qu'on n'ait pas à
+    l'additionner de tête avant de valider. --}}
+    <div class="cowboy-dialog-dice-count"
+      data-tooltip="{{localize 'COWBOY.roll.diceCountHint'}}">
+      <i class="fa-solid fa-dice" aria-hidden="true"></i>
+      <strong class="cowboy-dialog-dice-total">{{ mouvement.dices }}</strong>
+      <span class="cowboy-dialog-dice-formula"></span>
+    </div>
+  </section>
+
+  {{!-- Avantage et bonus de genre partagent leur rangée. Le second ne se coche
+  pas : il constate que l'approche du chasseur est celle de la prime. --}}
+  <section class="cowboy-dialog-row">
+    <div class="cowboy-dialog-field">
+      <label for="cowboy-dialog-modifier-advantage">
+        {{localize 'COWBOY.roll.advantage'}}
+      </label>
+      <select class="cowboy-dialog-modifier-advantage"
+        id="cowboy-dialog-modifier-advantage">
+        <option value="0" selected>{{localize 'COWBOY.roll.advantageNone'}}</option>
+        <option value="1">{{localize 'COWBOY.roll.advantageUp'}}</option>
+        <option value="-1">{{localize 'COWBOY.roll.advantageDown'}}</option>
+      </select>
+    </div>
+
+    <div class="cowboy-dialog-bonus"
+      data-tooltip="{{localize 'COWBOY.roll.genreBonusHint'}}">
       <input type="checkbox" id="cowboy-dialog-modifier-bonus" disabled
       {{#if (eq category genre)}}
       checked
       {{/if}}
       />
+      <label for="cowboy-dialog-modifier-bonus">
+        {{localize 'COWBOY.roll.genreBonus'}}
+      </label>
+    </div>
+
+    {{!-- Les dés comptés à la main. Le livre n'en fait pas un barème : S'impliquer
+    en donne deux, Improviser ouvre une seconde approche, Big Shot en accorde ou
+    en retire au jugé. Un seul compteur porte tout ça, plutôt qu'une case par
+    riff que le prochain livre démentirait. --}}
+    <div class="cowboy-dialog-bonus-dice"
+      data-tooltip="{{localize 'COWBOY.roll.bonusDiceHint'}}">
+      <button type="button" class="cowboy-dialog-bonus-dice-step" data-value="-1"
+        aria-label="{{localize 'COWBOY.roll.bonusDiceDown'}}">−</button>
+      <strong class="cowboy-dialog-bonus-dice-total">+0</strong>
+      <button type="button" class="cowboy-dialog-bonus-dice-step" data-value="1"
+        aria-label="{{localize 'COWBOY.roll.bonusDiceUp'}}">+</button>
+      <label>{{localize 'COWBOY.roll.bonusDice'}}</label>
+      <input type="hidden" class="cowboy-dialog-bonus-dice-value" value="0" />
     </div>
   </section>
+  {{!-- Ce qu'on peut plaquer sur ce test. Redessiné à chaque geste par la
+  boîte : le mouvement choisi décide des riffs ouverts, et chaque riff plaqué
+  change ce que les suivants coûtent encore. --}}
+  <div class="cowboy-dialog-riffs-mount"></div>
+
+  {{#if plannedDie}}
+  <label class="cowboy-dialog-plan" data-tooltip="{{localize 'COWBOY.groove.plan.useHint'}}">
+    <input type="checkbox" class="cowboy-dialog-planned-die" />
+    <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+    {{localize 'COWBOY.groove.plan.use'}} : <strong>{{ plannedDie }}</strong>
+  </label>
+  {{/if}}
+
+  {{!-- Les traits du chasseur, puis ceux de son MONO - qui n'ont pas de genre
+  et se proposent donc à tous les jets. Cocher l'un d'eux, c'est déclarer qu'on
+  se sert de son appareil.
+
+  Les cinq approches sont dessinées, pas seulement celle du test : Improviser en
+  ouvre une seconde en cours de réglage, et la boîte n'a plus le moyen de
+  redemander une réserve une fois ouverte. Celles qui ne sont pas en jeu portent
+  `is-out` et ne comptent pas. --}}
   <section class="cowboy-dialog-traits">
     {{#each dicePool as |dice|}}
-    <div class="cowboy-dialog-dice-pool">
-      <input type="checkbox" id="dice-{{ dice }}" data-dice="{{ dice }}" />
-      <label for="dice-{{ dice }}">{{ dice }}</label>
+    <div
+      class="cowboy-dialog-dice-pool
+      {{#if dice.dented}}cowboy-dialog-dice-dented{{/if}}
+      {{#if (eq dice.source 'mono')}}cowboy-dialog-dice-mono{{/if}}"
+      data-category="{{ dice.category }}"
+      data-dented="{{#if dice.dented}}true{{else}}false{{/if}}"
+    >
+      <input type="checkbox" id="dice-{{ dice.key }}" data-dice="{{ dice.key }}" />
+      <label for="dice-{{ dice.key }}">
+        {{#if (eq dice.source 'mono')}}
+        <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+        {{else}}
+        {{!-- L'icône du genre, aux couleurs de la table unique : avec cinq
+        approches dans la même liste, le nom seul ne dit plus d'où vient le dé. --}}
+        {{{ genreToIcon dice.category }}}
+        {{/if}}
+        {{ dice.name }}
+      </label>
     </div>
     {{/each}}
   </section>

@@ -1,4 +1,4 @@
-import { moduleId } from "../../constants";
+import { colors, moduleId } from "../../constants";
 import { getActivePrime, getPosterPosition, posterOptions } from "../../prime";
 
 const ApplicationV2 = (foundry as any).applications.api.ApplicationV2;
@@ -50,9 +50,34 @@ export default class PrimePoster extends ApplicationV2 {
       ? `<div class="cowboy-poster-name">${escapeHtml(prime.name)}</div>`
       : "";
 
+    // Le genre de la session, sous la bannière. Il ne suit pas les deux
+    // interrupteurs : ceux-ci cachent l'*identité* de la prime, et la couleur
+    // de la chasse n'en fait pas partie - c'est même ce que la table a besoin
+    // de savoir quand elle ignore encore qui elle traque.
+    //
+    // Une prime sans genre n'affiche rien plutôt qu'une ligne vide : le livre
+    // dit qu'une session filler n'en a pas.
+    const genre = String(prime.system?.genre ?? "").trim();
+    const tint = colors[genre];
+    const genreLine =
+      genre && tint
+        ? `<div class="cowboy-poster-genre" style="color: ${escapeHtml(
+            tint.on
+          )}">` +
+          `<i class="fa-solid ${escapeHtml(tint.fa)}" aria-hidden="true"></i>` +
+          `<span>${escapeHtml(genre)}</span>` +
+          `</div>`
+        : "";
+
+    // La bannière et le genre forment un bloc : c'est ce qui les tient l'un
+    // sous l'autre quelle que soit l'orientation de la carte, qui est une
+    // rangée sur les bords haut et bas, et une colonne sur les côtés.
     return (
       `<div class="cowboy-poster-card">` +
+      `<div class="cowboy-poster-head">` +
       `<div class="cowboy-poster-banner">${label("wanted")}</div>` +
+      genreLine +
+      `</div>` +
       image +
       name +
       `</div>`

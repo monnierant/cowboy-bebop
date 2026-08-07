@@ -111,6 +111,55 @@ export async function adjust(
   }
 }
 
+/** Les cinq genres à zéro, la forme qu'une réserve vide a toujours. */
+const emptyPool = (): Record<string, number> =>
+  Object.fromEntries(genres.map((genre) => [genre, 0]));
+
+/**
+ * Solde l'économie d'une session : plus un carton nulle part, plus une fausse
+ * note, et la prime revient au premier mouvement.
+ *
+ * Les cartons de chaque chasseur sont compris. C'est délibéré, et c'est ce qui
+ * rend ce geste large : un carton suit celui qui l'a gagné (ADR 0002), donc les
+ * remettre à zéro depuis la prime écrit sur des documents qu'elle ne possède
+ * pas. La fiche demande confirmation avant de l'appeler.
+ *
+ * Rend le nombre de chasseurs touchés, pour que l'appelant puisse le dire.
+ */
+export async function resetSession(prime: any): Promise<number> {
+  if (!prime) return 0;
+
+  await prime.update({
+    "system.mouvement": 0,
+    "system.cartons": emptyPool(),
+    "system.notes": emptyPool(),
+    "system.activations": [],
+  });
+
+  const hunters = ((game as any).actors ?? []).filter(
+    (actor: any) => actor.type === "chasseur"
+  );
+
+  for (const hunter of hunters) {
+    // Le solo se rend en même temps que les jetons : « une fois par session »
+    // n'a de sens que si quelque chose marque la fin d'une session, et c'est ce
+    // geste-là. Rien d'autre dans le système ne le fait.
+    await hunter.update({
+      "system.cartons": emptyPool(),
+      "system.solo": false,
+      "system.plannedDie": 0,
+    });
+  }
+
+  // Les fiches de prime affichent les cartons des chasseurs : elles ne se
+  // redessinent pas toutes seules quand c'est un autre acteur qui a changé.
+  Object.values((ui as any).windows ?? {}).forEach((app: any) => {
+    if (app?.actor?.type === "prime") app.render(false);
+  });
+
+  return hunters.length;
+}
+
 /**
  * What the prime sheet shows at the bottom: the table's total cartons by genre.
  * Individual ownership and corrections stay on each hunter sheet.
