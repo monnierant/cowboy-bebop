@@ -1,0 +1,254 @@
+// Les trois hexagones d'un MONO, et la fiche du vaisseau mère. Les deux états
+// d'usure réutilisent les couleurs des traits d'un chasseur - c'est la même
+// règle, donc la même teinte.
+
+// La vignette du header d'un chasseur : une colonne de plus, à droite du
+// souvenir. Vide, c'est une cible de dépôt ; pleine, c'est le portrait de
+// l'appareil, sur lequel on clique pour ouvrir sa fiche.
+.cowboy-mono-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2em;
+  flex: 0 0 auto;
+  width: 84px;
+  padding: 0.3em;
+  border: 1px solid #0003;
+  border-radius: 0.35em;
+  background: #ffffff18;
+
+  &.is-empty {
+    border-style: dashed;
+    opacity: 0.55;
+  }
+
+  .cowboy-mono-slot-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 0;
+    border-radius: 0.25em;
+    cursor: pointer;
+  }
+
+  .cowboy-mono-slot-ghost {
+    font-size: 2.4em;
+    opacity: 0.5;
+  }
+
+  .cowboy-mono-slot-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.7em;
+    text-align: center;
+  }
+
+  // Discret jusqu'au survol : détacher n'est pas un geste qu'on fait souvent,
+  // et l'icône ne doit pas concurrencer le portrait.
+  .cowboy-mono-slot-unlink {
+    position: absolute;
+    top: 0.1em;
+    right: 0.1em;
+    width: 1.4em;
+    height: 1.4em;
+    line-height: 1;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .cowboy-mono-slot-unlink { opacity: 1; }
+
+  // Pendant un glisser-déposer, la cible se signale.
+  &.cowboy-dial-drop-active {
+    border-color: #0dcaca;
+    background: #0dcaca24;
+    opacity: 1;
+  }
+}
+
+.cowboy-mono-block,
+.cowboy-mono-section {
+  border-top: 1px solid #0002;
+  padding-top: 0.5em;
+  margin-top: 0.5em;
+}
+
+// La carte grise : portrait à gauche, identité à droite. Le portrait prend la
+// hauteur du bloc de champs, donc il grandit tout seul si une ligne s'ajoute -
+// aucun nombre à tenir en phase à la main.
+.cowboy-mono-sheet {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cowboy-mono-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.7em;
+  flex: 0 0 auto;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid #0002;
+
+  .cowboy-mono-portrait {
+    width: 40%;
+    max-width: 150px;
+    object-fit: cover;
+    border: 1px solid #0004;
+    border-radius: 0.35em;
+    flex: 0 0 auto;
+  }
+
+  .cowboy-mono-card-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15em;
+    flex: 1;
+    min-width: 0;
+
+    label {
+      font-size: 0.75em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+  }
+
+  .cowboy-mono-card-name {
+    font-size: 1.15em;
+    font-weight: bold;
+  }
+
+  .cowboy-mono-restore {
+    margin-top: 0.4em;
+    font-size: 0.85em;
+  }
+}
+
+// Les trois hexagones prennent la place qui reste, sans étirer la carte.
+.cowboy-mono-sheet .cowboy-mono-section {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 0;
+  margin-top: 0;
+}
+
+.cowboy-mono-section-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+
+  h3 {
+    margin: 0;
+    font-weight: bold;
+  }
+}
+
+.cowboy-mono-hint {
+  margin: 0.25em 0 0.5em;
+  font-size: 0.85em;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.cowboy-mono-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25em;
+}
+
+.cowboy-mono-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.cowboy-mono-trait {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4em;
+
+  .cowboy-mono-trait-label {
+    width: 1.5em;
+    flex: 0 0 auto;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  .cowboy-mono-trait-name {
+    flex: 1;
+  }
+
+  .cowboy-mono-trait-heal {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+
+// Le nom est le premier hexagone et s'use comme les autres, mais il reste le
+// nom de l'acteur : il porte donc son propre poids à l'écran.
+.cowboy-mono-trait-name-row .cowboy-mono-trait-name {
+  font-weight: bold;
+}
+
+.cowboy-mono-out {
+  margin: 0.5em 0 0;
+  padding: 0.4em 0.6em;
+  border-left: 3px solid #aa0200;
+  background-color: #d9888733;
+  font-style: italic;
+}
+
+.cowboy-prime-mono-name {
+  margin: 0.25em 0;
+  font-weight: bold;
+}
+
+// La réserve de dés distingue ce qui vient de l'appareil : ces traits n'ont
+// pas de genre et se proposent à tous les jets, ce qui surprend au début.
+.cowboy-dialog-dice-mono label {
+  font-style: italic;
+}
+
+.cowboy-vaisseau-descriptor {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.3em;
+  align-items: center;
+  margin-bottom: 0.6em;
+
+  .cowboy-vaisseau-descriptor-role {
+    grid-column: 1 / -1;
+    font-weight: bold;
+    font-size: 0.9em;
+    opacity: 0.8;
+  }
+
+  .cowboy-vaisseau-descriptor-name {
+    grid-column: 1 / -1;
+  }
+}
+
+// Le bouton d'état de Big Shot porte la couleur de ce qu'il montre, pas de ce
+// qu'il fera : intact discret, entamé ambre, brisé rouge - les mêmes teintes
+// que le nom du trait à côté.
+.cowboy-actor-trait-cycle,
+.cowboy-mono-trait-cycle {
+  width: auto;
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+
+  .fa-circle-check { opacity: 0.35; }
+  .fa-burst { color: #b07f00; }
+  .fa-skull { color: #aa0200; }
+}

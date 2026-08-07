@@ -1,0 +1,82 @@
+{{!-- Les trois hexagones du livre. Le premier est le nom de l'appareil, qui
+s'use comme les deux autres ; il écrit dans `name` plutôt que dans `system`
+parce que c'est aussi l'étiquette du pion sur la scène. --}}
+<div class="cowboy-mono-traits">
+  {{#each monoTraits as |trait|}}
+  <div
+    class="cowboy-mono-trait
+    {{#if trait.isName}}cowboy-mono-trait-name-row{{/if}}"
+  >
+    <label class="cowboy-mono-trait-label">
+      {{#if trait.isName}}
+      <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+      {{else}}
+      <i class="fa-solid fa-wrench" aria-hidden="true"></i>
+      {{/if}}
+    </label>
+
+    <input
+      class="cowboy-mono-trait-name
+        {{#if trait.broken}}
+        cowboy-actor-trait-isbroken
+        {{else if trait.dented}}
+        cowboy-actor-trait-isdented
+        {{/if}}"
+      data-index="{{ trait.index }}"
+      data-mono-uuid="{{ ../monoUuid }}"
+      type="text"
+      value="{{ trait.name }}"
+      placeholder="{{#if trait.isName}}{{localize 'COWBOY.mono.namePlaceholder'}}{{else}}{{localize 'COWBOY.mono.traitPlaceholder'}}{{/if}}"
+    />
+
+    {{!-- Un trait brisé ne se répare pas, exactement comme chez un chasseur :
+    la remise à neuf de Big Shot reste la seule soupape - et, pour lui seul, le
+    passage d'état à la main qui rattrape les fausses manipulations. La
+    réparation, elle, garde son bouton chez tout le monde. --}}
+    {{#if (and trait.dented (not trait.broken))}}
+    <button
+      type="button"
+      class="cowboy-mono-trait-heal"
+      data-index="{{ trait.index }}"
+      data-mono-uuid="{{ ../monoUuid }}"
+      title="{{localize 'COWBOY.actor.healTrait'}}"
+      aria-label="{{localize 'COWBOY.actor.healTrait'}}"
+    >
+      <i class="fa-solid fa-notes-medical"></i>
+    </button>
+    {{else if (not ../isGM)}}
+    <input
+      class="cowboy-actor-trait-status"
+      type="checkbox"
+      {{#if trait.dented}}checked{{/if}}
+      disabled
+    />
+    {{/if}}
+
+    {{#if ../isGM}}
+    <button
+      type="button"
+      class="cowboy-mono-trait-cycle"
+      data-index="{{ trait.index }}"
+      data-mono-uuid="{{ ../monoUuid }}"
+      data-dented="{{ trait.dented }}"
+      data-broken="{{ trait.broken }}"
+      data-tooltip="{{localize 'COWBOY.actor.cycleTrait'}}"
+      aria-label="{{localize 'COWBOY.actor.cycleTrait'}}"
+    >
+      <i class="fa-solid
+        {{#if trait.broken}}fa-skull
+        {{else if trait.dented}}fa-burst
+        {{else}}fa-circle-check{{/if}}"></i>
+    </button>
+    {{/if}}
+  </div>
+  {{/each}}
+</div>
+
+{{#if monoOutOfChase}}
+<p class="cowboy-mono-out">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  {{localize 'COWBOY.mono.outOfChase'}}
+</p>
+{{/if}}

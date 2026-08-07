@@ -1,0 +1,74 @@
+<form class="actor-sheet cowboy-vaisseau-sheet {{ cssClass }}" autocomplete="off">
+  <header class="sheet-header">
+    <img
+      src="{{ actor.img }}"
+      data-edit="img"
+      title="{{ actor.name }}"
+      height="64"
+      width="64"
+    />
+    <div class="cowboy-mono-header-fields">
+      <label>{{localize 'COWBOY.actor.name'}}</label>
+      <input name="name" type="text" value="{{ actor.name }}" />
+      <label>{{localize 'COWBOY.actor.concept'}}</label>
+      <input
+        name="system.concept"
+        type="text"
+        value="{{ actor.system.concept }}"
+      />
+    </div>
+  </header>
+
+  {{!-- Aucun dé, aucun dégât : le vaisseau mère est une boussole de campagne,
+  pas une réserve. Trois descripteurs, chacun avec son approche et ce qu'il dit
+  de la série - thème pour les deux premiers, ton pour le dernier. --}}
+  <section class="cowboy-vaisseau-section">
+    <header class="cowboy-mono-section-header">
+      <h3>
+        <i class="fa-solid fa-satellite"></i>
+        {{localize 'COWBOY.vaisseauMere.descriptors'}}
+      </h3>
+    </header>
+    <p class="cowboy-mono-hint">
+      {{localize 'COWBOY.vaisseauMere.descriptorsHint'}}
+    </p>
+
+    {{#each descriptors as |descriptor|}}
+    <div class="cowboy-vaisseau-descriptor">
+      <label class="cowboy-vaisseau-descriptor-role">
+        {{ descriptor.roleLabel }}
+      </label>
+
+      <input
+        class="cowboy-vaisseau-descriptor-name"
+        name="system.descriptors.{{ descriptor.index }}.name"
+        type="text"
+        value="{{ descriptor.name }}"
+        placeholder="{{ descriptor.placeholder }}"
+      />
+
+      <select
+        class="cowboy-vaisseau-descriptor-genre"
+        name="system.descriptors.{{ descriptor.index }}.genre"
+      >
+        <option value="">{{localize 'COWBOY.vaisseauMere.noApproach'}}</option>
+        {{#each ../genres as |genre|}}
+        {{#if (eq genre ../descriptor.genre)}}
+        <option value="{{ genre }}" selected>{{ genre }}</option>
+        {{else}}
+        <option value="{{ genre }}">{{ genre }}</option>
+        {{/if}}
+        {{/each}}
+      </select>
+
+      <input
+        class="cowboy-vaisseau-descriptor-meaning"
+        name="system.descriptors.{{ descriptor.index }}.meaning"
+        type="text"
+        value="{{ descriptor.meaning }}"
+        placeholder="{{ descriptor.meaningPlaceholder }}"
+      />
+    </div>
+    {{/each}}
+  </section>
+</form>

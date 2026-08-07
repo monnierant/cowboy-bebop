@@ -1,0 +1,46 @@
+{{!-- Une carte grise de vaisseau : le portrait tient la moitié gauche, le nom
+et le concept l'identifient, et les trois hexagones sont les seules lignes qui
+changent en jeu. Rien d'autre n'a sa place ici - un MONO n'a ni réserve, ni
+genre, ni jauge. --}}
+<form class="actor-sheet cowboy-mono-sheet {{ cssClass }}" autocomplete="off">
+  <header class="cowboy-mono-card">
+    <img
+      class="cowboy-mono-portrait"
+      src="{{ actor.img }}"
+      data-edit="img"
+      title="{{ actor.name }}"
+    />
+    <div class="cowboy-mono-card-fields">
+      <label>{{localize 'COWBOY.actor.name'}}</label>
+      <input
+        class="cowboy-mono-card-name"
+        name="name"
+        type="text"
+        value="{{ actor.name }}"
+      />
+      <label>{{localize 'COWBOY.actor.concept'}}</label>
+      <input
+        name="system.concept"
+        type="text"
+        value="{{ actor.system.concept }}"
+        placeholder="{{localize 'COWBOY.mono.conceptPlaceholder'}}"
+      />
+      {{#if isGM}}
+      <button class="cowboy-mono-restore" type="button">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+        {{ localize "COWBOY.actor.admin.restore" }}
+      </button>
+      {{/if}}
+    </div>
+  </header>
+
+  <section class="cowboy-mono-section">
+    <header class="cowboy-mono-section-header">
+      <h3><i class="fa-solid fa-rocket"></i> {{localize 'COWBOY.mono.traits'}}
+        <i class="fa-solid fa-circle-info cowboy-prime-section-help"
+          data-tooltip="{{localize 'COWBOY.mono.traitsHint'}}"></i>
+      </h3>
+    </header>
+    {{> "systems/cowboy-bebop/templates/partials/mono-traits.hbs"}}
+  </section>
+</form>

@@ -1,44 +1,112 @@
 {
   "Actor": {
-    "types": ["chasseur", "prime"],
+    "types": [
+      "chasseur",
+      "prime",
+      "mono",
+      "vaisseauMere"
+    ],
     "templates": {
       "common": {
-        "groove": "",
         "concept": ""
       }
     },
     "chasseur": {
-      "templates": ["common"],
+      "templates": [
+        "common"
+      ],
       "memory": "",
       "traits": {
         "rock": [
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false }
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          }
         ],
         "blues": [
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false }
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          }
         ],
         "jazz": [
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false }
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          }
         ],
         "dance": [
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false }
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          }
         ],
         "tango": [
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false },
-          { "name": "", "damaged": false, "hyperdamaged": false }
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          },
+          {
+            "name": "",
+            "dented": false,
+            "broken": false
+          }
         ]
       },
       "cartridge": 6,
       "rythme": 0,
+      "solo": false,
+      "plannedDie": 0,
       "cartons": {
         "rock": 0,
         "blues": 0,
@@ -47,18 +115,27 @@
         "tango": 0
       },
       "burden": [],
-      "ship": {
-        "main": "",
-        "mono": []
-      }
+      "mono": ""
     },
     "prime": {
       "genre": "rock",
-      "secret": { "text": "", "revealed": false },
+      "secret": {
+        "text": "",
+        "revealed": false
+      },
       "sessionTraits": [
-        { "name": "", "revealed": false },
-        { "name": "", "revealed": false },
-        { "name": "", "revealed": false }
+        {
+          "name": "",
+          "revealed": false
+        },
+        {
+          "name": "",
+          "revealed": false
+        },
+        {
+          "name": "",
+          "revealed": false
+        }
       ],
       "cartons": {
         "rock": 0,
@@ -75,25 +152,87 @@
         "tango": 0
       },
       "mouvement": 0,
+      "risque": 0,
+      "activations": [],
       "riffs": [],
       "sessionType": "",
+      "mono": "",
       "poster": {
         "showImage": true,
         "showName": true
       },
-      "templates": ["common"]
+      "grooveState": {
+        "orbitalSafe": false,
+        "vengeanceHunterId": "",
+        "shadowsHunterIds": [],
+        "shadowsAccepted": false
+      },
+      "templates": [
+        "common"
+      ]
+    },
+    "mono": {
+      "templates": [
+        "common"
+      ],
+      "nameState": {
+        "dented": false,
+        "broken": false
+      },
+      "traits": [
+        {
+          "name": "",
+          "dented": false,
+          "broken": false
+        },
+        {
+          "name": "",
+          "dented": false,
+          "broken": false
+        }
+      ]
+    },
+    "vaisseauMere": {
+      "templates": [
+        "common"
+      ],
+      "descriptors": [
+        {
+          "name": "",
+          "genre": "",
+          "meaning": ""
+        },
+        {
+          "name": "",
+          "genre": "",
+          "meaning": ""
+        },
+        {
+          "name": "",
+          "genre": "",
+          "meaning": ""
+        }
+      ]
     }
   },
   "Item": {
-    "types": ["mono", "sessionType"],
-    "mono": {
-      "weapon-trait": "",
-      "equipment-trait": "",
-      "health": 1
-    },
+    "types": [
+      "sessionType",
+      "groove"
+    ],
     "sessionType": {
       "setup": "",
       "riffs": []
+    },
+    "groove": {
+      "audience": "chasseur",
+      "description": "",
+      "substitution": {
+        "from": "",
+        "to": []
+      },
+      "activations": [],
+      "reminders": []
     }
   }
 }
