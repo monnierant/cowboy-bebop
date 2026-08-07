@@ -18,7 +18,9 @@ assert.equal(folders.length, 2, "le catalogue contient les dossiers chasseurs et
 assert.equal(grooves.filter((item) => item.system.audience === "chasseur").length, 11);
 assert.equal(grooves.filter((item) => item.system.audience === "prime").length, 22);
 assert.equal(grooves.filter((item) => item.system.substitution?.from).length, 5);
-assert.equal(grooves.filter((item) => item.system.activations?.length).length, 14);
+// Treize, et non quatorze : Passe-partout a rejoint les exceptions nommées, sa
+// case portant un choix et son écart une mémoire (ADR 0015).
+assert.equal(grooves.filter((item) => item.system.activations?.length).length, 13);
 assert.equal(grooves.filter((item) => item.system.reminders?.length).length, 11);
 assert.equal(grooves.filter((item) => item.system.activations?.length && item.system.reminders?.length).length, 1);
 
@@ -36,6 +38,7 @@ for (const item of grooves) {
 
 const bespoke = new Set([
   "grooveHunter09",
+  "groovePrime005",
   "groovePrime015",
   "groovePrime018",
   "groovePrime022",
@@ -52,6 +55,50 @@ const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "cowboy-grooves-"));
 const translations = JSON.parse(
   await fs.readFile(path.resolve("src/translations/packs/grooves.en.json"), "utf8")
 );
+
+// La parité des traductions, que rien ne vérifiait : c'est ainsi que cinq
+// grooves se sont retrouvés annoncés « Reminder only » côté anglais alors que le
+// moteur les appliquait, et qu'un rappel est resté en français dans le pack EN.
+for (const item of grooves) {
+  const translated = translations[item._id];
+  assert.ok(translated, `${item._id} a une traduction anglaise`);
+  assert.ok(translated.name, `${item._id} a un nom anglais`);
+  assert.ok(translated.description, `${item._id} a une description anglaise`);
+
+  // Un rappel qui répète la description se traduit par le repli ; un rappel qui
+  // en diffère porte un texte propre, et doit donc être traduit explicitement.
+  const divergent = item.system.reminders.filter(
+    (reminder) => reminder.text !== item.system.description
+  );
+  if (divergent.length > 0) {
+    assert.equal(
+      translated.reminders?.length,
+      item.system.reminders.length,
+      `${item._id} traduit chacun de ses rappels`
+    );
+  }
+}
+
+// Le statut « joué / rappel » se dérive et ne s'écrit plus : le retrouver dans
+// une description signifie qu'il a été ressaisi à la main quelque part.
+const statusPhrases = [
+  "Joué par le système", "Rappel uniquement", "Joué sur la carte",
+  "Partiellement joué", "Handled by the system", "Reminder only",
+];
+for (const item of grooves) {
+  const texts = [
+    item.system.description,
+    ...item.system.reminders.map((reminder) => reminder.text),
+    translations[item._id]?.description ?? "",
+    ...(translations[item._id]?.reminders ?? []),
+  ];
+  for (const phrase of statusPhrases) {
+    assert.ok(
+      texts.every((text) => !text.includes(phrase)),
+      `${item._id} ne réécrit pas le statut « ${phrase} »`
+    );
+  }
+}
 
 async function compileAndReload(language) {
   const database = path.join(temporary, `grooves-${language}`);
@@ -81,9 +128,11 @@ try {
   assert.equal(englishGrooves.filter((item) => item.folder === "grooveHunters001").length, 11);
   assert.equal(englishGrooves.filter((item) => item.folder === "grooveBounties01").length, 22);
   assert.equal(englishGrooves.find((item) => item._id === "grooveHunter05")?.name, "Lone Wolf");
+  // La description anglaise remplace bien la française, sans phrase de statut :
+  // celui-ci se dérive à l'affichage et n'est plus écrit dans le catalogue.
   assert.match(
     englishGrooves.find((item) => item._id === "groovePrime002")?.system.description ?? "",
-    /^Handled by the system\./
+    /^For one Risk and this Tab/
   );
   assert.deepEqual(
     englishGrooves.map((item) => item._id).sort(),

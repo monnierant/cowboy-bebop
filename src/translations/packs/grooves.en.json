@@ -3,136 +3,137 @@
   "grooveBounties01": { "name": "Bounties" },
   "grooveHunter01": {
     "name": "Against the Odds",
-    "description": "Handled by the system. With disadvantage, a matching pair other than two 6s grants one hit at most."
+    "description": "With disadvantage, a matching pair other than two 6s grants one hit at most."
   },
   "grooveHunter02": {
     "name": "Utter Determination",
-    "description": "Handled by the system. With disadvantage, wounded traits from the chosen approach may still add their dice to the pool."
+    "description": "With disadvantage, wounded traits from the chosen approach may still add their dice to the pool."
   },
   "grooveHunter03": {
     "name": "Virtue of Necessity",
-    "description": "Reminder only. A trait adjacent to a wounded trait in the approach may replace it, even when it belongs to another approach."
+    "description": "A trait adjacent to a wounded trait in the approach may replace it, even when it belongs to another approach."
   },
   "grooveHunter04": {
     "name": "Out of the Box",
-    "description": "Reminder only. After rolling, trigger one shock to turn a result from 2 to 5 into a 6."
+    "description": "After rolling, trigger one shock to turn a result from 2 to 5 into a 6."
   },
   "grooveHunter05": {
     "name": "Lone Wolf",
-    "description": "Handled by the system. Rock traits are available for Blues and Jazz Tests."
+    "description": "Rock traits are available for Blues and Jazz Tests."
   },
   "grooveHunter06": {
     "name": "Scrap Master",
-    "description": "Reminder only. With disadvantage, reroll the removed die, then choose whether to keep its new result."
+    "description": "With disadvantage, reroll the removed die, then choose whether to keep its new result."
   },
   "grooveHunter07": {
     "name": "Loose Handcuffs",
-    "description": "Handled by the system. Tango traits are available for Dance and Jazz Tests."
+    "description": "Tango traits are available for Dance and Jazz Tests."
   },
   "grooveHunter08": {
     "name": "Mirror of the Soul",
-    "description": "Handled by the system. Dance traits are available for Tango and Blues Tests."
+    "description": "Dance traits are available for Tango and Blues Tests."
   },
   "grooveHunter09": {
     "name": "Long Term Plan",
-    "description": "Handled by the system. After a roll, save one die result, then voluntarily add it to a later Test in the same Session. Only one result remains saved."
+    "description": "After a roll, save one die result, then voluntarily add it to a later Test in the same Session. Only one result remains saved."
   },
   "grooveHunter10": {
     "name": "Faster than the Eye",
-    "description": "Handled by the system. Jazz traits are available for Dance and Rock Tests."
+    "description": "Jazz traits are available for Dance and Rock Tests."
   },
   "grooveHunter11": {
     "name": "Memento of War",
-    "description": "Handled by the system. Blues traits are available for Tango and Rock Tests."
+    "description": "Blues traits are available for Tango and Rock Tests."
   },
   "groovePrime001": {
     "name": "Planetary Threat",
-    "description": "Reminder only. After every two Bounty Hunter Tests, increase the Tab difficulty by 1."
+    "description": "After every two Bounty Hunter Tests, increase the Tab difficulty by 1."
   },
   "groovePrime002": {
     "name": "Master Bomber",
-    "description": "Handled by the system. For one Risk and this Tab, Tests using the Session Genre roll one fewer die and all other approaches produce at least two shocks."
+    "description": "For one Risk and this Tab, Tests using the Session Genre roll one fewer die and all other approaches produce at least two shocks."
   },
   "groovePrime003": {
     "name": "Orbital Kidnapping",
-    "description": "Partially handled by the system. Big Shot manages the 4-clock ‘The Hostages Are Safe’, then marks it closed; 1s on Tests using the Session Genre no longer cause shocks.",
+    "description": "Big Shot manages the 4-clock ‘The Hostages Are Safe’, then marks it closed; 1s on Tests using the Session Genre no longer cause shocks.",
     "reminders": ["Open the 4-clock ‘The Hostages Are Safe’; the first hit from every Session Genre Test advances it. Then activate the state on the Bounty."]
   },
   "groovePrime004": {
     "name": "Tools of the Trade",
-    "description": "Reminder only. Outside a Test, spend one Risk to swap the objectives of two open clocks; this cannot be used after the Secret is revealed."
+    "description": "Outside a Test, spend one Risk to swap the objectives of two open clocks; this cannot be used after the Secret is revealed."
   },
   "groovePrime005": {
     "name": "Master Key",
-    "description": "System approximation. Before a Test, add 3 to its difficulty and 1d6 to its pool. The Bounty Hunters may cancel the difficulty increase by spending two hits; this buyback is not modeled."
+    "description": "Before a Test, a Bounty Hunter may add 3 to the Tab's difficulty for the whole Session and 1d6 to their pool. Two hits from the Test cancel the accumulated shift."
   },
   "groovePrime006": {
     "name": "Digitalized Mind",
-    "description": "Reminder only. For one Risk, non-improvised actions have disadvantage while improvised actions have advantage."
+    "description": "For one Risk, non-improvised actions have disadvantage while improvised actions have advantage."
   },
   "groovePrime007": {
     "name": "Remote Control",
-    "description": "Handled by the system. For one Risk, Tests using the Session Genre have disadvantage until the end of the Tab."
+    "description": "For one Risk, Tests using the Session Genre have disadvantage until the end of the Tab."
   },
   "groovePrime008": {
     "name": "Dangerous Goods",
-    "description": "Partially handled by the system. A MONO trait may absorb a third shock. Big Shot adjudicates a MONO's destruction and the Tab's failure.",
+    "description": "A MONO trait may absorb a third shock. Big Shot adjudicates a MONO's destruction and the Tab's failure.",
     "reminders": ["If a MONO is destroyed, the Tab fails; Big Shot manages that destruction and its consequences."]
   },
   "groovePrime009": {
     "name": "An Offer You Can't Refuse",
-    "description": "Reminder only. For one Risk, the Bounty Hunters must spend one hit at the end of each Test on a clock chosen by Big Shot."
+    "description": "For one Risk, the Bounty Hunters must spend one hit at the end of each Test on a clock chosen by Big Shot."
   },
   "groovePrime010": {
     "name": "Until the End",
-    "description": "Handled by the system. For one Risk and this Tab, a Test with no hits adds two shocks and a Test with one hit adds one shock."
+    "description": "For one Risk and this Tab, a Test with no hits adds two shocks and a Test with one hit adds one shock."
   },
   "groovePrime011": {
     "name": "Escape Artist",
-    "description": "Reminder only. When a clock other than a 4-clock closes, spend one Risk to open a smaller special clock which must also be filled."
+    "description": "When a clock other than a 4-clock closes, spend one Risk to open a smaller special clock which must also be filled."
   },
   "groovePrime012": {
     "name": "Do or Die",
-    "description": "Reminder only. Require one hit from each Test to fill the protective 8-clock, then a 6-clock for one Risk, then a 4-clock for another Risk."
+    "description": "Require one hit from each Test to fill the protective 8-clock, then a 6-clock for one Risk, then a 4-clock for another Risk."
   },
   "groovePrime013": {
     "name": "Fictional Identity",
-    "description": "Partially handled by the system. Nobody may assign disadvantage to Tests. Reminder only: Assist and Jam! no longer remove wounds."
+    "description": "Nobody may assign disadvantage to Tests, and Assist or Jam! no longer removes wounds."
   },
   "groovePrime014": {
     "name": "Secret Mission",
-    "description": "Handled by the system. Session Genre Tests have disadvantage until the Secret is revealed. Reminder only: objective clocks may only be closed with those Tests."
+    "description": "Session Genre Tests have disadvantage until the Secret is revealed.",
+    "reminders": ["Only Tests of that Genre may close objective clocks."]
   },
   "groovePrime015": {
     "name": "Revenge Is a Dish Best Served Cold",
-    "description": "Handled by the system. Big Shot selects the Bounty Hunter whose Memory is linked to the Bounty; they may spend Rhythm as Bullets or Bullets as Rhythm."
+    "description": "Big Shot selects the Bounty Hunter whose Memory is linked to the Bounty; they may spend Rhythm as Bullets or Bullets as Rhythm."
   },
   "groovePrime016": {
     "name": "Special Raid",
-    "description": "Handled by the system. For one Risk, Tests outside the Session Genre have disadvantage until the end of the Tab."
+    "description": "For one Risk, Tests outside the Session Genre have disadvantage until the end of the Tab."
   },
   "groovePrime017": {
     "name": "High View",
-    "description": "Reminder only. Bounty Hunters cannot spend hits to reduce the difficulty unless they play Solo!."
+    "description": "Bounty Hunters cannot spend hits to reduce the difficulty unless they play Solo!."
   },
   "groovePrime018": {
     "name": "A Smaller Fish Bites Harder",
-    "description": "Handled by the system. Absorbing a shock with a trait requires wounding one additional trait; the Bullet cost remains unchanged."
+    "description": "Absorbing a shock with a trait requires wounding one additional trait; the Bullet cost remains unchanged."
   },
   "groovePrime019": {
     "name": "A Ruined Life",
-    "description": "Reminder only. Give clock events deliberately vague descriptions so their true objective and consequences remain uncertain."
+    "description": "Give clock events deliberately vague descriptions so their true objective and consequences remain uncertain."
   },
   "groovePrime020": {
     "name": "When You Look Into the Abyss…",
-    "description": "Reminder only. For one Risk, wounds cannot be removed before the end of the Tab or the revelation of the Secret."
+    "description": "For one Risk, wounds cannot be removed before the end of the Tab or the revelation of the Secret."
   },
   "groovePrime021": {
     "name": "…The Abyss Looks Into You",
-    "description": "Reminder only. For one Risk, wounds cannot be removed before the end of the Tab or the revelation of the Secret."
+    "description": "For one Risk, wounds cannot be removed before the end of the Tab or the revelation of the Secret."
   },
   "groovePrime022": {
     "name": "Shadows of the Past",
-    "description": "Handled by the system. Big Shot selects two Bounty Hunters: every payment containing Rhythm also costs them two Bullets. After the Secret is manually accepted, Risk payments are doubled."
+    "description": "Big Shot selects two Bounty Hunters: every payment containing Rhythm also costs them two Bullets. After the Secret is manually accepted, Risk payments are doubled."
   }
 }

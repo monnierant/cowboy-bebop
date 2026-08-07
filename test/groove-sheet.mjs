@@ -11,6 +11,7 @@
 
 import fs from "node:fs";
 import Handlebars from "handlebars";
+import { range as cowboyRange } from "./.out/handlebarsHelpers/range.js";
 
 Handlebars.registerHelper("localize", (key) => key);
 Handlebars.registerHelper("eq", (left, right) => left === right);
@@ -296,12 +297,27 @@ Handlebars.registerHelper("gt", (left, right) => left > right);
 Handlebars.registerHelper("gte", (left, right) => left >= right);
 Handlebars.registerHelper("or", (...values) => values.slice(0, -1).some(Boolean));
 Handlebars.registerHelper("and", (...values) => values.slice(0, -1).every(Boolean));
-Handlebars.registerHelper("range", () => "");
+// Le vrai helper et pas un bouchon : c'est lui qui dessine les cartons et les
+// fausses notes, y compris dans l'historique, et un bouchon plus tolérant que
+// la production laisserait passer exactement ce qui a cassé en partie.
+Handlebars.registerHelper("cowboyRange", cowboyRange);
 Handlebars.registerHelper("genreToIcon", () => "");
 
 const carte = card({
   actor: { id: "spike" },
   result: { formula: "3d6", terms: [] },
+  history: [
+    {
+      dice: [4, 3, 1],
+      score: { total: 8, cartons: 0, notes: 1 },
+      source: "Hors des sentiers battus",
+    },
+  ],
+  resultDice: [
+    { face: 4, discarded: false, rewritten: false },
+    { face: 6, discarded: false, rewritten: true, from: 3 },
+    { face: 2, discarded: true, rewritten: false },
+  ],
   mouvement: { difficulty: 10, modifier: 0 },
   total: 12,
   notes: 1,
@@ -312,8 +328,16 @@ const carte = card({
   canCorrect: false,
   canStake: false,
   grooves: [
-    { name: "Hors des sentiers battus", description: "Un 2-5 devient 6.", lentBy: "" },
+    {
+      name: "Hors des sentiers battus",
+      description: "Un 2-5 devient 6.",
+      lentBy: "",
+      actions: [
+        { action: "rewrite-die", label: "Transformer un résultat en 6", icon: "fa-solid fa-wand-magic-sparkles" },
+      ],
+    },
   ],
+  looseActions: [],
   running: [
     { name: "Contrôle à distance", description: "Désavantage sur le genre." },
   ],
@@ -321,6 +345,75 @@ const carte = card({
 has("la carte rappelle le groove après le jet", carte, /Hors des sentiers battus/);
 has("avec son texte en infobulle", carte, /cowboy-roll-groove[\s\S]*?data-tooltip/);
 has("la carte nomme l'activation appliquée", carte, /cowboy-roll-activation[\s\S]*?Contrôle à distance/);
+
+// Le geste se range sous le badge qui l'ouvre, et un seul bouton l'ouvre : le
+// dé se choisit ensuite dans une boîte, pas sur la carte.
+has(
+  "le geste du groove est un bouton sous son badge",
+  carte,
+  /Hors des sentiers battus[\s\S]*?cowboy-roll-groove-actions[\s\S]*?data-action="rewrite-die"/
+);
+has("qui sait sur quel acteur il agit", carte, /data-action="rewrite-die"[\s\S]*?data-actor-id="spike"/);
+
+// Le groupement affiché vient de l'état, pas du jet : une face réécrite après
+// coup n'existe que là, et le total juste à côté est compté sur elle.
+has("la face réécrite est affichée, pas celle qui est tombée", carte, /cowboy-roll-rewritten-die/);
+has("et rappelle ce qu'elle montrait", carte, /data-tooltip="3 → 6"/);
+has("le dé écarté reste montré sans compter", carte, /roll die d6[\s\S]*?discarded/);
+
+// Une étape dépassée se lit comme celle qui compte : des faces, pas une somme
+// écrite, et ses jetons dessinés.
+has("l'étape dépassée montre ses faces", carte, /cowboy-test-history-dice[\s\S]*?>1<[\s\S]*?<\/ol>/);
+has("le 1 y est marqué comme ailleurs", carte, /cowboy-test-history-dice[\s\S]*?min[\s\S]*?<\/ol>/);
+has("son total est barré", carte, /<s class="cowboy-test-history-total">8<\/s>/);
+has("et sa fausse note dessinée", carte, /cowboy-test-history-total[\s\S]*?cowboy-note/);
+has("ce qui l'a dépassée est nommé", carte, /cowboy-test-history-step[\s\S]*?Hors des sentiers battus/);
+hasNot("plus de somme écrite à la main", carte, /3 \+ 4 \+ 5|4 \+ 3 \+ 1/);
+
+// Joué, le geste reste sur la carte plutôt que de disparaître : l'étape barrée
+// au-dessus dit qu'on s'en est servi, le bouton grisé dit qu'on ne peut plus.
+const epuise = card({
+  actor: { id: "spike" },
+  result: { formula: "3d6", terms: [] },
+  resultDice: [],
+  mouvement: { difficulty: 10, modifier: 0 },
+  total: 12,
+  traits: [],
+  grooves: [
+    {
+      name: "Hors des sentiers battus",
+      description: "Un 2-5 devient 6.",
+      lentBy: "",
+      actions: [
+        {
+          action: "rewrite-die",
+          label: "Transformer un résultat en 6",
+          icon: "fa-solid fa-wand-magic-sparkles",
+          blocked: "Déjà joué sur ce Test.",
+        },
+      ],
+    },
+  ],
+  looseActions: [],
+});
+has("le geste joué reste offert", epuise, /data-action="rewrite-die"/);
+has("mais grisé", epuise, /data-action="rewrite-die"[\s\S]*?disabled/);
+has("avec son motif", epuise, /Déjà joué sur ce Test\./);
+
+// Ouvert par un riff plutôt que par un groove, le même geste n'a pas de badge
+// sous lequel se ranger : il reste offert, dessous.
+const jam = card({
+  actor: { id: "spike" },
+  result: { formula: "3d6", terms: [] },
+  mouvement: { difficulty: 10, modifier: 0 },
+  total: 12,
+  traits: [],
+  grooves: [],
+  looseActions: [
+    { action: "reserve-plan", label: "Réserver un résultat", icon: "fa-solid fa-calendar-plus" },
+  ],
+});
+has("un geste sans badge reste offert", jam, /data-action="reserve-plan"/);
 
 // Une Activation en cours est nommée partout où elle agit : c'est ce qui tient
 // lieu de journal (ADR 0012).

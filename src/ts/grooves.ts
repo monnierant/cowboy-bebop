@@ -24,7 +24,7 @@ import { confirmPlayOption, payOption, paymentOptionBlocked, paymentOptionLabel 
 import { getActivePrime } from "./prime";
 import {
   ActiveActivation,
-  Activation,
+  SourcedActivation,
   Groove,
   GrooveAudience,
   GrooveReminder,
@@ -70,6 +70,15 @@ export function grooveItemOf(actor: any): any | undefined {
 /** L'identifiant stable du groove embarqué, ou une chaîne vide. */
 export function grooveIdOf(actor: any): string {
   const item = grooveItemOf(actor);
+  return catalogIdOf(item);
+}
+
+/**
+ * L'identité de catalogue d'un Groove, celle sur laquelle les exceptions
+ * nommées se reconnaissent. Un groove maison n'en a pas et retombe sur son
+ * propre identifiant, ce qui ne correspondra à aucune exception.
+ */
+function catalogIdOf(item: any): string {
   return String(item?.getFlag?.(moduleId, "catalogId") ?? item?.id ?? item?._id ?? "");
 }
 
@@ -91,6 +100,9 @@ export function bespokeRulesOf(prime: any): BespokeGrooveRules {
   }
   if (id === BESPOKE_GROOVES.smallerBites) {
     return { smallerBites: true };
+  }
+  if (id === BESPOKE_GROOVES.masterKey) {
+    return { masterKey: true };
   }
   if (id === BESPOKE_GROOVES.vengeance) {
     return { vengeanceHunterId: String(state.vengeanceHunterId ?? "") };
@@ -125,13 +137,15 @@ export function grooveOf(actor: any): Groove | undefined {
 }
 
 /** Les Activations instantanées que cet acteur porte, appliquées d'office. */
-export function grooveActivationsOf(actor: any): Activation[] {
-  const raw = grooveItemOf(actor)?.system?.activations;
+export function grooveActivationsOf(actor: any): SourcedActivation[] {
+  const item = grooveItemOf(actor);
+  const raw = item?.system?.activations;
   if (!Array.isArray(raw)) return [];
   return raw
     .filter(isActivationValid)
     .map(normalizeActivation)
-    .filter((activation) => !activation.scope);
+    .filter((activation) => !activation.scope)
+    .map((activation) => ({ ...activation, source: item?.name }));
 }
 
 export function grooveTermsOf(item: any): Groove {
@@ -249,10 +263,35 @@ export function substitutedApproaches(
   return openedApproaches([grooveOf(actor)?.substitution, lent], category);
 }
 
+/**
+ * Ce que le système fait de ce groove, déduit et non saisi.
+ *
+ * La phrase de statut vivait dans les descriptions, en français et en anglais,
+ * sans rien pour les tenir d'accord : cinq grooves finissaient annoncés
+ * « Reminder only » côté anglais alors que le moteur les appliquait. Elle se
+ * calcule désormais de trois faits.
+ *
+ * L'appartenance aux exceptions nommées en fait partie, et elle est
+ * indispensable : celles-ci portent `activations: []` tout en étant jouées par
+ * du code nommé, si bien qu'Enlèvement orbital dériverait sans elle en « rappel
+ * seulement » (ADR 0014, ADR 0015).
+ */
+export type GroovePlayStatus = "played" | "partial" | "reminder";
+
+export function groovePlayStatus(groove: Groove, grooveId: string): GroovePlayStatus {
+  const applied =
+    groove.activations.length > 0 ||
+    Boolean(groove.substitution?.from) ||
+    (Object.values(BESPOKE_GROOVES) as string[]).includes(grooveId);
+
+  if (!applied) return "reminder";
+  return groove.reminders.length > 0 ? "partial" : "played";
+}
+
 /** Ce qu'une fiche ou une boîte affiche d'un groove : son nom et son texte. */
 export function grooveCard(
   actor: any
-): { name: string; description: string; audience: GrooveAudience } | undefined {
+): { id: string; name: string; description: string; audience: GrooveAudience; status: GroovePlayStatus } | undefined {
   const item = grooveItemOf(actor);
   if (!item) return undefined;
 
@@ -260,14 +299,23 @@ export function grooveCard(
   const visibleReminders = groove.reminders.filter((reminder) =>
     reminder.audience === "table" || (game as any)?.user?.isGM === true
   );
+  const status = groovePlayStatus(groove, String(item._id ?? ""));
 
   return {
+    id: catalogIdOf(item),
     name: item.name,
-    description: [groove.description, ...visibleReminders.map((reminder) => reminder.text)]
-      .filter(Boolean).join("\n\n"),
+    description: [
+      localizeStatus(status),
+      groove.description,
+      ...visibleReminders.map((reminder) => reminder.text),
+    ].filter(Boolean).join("\n\n"),
     audience: groove.audience,
+    status,
   };
 }
+
+const localizeStatus = (status: GroovePlayStatus): string =>
+  (game as any)?.i18n?.localize(`COWBOY.groove.status.${status}`) ?? "";
 
 // ========================================
 // Les activations en cours
